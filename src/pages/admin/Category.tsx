@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
-
 import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
+import Pagination from '../../components/Pagination';
 
 interface CategoryTableDisplay extends ICategoryResponse {
     subCategoriesCount?: number | undefined;
     commissionRule?: ICommissionRuleResponse | null;
 }
+
+const categories_per_page = 2;
 
 const CategoryCommissionManagement = () => {
     const navigate = useNavigate();
@@ -17,6 +19,7 @@ const CategoryCommissionManagement = () => {
     const [categories, setCategories] = useState<CategoryTableDisplay[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1)
 
     const dummyEarningsSummary = {
         totalCommissionRevenue: '₹50,000',
@@ -161,6 +164,10 @@ const CategoryCommissionManagement = () => {
         );
     }
 
+    const totalPages = Math.ceil(categories.length / categories_per_page);
+    const startIndex = (currentPage - 1) * categories_per_page;
+    const currentCategories = categories.slice(startIndex, startIndex + categories_per_page)
+
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <Sidebar />
@@ -185,7 +192,7 @@ const CategoryCommissionManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {categories.map((category) => (
+                                    {currentCategories.map((category) => (
                                         <tr key={category._id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{category.subCategoriesCount ?? 0} Subcategories</td>
@@ -237,6 +244,20 @@ const CategoryCommissionManagement = () => {
                         >
                             Add New Category
                         </button>
+                        <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Showing {currentCategories.length} of {categories.length} categories
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                />
+                                </div>
+                            </div>
+                        </div>
                     </section>
 
                     <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
@@ -254,7 +275,7 @@ const CategoryCommissionManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {categories.map((category) => (
+                                    {currentCategories.map((category) => (
                                         <tr key={category._id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
@@ -263,7 +284,7 @@ const CategoryCommissionManagement = () => {
                                                     : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flat"
+                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flatFee"
                                                     ? `₹${category.commissionValue}`
                                                     : 'N/A'}
                                             </td>
@@ -296,7 +317,15 @@ const CategoryCommissionManagement = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Showing {currentCategories.length} of {categories.length} categories
+                                </div>
+                            </div>
+                        </div>
                     </section>
+                    
 
                     <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                         <h2 className="text-2xl font-semibold mb-6">Earnings Summary</h2>

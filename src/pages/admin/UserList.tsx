@@ -7,6 +7,7 @@ import { authService } from '../../services/authService';
 import { updateProfile } from '../../features/auth/authSlice';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
+import Pagination from '../../components/Pagination';
 
 interface User {
   id: string;
@@ -19,11 +20,14 @@ interface User {
   joinDate: string;
 }
 
+const users_per_page = 2
+
 const AdminUsersPage = () => {
     const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -77,6 +81,11 @@ const AdminUsersPage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const totalPages = Math.ceil(filteredUsers.length / users_per_page);
+  const startIndex = (currentPage - 1) * users_per_page;
+  const currentUsers = filteredUsers.slice(startIndex, startIndex + users_per_page)
+
+
   const getAvatarColor = (index: number) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
@@ -105,6 +114,7 @@ const AdminUsersPage = () => {
     console.error('Error updating user status:', error);
   }
 }
+
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -169,7 +179,7 @@ const AdminUsersPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredUsers.map((user, index) => (
+                  {currentUsers.map((user, index) => (
                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                       <td className="py-4 px-6">
                         <div className={`w-10 h-10 ${getAvatarColor(index)} rounded-full flex items-center justify-center`}>
@@ -258,21 +268,14 @@ const AdminUsersPage = () => {
             <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {filteredUsers.length} of {users.length} users
+                  Showing {currentUsers.length} of {filteredUsers.length} users
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-                    Previous
-                  </button>
-                  <button className="px-3 py-2 text-sm bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
-                    1
-                  </button>
-                  <button className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-                    2
-                  </button>
-                  <button className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-                    Next
-                  </button>
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
                 </div>
               </div>
             </div>

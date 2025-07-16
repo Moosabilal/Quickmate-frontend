@@ -11,6 +11,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
 
+    if(!config){
+      console.log('config error')
+    }
+
     return config;
   },
   (error) => {

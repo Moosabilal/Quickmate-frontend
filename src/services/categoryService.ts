@@ -1,9 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import {
-    ICategoryResponse, 
-    ICommissionRuleInput,
-    ICommissionRuleResponse, 
-} from "../types/category"; 
+import {ICategoryResponse} from "../types/category"; 
 
 const CATEGORIES_PATH = '/categories';
 const CATEGORIES_TOP_LEVEL_DETAILS_PATH = '/categories/top-level-details';

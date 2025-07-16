@@ -9,7 +9,7 @@ interface ICategoryFormData {
     name: string;
     description: string;
     status: boolean;
-    commissionType: 'percentage' | 'flat' | 'none';
+    commissionType: 'percentage' | 'flatFee' | 'none';
     commissionValue: number | '';
     commissionStatus: boolean;
     icon: File | string | null;
@@ -55,7 +55,7 @@ const CategoryForm: React.FC = () => {
                         name: response.name,
                         description: response.description || '',
                         status: response.status ?? true,
-                        commissionType: response.commissionType as 'percentage' | 'flat' | 'none' || 'none',
+                        commissionType: response.commissionType as 'percentage' | 'flatFee' | 'none' || 'none',
                         commissionValue: response.commissionValue || '',
                         commissionStatus: response.commissionStatus ?? true,
                         icon: response.iconUrl || null,
@@ -235,6 +235,7 @@ const CategoryForm: React.FC = () => {
         );
     }
 
+
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <Sidebar />
@@ -385,8 +386,8 @@ const CategoryForm: React.FC = () => {
                                                 type="radio"
                                                 className="form-radio text-blue-600 focus:ring-blue-500 focus:ring-4 dark:focus:ring-blue-400"
                                                 name="commissionType"
-                                                value="flat"
-                                                checked={formData.commissionType === 'flat'}
+                                                value="flatFee"
+                                                checked={formData.commissionType === 'flatFee'}
                                                 onChange={handleChange}
                                                 disabled={isLoading}
                                             />

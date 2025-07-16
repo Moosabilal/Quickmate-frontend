@@ -4,12 +4,12 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class', // Enable dark mode with class strategy
+  darkMode: 'class', 
   theme: {
     extend: {
       colors: {
-        primary: '#1D4ED8', // Custom blue for light mode
-        secondary: '#15803D', // Custom green for light mode
+        primary: '#1D4ED8', 
+        secondary: '#15803D', 
       },
     },
   },

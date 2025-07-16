@@ -70,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
       <nav className="flex-grow">
         <ul>
           {navItems.map((item) => (
-            <li key={item.name} className="mb-2">
+            <li key={item.name} className="mb-">
               <Link
                 to={item.path}
                 className={`flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
@@ -83,14 +83,13 @@ const Sidebar: React.FC<SidebarProps> = () => {
             </li>
           ))}
 
-          {/* Separator for "Manage Your Services" */}
-          {user?.role === 'Provider' && (
+          {user?.role === 'ServiceProvider' && (
             <li className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 {manageServicesItems.map((item) => (
                 <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                    className={`flex items-center  rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                     ${isActive(item.path) ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium' : ''}`
                     }
                 >
@@ -107,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
       <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={handleLogout}
-          className="flex items-center p-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-colors"
+          className="flex items-center p-3 pb-12 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-colors"
         >
           <MdLogout className="w-5 h-5 mr-3" />
           Logout

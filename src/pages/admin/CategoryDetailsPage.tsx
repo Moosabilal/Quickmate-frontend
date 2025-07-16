@@ -35,7 +35,7 @@ const CategoryDetailsPage: React.FC = () => {
         };
 
         fetchCategoryDetails();
-    }, [categoryId]);
+    }, []);
 
     const handleEditSubCategory = (subcategoryId: string) => {
         const parentId = categoryId
@@ -44,24 +44,85 @@ const CategoryDetailsPage: React.FC = () => {
 
     const handleToggleSubCategoryStatus = async (subcategoryId: string, currentStatus: boolean) => {
         try {
-            // For a real application, you would make an API call here to update the subcategory status
-            // await subcategoryService.updateSubCategoryStatus(subcategoryId, !currentStatus);
+
+            const formData = new FormData();
+            formData.append('status', String(!currentStatus));
+
+            const subCategoryToUpdate = categoryDetails?.subCategories?.find(c => c._id === subcategoryId)
+            if (subCategoryToUpdate) {
+                formData.append('name', subCategoryToUpdate.name);
+                formData.append('description', subCategoryToUpdate.description || '');
+                formData.append('parentId', subCategoryToUpdate?.parentId ?? '')
+                if (subCategoryToUpdate.icon) {
+                    formData.append('icon', subCategoryToUpdate.icon);
+                } else {
+                    formData.append('icon', 'null');
+                }
+            } else {
+                console.warn(`subCategory with ID ${subcategoryId} not found for status toggle.`);
+                setError("subCategory not found for status update.");
+                setIsLoading(false);
+                return;
+            }
+
+            await categoryService.updateCategory(subcategoryId, formData);
 
             if (categoryDetails && categoryDetails.subCategories) {
                 setCategoryDetails(prevDetails => {
                     if (!prevDetails) return null;
-                    const updatedSubCategories = (prevDetails.subCategories ?? []).map(sub =>
-                        sub._id === subcategoryId ? { ...sub, status: !currentStatus } : sub
-                    );
+                    const updatedSubCategories = (prevDetails.subCategories ?? []).map(sub => {
+                        return sub._id === subcategoryId ? { ...sub, status: !currentStatus } : sub
+                    });
                     return { ...prevDetails, subCategories: updatedSubCategories };
                 });
             }
             console.log("Subcategory status updated locally (simulate success).");
         } catch (err) {
             console.error("Failed to toggle subcategory status:", err);
-            // setError(err.message || "Failed to toggle subcategory status."); // Uncomment for actual error handling
+            setError(err.message || "Failed to toggle subcategory status.");
         }
     };
+
+    const handleToggleCommissionStatus = async (subcategoryId: string, currentCommissionStatus: boolean) => {
+        try {
+            const subCategoryToUpdate = categoryDetails?.subCategories?.find(c => c._id === subcategoryId)
+            if (!subCategoryToUpdate) {
+                console.warn(`subCategory with ID ${subcategoryId} not found for commission status toggle.`);
+                setError("subCategory not found for commission status update.");
+                setIsLoading(false);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('commissionStatus', String(!currentCommissionStatus));
+            formData.append('commissionType', subCategoryToUpdate.commissionType ?? "")
+            formData.append('commissionValue', subCategoryToUpdate.commissionValue?.toString() ?? "")
+            formData.append('parentId',subCategoryToUpdate.parentId ?? '')
+            formData.append('name', subCategoryToUpdate.name);
+            formData.append('description', subCategoryToUpdate.description || '');
+            if (subCategoryToUpdate.icon) {
+                formData.append('icon', subCategoryToUpdate.icon);
+            } else {
+                formData.append('icon', 'null');
+            }
+
+            await categoryService.updateCategory(subcategoryId, formData);
+
+            if (categoryDetails && categoryDetails.subCategories) {
+                setCategoryDetails(prevDetails => {
+                    if (!prevDetails) return null;
+                    const updatedSubCategories = (prevDetails.subCategories ?? []).map(sub => {
+                        return sub._id === subcategoryId ? { ...sub, commissionStatus: !currentCommissionStatus } : sub
+                    });
+                    return { ...prevDetails, subCategories: updatedSubCategories };
+                });
+            }
+        } catch (err: any) {
+            console.error("Error toggling commission status:", err);
+            setError(err.message || "Failed to toggle commission status.");
+        }
+
+    }
 
     if (isLoading) {
         return (
@@ -158,7 +219,7 @@ const CategoryDetailsPage: React.FC = () => {
                                             <>
                                                 {commissionType === 'percentage' ? (
                                                     ` ${commissionValue}% (Percentage)`
-                                                ) : ( ` ₹${commissionValue} (Flat Fee)`)
+                                                ) : (` ₹${commissionValue} (Flat Fee)`)
                                                 }
                                             </>
                                         ) : (
@@ -169,7 +230,7 @@ const CategoryDetailsPage: React.FC = () => {
                             </div>
                         </section>
 
-                        
+
 
                         <section>
                             <div className="flex justify-between items-center mb-6">
@@ -214,11 +275,10 @@ const CategoryDetailsPage: React.FC = () => {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                         <span
-                                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                                sub.status
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                                            }`}
+                                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${sub.status
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                                                }`}
                                                         >
                                                             {sub.status ? 'Active' : 'Inactive'}
                                                         </span>
@@ -233,11 +293,10 @@ const CategoryDetailsPage: React.FC = () => {
                                                             </button>
                                                             <button
                                                                 onClick={() => handleToggleSubCategoryStatus(sub._id, sub.status ?? false)}
-                                                                className={`${
-                                                                    sub.status
-                                                                        ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                                                                        : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                                }`}
+                                                                className={`${sub.status
+                                                                    ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                                                                    : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                                                                    }`}
                                                             >
                                                                 {sub.status ? 'Deactivate' : 'Activate'}
                                                             </button>
@@ -250,70 +309,67 @@ const CategoryDetailsPage: React.FC = () => {
                                 </div>
                             )}
                         </section>
-                        
-                        {/* Commission Rule Section for the Main Category */}
-                        <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-                        <h2 className="text-2xl font-semibold mb-6">Commission Rules</h2>
-                        {(!subCategories || subCategories.length === 0) ? (
-                                <p className="text-gray-600 dark:text-gray-400">No commission set yet!.</p>
-                        ) : (
 
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Commission %</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Flat Fee</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {subCategories.map((category) => (
-                                        <tr key={category._id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "percentage"
-                                                    ? `${category.commissionValue}%`
-                                                    : 'N/A'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flat"
-                                                    ? `₹${category.commissionValue}`
-                                                    : 'N/A'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        category.commissionStatus
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                                    }`}
-                                                >
-                                                    {category.commissionStatus ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                
-                                                {/* <button
-                                                    onClick={() => handleToggleCommissionStatus(category._id, category.commissionStatus ?? false)}
-                                                    className={`${
-                                                        category.commissionStatus
-                                                            ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                                                            : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                    }`}
-                                                >
-                                                    {category.commissionStatus ? 'Deactivate' : 'Activate'}
-                                                </button> */}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        )}
-                    </section>
+                        <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                            <h2 className="text-2xl font-semibold mb-6">Commission Rules</h2>
+                            {(!subCategories || subCategories.length === 0) ? (
+                                <p className="text-gray-600 dark:text-gray-400">No commission set yet!.</p>
+                            ) : (
+
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead className="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Commission %</th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Flat Fee</th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            {subCategories.map((category) => (
+                                                <tr key={category._id}>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "percentage"
+                                                            ? `${category.commissionValue}%`
+                                                            : 'N/A'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flatFee"
+                                                            ? `₹${category.commissionValue}`
+                                                            : 'N/A'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                        <span
+                                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.commissionStatus
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                                                }`}
+                                                        >
+                                                            {category.commissionStatus ? 'Active' : 'Inactive'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+
+                                                        <button
+                                                            onClick={() => handleToggleCommissionStatus(category._id, category.commissionStatus ?? false)}
+                                                            className={`${category.commissionStatus
+                                                                ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                                                                : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                                                                }`}
+                                                        >
+                                                            {category.commissionStatus ? 'Deactivate' : 'Activate'}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </section>
                     </div>
                 </main>
             </div>

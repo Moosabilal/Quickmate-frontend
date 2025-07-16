@@ -5,24 +5,31 @@ import { authService } from '../../services/authService';
 import { useRef } from 'react';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
+import homeServiceVector from '../../assets/home-service-vector.webp';
+import { useNavigate } from 'react-router-dom';
+
 
 const ProfileSetting: React.FC = () => {
     const { user } = useAppSelector(state => state.auth);
     const [isEditing, setIsEditing] = useState(false);
-    
+
     const [name, setName] = useState(user?.name || 'N/A');
     const [email, setEmail] = useState(user?.email || 'N/A');
     const [profilePicture, setProfilePicture] = useState<string | File | null>('nothing');
-    
+
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
-    
+
+    const navigate = useNavigate()
+
     const nameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
 
+    const isCustomer = user?.role === "Customer"
+
     const dispatch = useAppDispatch();
-    
+
     const addresses = [
         { id: '1', type: 'Home', street: '123 Maple Street', city: 'Anytown', country: 'USA', zip: '12345' },
         { id: '2', type: 'Work', street: '456 Oak Avenue', city: 'Anytown', country: 'USA', zip: '67890' },
@@ -30,25 +37,25 @@ const ProfileSetting: React.FC = () => {
 
 
     useEffect(() => {
-  const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-  const isRefresh = navigationEntries[0]?.type === 'reload';
+        const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+        const isRefresh = navigationEntries[0]?.type === 'reload';
 
-  if (isRefresh) {
-    const fetchUser = async () => {
-      try {
-        const userData = await authService.getUser();
-        setName(userData.name);
-        setEmail(userData.email);
-        setProfilePicture(userData.profilePicture || 'nothing');
-        dispatch(updateProfile({ user: userData }));
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      }
-    };
+        if (isRefresh) {
+            const fetchUser = async () => {
+                try {
+                    const userData = await authService.getUser();
+                    setName(userData.name);
+                    setEmail(userData.email);
+                    setProfilePicture(userData.profilePicture || 'nothing');
+                    dispatch(updateProfile({ user: userData }));
+                } catch (error) {
+                    console.error('Failed to fetch user data:', error);
+                }
+            };
 
-    fetchUser();
-  }
-}, []);
+            fetchUser();
+        }
+    }, []);
 
 
     const handleEditProfile = () => {
@@ -69,11 +76,11 @@ const ProfileSetting: React.FC = () => {
                 formData.append('profilePicture', editingProfilePicture);
             }
             const updatedData = await authService.updateProfile(formData);
-            
+
             setName(editingName);
             setEmail(editingEmail);
             setProfilePicture(editingProfilePicture);
-            
+
             alert('Profile saved!');
             setIsEditing(false);
         } catch (error) {
@@ -81,6 +88,7 @@ const ProfileSetting: React.FC = () => {
             alert('Failed to save profile. Please try again.');
         }
     };
+
 
     const handleCancel = () => {
         setEditingName(name);
@@ -96,7 +104,7 @@ const ProfileSetting: React.FC = () => {
         }
     };
     const handleAddAddress = () => alert('Add Address clicked!');
-    
+
     const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -193,7 +201,7 @@ const ProfileSetting: React.FC = () => {
                         <div className="flex-1">
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Profile info</h2>
                             <p className="text-gray-700 dark:text-gray-300 text-sm font-medium">{name}</p>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">{email} • {}</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">{email} • { }</p>
                             <button
                                 onClick={handleEditProfile}
                                 className="mt-4 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-sm font-semibold rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
@@ -257,6 +265,33 @@ const ProfileSetting: React.FC = () => {
                     Add address
                 </button>
             </div> */}
+            {isCustomer &&
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6 mt-10">
+                <div className="w-full md:w-1/2 flex justify-center">
+                    <img
+                        src={homeServiceVector}
+                        alt="Start Earning"
+                        className="w-56 h-auto"
+                    />
+
+                </div>
+
+                <div className="w-full md:w-1/2">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        Start Earning with Your Skills
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        Join thousands of professionals offering trusted services in your city.
+                    </p>
+                    <button
+                        onClick={() => navigate('/provider-registration')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200"
+                    >
+                        Register as a Provider
+                    </button>
+                </div>
+            </div>}
+
         </div>
     );
 };

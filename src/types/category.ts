@@ -21,7 +21,7 @@ export interface ICategory extends Document {
 
 export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
     _id: string;
-    parentid?: string | null; 
+    parentId?: string | null; 
     createdAt: string; 
     updatedAt: string;
     iconUrl: string; 
@@ -40,16 +40,6 @@ export interface ICommissionRuleInput {
     status?: boolean; 
 }
 
-export interface ICommissionRule extends Document {
-    _id: Types.ObjectId;
-    categoryid?: Types.ObjectId | null; 
-    globalCommission?: number;
-    flatFee?: number;
-    categoryCommission?: number;
-    status: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 export interface ICommissionRuleResponse extends Omit<ICommissionRuleInput, 'categoryid'> {
     _id: string; 
@@ -66,7 +56,7 @@ export interface ICategoryFormCombinedData {
     status: boolean; 
     parentid?: string | null; 
 
-    commissionType: 'percentage' | 'flat' | 'none'; 
+    commissionType: 'percentage' | 'flatFee' | 'none'; 
     commissionValue: number | '';
     commissionStatus: boolean; 
 }

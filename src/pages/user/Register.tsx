@@ -21,7 +21,7 @@ interface FormTouched {
     email: boolean;
     password: boolean;
     confirmPassword: boolean;
-    role: boolean;
+    // role: boolean;
 }
 
 const Register = () => {
@@ -38,7 +38,7 @@ const Register = () => {
         email: false,
         password: false,
         confirmPassword: false,
-        role: false
+        // role: false
     });
     
     const navigate = useNavigate();
@@ -111,16 +111,16 @@ const Register = () => {
         return undefined;
     };
 
-    const validateRole = (role: string): string | undefined => {
-        const validRoles = ['Customer', 'ServiceProvider'];
-        if (!role) {
-            return 'Please select an account type';
-        }
-        if (!validRoles.includes(role)) {
-            return 'Please select a valid account type';
-        }
-        return undefined;
-    };
+    // const validateRole = (role: string): string | undefined => {
+    //     const validRoles = ['Customer', 'ServiceProvider'];
+    //     if (!role) {
+    //         return 'Please select an account type';
+    //     }
+    //     if (!validRoles.includes(role)) {
+    //         return 'Please select a valid account type';
+    //     }
+    //     return undefined;
+    // };
 
     const validateAllFields = (): ValidationErrors => {
         return {
@@ -128,7 +128,7 @@ const Register = () => {
             email: validateEmail(email),
             password: validatePassword(password),
             confirmPassword: validateConfirmPassword(confirmPassword, password),
-            role: validateRole(role)
+            // role: validateRole(role)
         };
     };
 
@@ -152,9 +152,9 @@ const Register = () => {
             case 'confirmPassword':
                 errors.confirmPassword = validateConfirmPassword(confirmPassword, password);
                 break;
-            case 'role':
-                errors.role = validateRole(role);
-                break;
+            // case 'role':
+            //     errors.role = validateRole(role);
+            //     break;
         }
         setValidationErrors(errors);
     };
@@ -186,11 +186,11 @@ const Register = () => {
         }
     }, [confirmPassword, password, touched.confirmPassword]);
 
-    useEffect(() => {
-        if (touched.role) {
-            setValidationErrors(prev => ({ ...prev, role: validateRole(role) }));
-        }
-    }, [role, touched.role]);
+    // useEffect(() => {
+    //     if (touched.role) {
+    //         setValidationErrors(prev => ({ ...prev, role: validateRole(role) }));
+    //     }
+    // }, [role, touched.role]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -211,7 +211,7 @@ const Register = () => {
             email: true,
             password: true,
             confirmPassword: true,
-            role: true
+            // role: true
         });
 
         const errors = validateAllFields();
@@ -229,10 +229,14 @@ const Register = () => {
         try {
             await authService.register(name.trim(), email.trim(), password, role);
 
-            navigate('/verify-otp', {state: {email: email.trim()}});
+            // if(role === "ServiceProvider"){
+            //     navigate('/provider-registration',{state: {email: email.trim()}})
+            // }else{
+                navigate('/verify-otp', {state: {email: email.trim()}});
+
             
-            // dispatch(login({ user, token }));
-            // toast.success(`Welcome to QuickMate, ${user.name}!`);
+
+            
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
             toast.error(errorMessage);
@@ -384,7 +388,7 @@ const Register = () => {
                         )}
                     </div>
 
-                    <div>
+                    {/* <div>
                         <label
                             htmlFor="role"
                             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -416,7 +420,7 @@ const Register = () => {
                                 {validationErrors.role}
                             </p>
                         )}
-                    </div>
+                    </div> */}
 
                     <button
                         type="submit"

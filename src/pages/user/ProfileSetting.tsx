@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
 import homeServiceVector from '../../assets/home-service-vector.webp';
 import { useNavigate } from 'react-router-dom';
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 
 const ProfileSetting: React.FC = () => {
@@ -56,6 +57,8 @@ const ProfileSetting: React.FC = () => {
             fetchUser();
         }
     }, []);
+
+    console.log('profile picutre', profilePicture)
 
 
     const handleEditProfile = () => {
@@ -164,7 +167,7 @@ const ProfileSetting: React.FC = () => {
                                     src={
                                         editingProfilePicture
                                             ? typeof editingProfilePicture === 'string'
-                                                ? editingProfilePicture
+                                                ? getCloudinaryUrl(editingProfilePicture)
                                                 : URL.createObjectURL(editingProfilePicture)
                                             : undefined
                                     }
@@ -211,7 +214,7 @@ const ProfileSetting: React.FC = () => {
                         </div>
                         <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                             <img
-                                src={typeof profilePicture === 'string' ? profilePicture : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : undefined}
+                                src={typeof profilePicture === 'string' ? getCloudinaryUrl(profilePicture) : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : undefined}
                                 alt="Profile"
                                 className="w-28 h-28 rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
                             />

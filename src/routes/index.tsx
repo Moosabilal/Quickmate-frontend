@@ -12,7 +12,6 @@ const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 const CategoryCommissionManagement = lazy(() => import('../pages/admin/Category'));
 const CategoryForm = lazy(() => import('../pages/admin/Add&EditCategory'));
-const ServiceForm = lazy(() => import('../pages/admin/subCategoryForm'));
 const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
 const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
 const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
@@ -30,7 +29,7 @@ const router = createBrowserRouter([
   { path: '/verify-otp', element: <RegistrationOTPVerification /> },
   { element: <ProtectedRoute roles={['Customer','ServiceProvider']} />,
     children: [
-      { path: '/Profile', element: <ProfileSettings /> },
+      { path: '/profile', element: <ProfileSettings /> },
     ],
   },
   

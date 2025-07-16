@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Header from '../../components/user/Header';
 import { categoryService } from '../../services/categoryService'; 
 import { ICategoryResponse } from '../../types/category'; 
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
@@ -164,7 +165,7 @@ const Home = () => {
                         {fetchedCategories.filter(category => category.status).slice(0,4).map((category) => (
                             <Link to={`/category/${category._id}`} key={category._id} className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-                                    <img src={category.iconUrl || 'https://via.placeholder.com/64?text=Category'} alt={category.name} className='rounded-full w-24 h-24 object-cover' />
+                                    <img src={getCloudinaryUrl(category.iconUrl) || 'https://via.placeholder.com/64?text=Category'} alt={category.name} className='rounded-full w-24 h-24 object-cover' />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center">{category.name}</h3>
                             </Link>
@@ -179,7 +180,7 @@ const Home = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                             {popularServices.map((service) => (
                                 <Link to={`/service/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                    <img src={service.iconUrl || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
+                                    <img src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
                                     <div className="p-5">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{service.name}</h3>
                                         <p className="text-blue-600 dark:text-blue-400 font-bold">{service.description || 'Service Details'}</p>
@@ -199,7 +200,7 @@ const Home = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
                             {trendingServices.map((service) => (
                                 <Link to={`/service/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                    <img src={service.iconUrl || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
+                                    <img src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
                                     <div className="p-5">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{service.name}</h3>
                                         <p className="text-blue-600 dark:text-blue-400 font-bold">{service.description || 'Service Details'}</p>
@@ -220,7 +221,7 @@ const Home = () => {
                             <div className="flex space-x-6">
                                 {featuredProviders.map((provider) => (
                                     <Link to={`/provider/${provider.id}`} key={provider.id} className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                        <img src={provider.imageUrl} alt={provider.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
+                                        <img src={getCloudinaryUrl(provider.imageUrl)} alt={provider.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
                                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.name}</h3>
                                         <StarRating rating={provider.rating} />
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p>

@@ -4,6 +4,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse } from '../../types/category';
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 interface ICategoryFormData {
     name: string;
@@ -37,6 +38,7 @@ const CategoryForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [submitAction, setSubmitAction] = useState<'save' | 'addSubcategory'>('save');
 
     const currentEntityId = isEditingCategory ? categoryId : subcategoryId;
@@ -85,6 +87,31 @@ const CategoryForm: React.FC = () => {
         fetchEntityData();
     }, [isEditMode, currentEntityId, navigate, isSubCategoryMode, parentId]);
 
+    const validateForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!formData.name.trim()) {
+            errors.name = "Name is required.";
+        } else if (formData.name.length < 3) {
+            errors.name = "Name must be at least 3 characters.";
+        }
+
+        if (
+            formData.commissionType !== 'none' &&
+            (formData.commissionValue === '' || Number(formData.commissionValue) <= 0)
+        ) {
+            errors.commissionValue = "Commission value must be a positive number.";
+        }
+
+        if (formData.icon instanceof File && !formData.icon.type.startsWith("image/")) {
+            errors.icon = "Only image files are allowed.";
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
 
@@ -129,6 +156,10 @@ const CategoryForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validateForm()) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         setError(null);
 
@@ -137,7 +168,7 @@ const CategoryForm: React.FC = () => {
         data.append('description', formData.description || '');
         data.append('status', String(formData.status));
 
-        if (parentId) { 
+        if (parentId) {
             data.append('parentId', parentId);
         }
         data.append('commissionType', formData.commissionType);
@@ -153,7 +184,7 @@ const CategoryForm: React.FC = () => {
             data.append('categoryIcon', formData.icon);
         } else if (formData.icon === null && iconPreview === null) {
             data.append('categoryIcon', '');
-        } 
+        }
 
 
         try {
@@ -278,9 +309,11 @@ const CategoryForm: React.FC = () => {
                                             onChange={handleChange}
                                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
                                             placeholder={`e.g., ${isSubCategoryMode ? 'Kitchen Cleaning' : 'Home Services'}`}
-                                            required
                                             disabled={isLoading}
                                         />
+                                        {formErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (Optional)</label>
@@ -332,6 +365,9 @@ const CategoryForm: React.FC = () => {
                                         <label htmlFor="dropzone-file" className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 cursor-pointer" style={{ pointerEvents: isLoading ? 'none' : 'auto' }}>
                                             Upload Image
                                         </label>
+                                        {formErrors.icon && (
+                                            <p className="text-red-500 text-sm mt-2">{formErrors.icon}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -412,9 +448,11 @@ const CategoryForm: React.FC = () => {
                                                 placeholder={formData.commissionType === 'percentage' ? 'e.g., 10' : 'e.g., 50'}
                                                 min="0"
                                                 step={formData.commissionType === 'percentage' ? "0.01" : "1"}
-                                                required
                                                 disabled={isLoading}
                                             />
+                                            {formErrors.commissionValue && (
+                                                <p className="text-red-500 text-sm mt-1">{formErrors.commissionValue}</p>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center justify-between mt-6">

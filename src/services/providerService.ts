@@ -13,5 +13,11 @@ export const providerService = {
     getProvidersWithAllDetails: async () => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getAllProviders`)
         return response.data
+    },
+
+    getProvidersForAdmin: async () => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderList`)
+        console.log('this ithe serive', response)
+        return response.data
     }
 }

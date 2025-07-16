@@ -1,4 +1,3 @@
-// src/components/user/Sidebar.tsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -15,31 +14,31 @@ import {
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 interface SidebarProps {
-  // No props needed as user data is from Redux
 }
 
 const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
+  console.log('user',user)
 
   const navItems = [
-    { name: 'Profile Settings', icon: MdOutlineSettings, path: '/Profile/settings' },
-    { name: 'Booking History', icon: MdHistory, path: '/Profile/history' },
+    { name: 'Profile Settings', icon: MdOutlineSettings, path: '/profile' },
+    { name: 'Booking History', icon: MdHistory, path: '/profile/history' },
     { name: 'Wallet', icon: MdOutlineAccountBalanceWallet, path: '/Profile/wallet' },
-    { name: 'Live Chat', icon: MdOutlineChat, path: '/Profile/chat' },
-    { name: 'Booking Assistant', icon: MdOutlineSupportAgent, path: '/Profile/assistant' },
-    { name: 'Calendar', icon: MdOutlineCalendarMonth, path: '/Profile/calendar' },
-    { name: 'Notifications', icon: MdOutlineNotificationsNone, path: '/Profile/notifications' },
+    { name: 'Live Chat', icon: MdOutlineChat, path: '/profile/chat' },
+    { name: 'Booking Assistant', icon: MdOutlineSupportAgent, path: '/profile/assistant' },
+    { name: 'Calendar', icon: MdOutlineCalendarMonth, path: '/profile/calendar' },
+    { name: 'Notifications', icon: MdOutlineNotificationsNone, path: '/profile/notifications' },
   ];
 
   const manageServicesItems = [
-    { name: 'Manage Your Services', icon: MdOutlineMiscellaneousServices, path: '/Profile/manage-services' },
+    { name: 'Manage Your Services', icon: MdOutlineMiscellaneousServices, path: '/profile/manage-services' },
   ];
 
-  // Helper to determine if a link is active, considering nested routes
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const handleLogout = () => {
@@ -50,16 +49,14 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   if (!user) {
-    return null; // Or a loading spinner
+    return null; 
   }
 
   return (
-    // Removed rounded-tr-2xl rounded-br-2xl for fixed full-height sidebar
     <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg p-6 flex flex-col h-full">
-      {/* User Profile Summary */}
       <div className="flex items-center mb-8">
         <img
-          src="https://cdn.pixabay.com/photo/2022/09/27/19/46/ai-generated-7483596_960_720.jpg"
+          src={getCloudinaryUrl(user.profilePicture || '')}
           alt={user.name || 'User'}
           className="w-12 h-12 rounded-full object-cover border-2 border-blue-400 mr-3"
         />

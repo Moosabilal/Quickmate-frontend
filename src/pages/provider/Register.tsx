@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BellIcon, ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
@@ -11,6 +11,7 @@ interface FormData {
     email: string;
     category: string;
     servicesOffered: string;
+    serviceName: string
     serviceArea: string;
     serviceLocation: string;
     experience: number | '';
@@ -36,8 +37,9 @@ const ProviderRegistration: React.FC = () => {
         email: '',
         category: '',
         servicesOffered: '',
+        serviceName: '',
         serviceArea: '',
-        serviceLocation:'',
+        serviceLocation: '',
         experience: '',
         availableDays: [],
         startTime: '',
@@ -48,10 +50,11 @@ const ProviderRegistration: React.FC = () => {
         businessCertifications: null,
         agreeTerms: false,
     });
-    const [categories, setCategories] = useState<CategoryTableDisplay[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [services, setServices] = useState<{ value: string; label: string }[]>([])
-    const navigate = useNavigate()
+    const [categories, setCategories] = useState<CategoryTableDisplay[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [services, setServices] = useState<{ value: string; label: string }[]>([]);
+    const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({}); // State for validation errors
+    const navigate = useNavigate();
 
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
     const profilePhotoRef = useRef<HTMLInputElement>(null);
@@ -59,13 +62,15 @@ const ProviderRegistration: React.FC = () => {
 
     useEffect(() => {
         const selectedCategory = categories.find(cat => cat._id === formData.category);
+
         if (selectedCategory && selectedCategory.subCategories) {
-            const mappedServices = selectedCategory.subCategories.map(sub => ({ value: sub._id, label: sub.name }))
-            setServices(mappedServices)
+            const mappedServices = selectedCategory.subCategories.filter(sub => sub.parentId === selectedCategory._id).map(sub => ({ value: sub._id, label: sub.name }));
+
+            setServices(mappedServices);
         } else {
-            setServices([])
+            setServices([]);
         }
-    }, [formData.category, categories])
+    }, [formData.category, categories]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type, checked } = e.target as HTMLInputElement;
@@ -86,16 +91,25 @@ const ProviderRegistration: React.FC = () => {
                 }));
             }
         } else {
-            setFormData(prev => ({ ...prev, [id]: value }));
+            if (id === 'servicesOffered') {
+                const selectedService = services.find(service => service.value === value);
+                setFormData(prev => ({
+                    ...prev,
+                    [id]: value,
+                    serviceName: selectedService?.label || '',
+                }));
+            } else {
+                setFormData(prev => ({ ...prev, [id]: value }));
+            }
         }
-
-
+        setErrors(prev => ({ ...prev, [id]: undefined }));
     };
 
-    const handleFileChange = (field: keyof FormData, event: React.ChangeEvent<HTMLInputElement>) => {
 
+    const handleFileChange = (field: keyof FormData, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         setFormData(prev => ({ ...prev, [field]: file }));
+        setErrors(prev => ({ ...prev, [field]: undefined }));
     };
 
     const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -106,11 +120,67 @@ const ProviderRegistration: React.FC = () => {
         event.preventDefault();
         const file = event.dataTransfer.files ? event.dataTransfer.files[0] : null;
         setFormData(prev => ({ ...prev, [field]: file }));
+        setErrors(prev => ({ ...prev, [field]: undefined })); // Clear error for the file input
     };
 
+    // --- Validation Logic ---
+    const validateForm = () => {
+        const newErrors: Partial<Record<keyof FormData, string>> = {};
+
+        // Required fields
+        if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required.';
+        if (!formData.phoneNumber.trim()) {
+            newErrors.phoneNumber = 'Phone Number is required.';
+        } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
+            newErrors.phoneNumber = 'Phone Number must be 10 digits.';
+        }
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required.';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Email is invalid.';
+        }
+        if (!formData.category) newErrors.category = 'Category is required.';
+        if (!formData.servicesOffered) newErrors.servicesOffered = 'Service is required.';
+        if (!formData.serviceArea.trim()) newErrors.serviceArea = 'Service Area (district) is required.';
+        if (!formData.serviceLocation.trim()) {
+            newErrors.serviceLocation = 'Service location (pincodes) is required.';
+        } else if (!/^\d{6}$/.test(formData.serviceLocation)) { // Assuming 6-digit Indian pincodes
+            newErrors.serviceLocation = 'Pincode must be 6 digits.';
+        }
+
+        if (formData.experience === '') {
+            newErrors.experience = 'Experience is required.';
+        } else if (formData.experience < 0) {
+            newErrors.experience = 'Experience cannot be negative.';
+        }
+        if (formData.availableDays.length === 0) newErrors.availableDays = 'Select at least one available day.';
+        if (!formData.startTime) newErrors.startTime = 'Start Time is required.';
+        if (!formData.endTime) newErrors.endTime = 'End Time is required.';
+        if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
+            newErrors.endTime = 'End Time must be after Start Time.';
+        }
+        if (!formData.averageChargeRange.trim()) newErrors.averageChargeRange = 'Average Charge Range is required.';
+
+        // File uploads (required)
+        if (!formData.aadhaarIdProof) newErrors.aadhaarIdProof = 'Aadhaar/ID Proof is required.';
+        if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile Photo is required.';
+
+        if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the Terms & Conditions.';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0; // Return true if no errors
+    };
+    // --- End Validation Logic ---
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            console.log('Form has validation errors:', errors);
+            // Optionally scroll to the first error or show a general message
+            return;
+        }
+
         const data = new FormData();
 
         data.append('fullName', formData.fullName);
@@ -118,13 +188,14 @@ const ProviderRegistration: React.FC = () => {
         data.append('email', formData.email);
         data.append('categoryId', formData.category);
         data.append('serviceId', formData.servicesOffered);
+        data.append('serviceName', formData.serviceName)
         data.append('serviceArea', formData.serviceArea);
         data.append('serviceLocation', formData.serviceLocation);
         data.append('experience', String(formData.experience));
         data.append('startTime', formData.startTime);
         data.append('endTime', formData.endTime);
         data.append('averageChargeRange', formData.averageChargeRange);
-        data.append('availableDays', JSON.stringify(formData.availableDays)); // Convert array to string
+        data.append('availableDays', JSON.stringify(formData.availableDays));
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
@@ -132,10 +203,8 @@ const ProviderRegistration: React.FC = () => {
 
         try {
             await providerService.register(data);
-
             alert('Registration form submitted successfully!');
-            navigate('/profile')
-            
+            navigate('/profile');
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('Something went wrong. Please try again.');
@@ -144,18 +213,19 @@ const ProviderRegistration: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true)
+            setIsLoading(true);
             try {
                 const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
-                setCategories(fetchedCategories)
+                setCategories(fetchedCategories);
             } catch (error: any) {
                 console.error("Error fetching data:", error);
+                // Optionally handle error state for categories, e.g., show a message to the user
             } finally {
                 setIsLoading(false);
             }
-        }
-        fetchData()
-    }, [])
+        };
+        fetchData();
+    }, []);
 
 
     const dayOptions = [
@@ -168,48 +238,49 @@ const ProviderRegistration: React.FC = () => {
         { value: 'sunday', label: 'Sunday' },
     ];
 
-    const renderInputField = (label: string, id: string, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
+    const renderInputField = (label: string, id: keyof FormData, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
         <div className="mb-5">
-            <label htmlFor={id} className="block text-gray-700 text-sm font-medium mb-2">
+            <label htmlFor={id as string} className="block text-gray-700 text-sm font-medium mb-2">
                 {label}
             </label>
             {type === 'textarea' ? (
                 <textarea
-                    id={id}
-                    name={id}
+                    id={id as string}
+                    name={id as string}
                     placeholder={placeholder}
-                    value={formData[id as keyof FormData] as string}
+                    value={formData[id] as string}
                     onChange={handleChange}
                     rows={rows}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
+                    className={`w-full px-4 py-2 border ${errors[id] ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y`}
                 />
             ) : (
                 <input
-                    id={id}
-                    name={id}
+                    id={id as string}
+                    name={id as string}
                     type={type}
                     placeholder={placeholder}
-                    value={formData[id as keyof FormData] as string | number}
+                    value={formData[id] as string | number}
                     onChange={handleChange}
                     min={min}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className={`w-full px-4 py-2 border ${errors[id] ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
                 />
             )}
+            {errors[id] && <p className="text-red-500 text-xs mt-1">{errors[id]}</p>}
         </div>
     );
 
-    const renderCustomSelectField = (label: string, id: string, options: { value: string; label: string; }[], placeholder?: string) => (
+    const renderCustomSelectField = (label: string, id: keyof FormData, options: { value: string; label: string; }[], placeholder?: string) => (
         <div className="mb-5">
-            <label htmlFor={id} className="block text-gray-700 text-sm font-medium mb-2">
+            <label htmlFor={id as string} className="block text-gray-700 text-sm font-medium mb-2">
                 {label}
             </label>
             <div className="relative">
                 <select
-                    id={id}
-                    name={id}
-                    value={formData[id as keyof FormData] as string}
+                    id={id as string}
+                    name={id as string}
+                    value={formData[id] as string}
                     onChange={handleChange}
-                    className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 pr-8 rounded-lg shadow-sm leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className={`block appearance-none w-full bg-white border ${errors[id] ? 'border-red-500' : 'border-gray-300'} text-gray-700 py-3 px-4 pr-8 rounded-lg shadow-sm leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
                 >
                     {placeholder && <option value="">{placeholder}</option>}
                     {options.map((option) => (
@@ -223,6 +294,7 @@ const ProviderRegistration: React.FC = () => {
                     <ChevronDownIcon className="h-4 w-4 -mt-1" />
                 </div>
             </div>
+            {errors[id] && <p className="text-red-500 text-xs mt-1">{errors[id]}</p>}
         </div>
     );
 
@@ -243,7 +315,7 @@ const ProviderRegistration: React.FC = () => {
                 {label} {optional && <span className="text-gray-500 text-xs">(Optional)</span>}
             </label>
             <div
-                className="w-full p-6 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary transition-colors duration-200"
+                className={`w-full p-6 border-2 border-dashed ${errors[id] ? 'border-red-500' : 'border-gray-300'} rounded-lg text-center cursor-pointer hover:border-primary transition-colors duration-200`}
                 onClick={() => fileRef.current?.click()}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(id, e)}
@@ -281,15 +353,14 @@ const ProviderRegistration: React.FC = () => {
                         )}
                     </div>
                 )}
-
             </div>
+            {errors[id] && <p className="text-red-500 text-xs mt-1">{errors[id]}</p>}
         </div>
     );
 
 
     return (
         <div className="min-h-screen bg-background font-inter">
-
             <main className="container mx-auto px-4 py-8">
                 <div className="bg-card p-8 rounded-lg shadow-custom max-w-3xl mx-auto">
                     <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Provider Registration</h1>
@@ -302,8 +373,8 @@ const ProviderRegistration: React.FC = () => {
                         {renderCustomSelectField("Select Category", "category", categories.map(cat => ({ value: cat._id, label: cat.name })), "Select your main service category")}
                         {renderCustomSelectField("Select Services Offered", "servicesOffered", services, "Select your service")}
 
-                        {renderInputField("Service location (Pincodes)", "serviceLocation", "number", "Enter the pincodes where you offer services", 2)}
-                        {renderInputField("Service Area (district)", "serviceArea", "text", "Enter the district where you offer services", 2)}
+                        {renderInputField("Service location (Pincodes)", "serviceLocation", "text", "Enter the pincodes where you offer services")}
+                        {renderInputField("Service Area (district)", "serviceArea", "text", "Enter the district where you offer services")}
 
                         <hr className="my-8 border-gray-200" />
 
@@ -326,6 +397,7 @@ const ProviderRegistration: React.FC = () => {
                                     </label>
                                 ))}
                             </div>
+                            {errors.availableDays && <p className="text-red-500 text-xs mt-1">{errors.availableDays}</p>}
                         </div>
 
                         <div className="mb-5">
@@ -339,8 +411,9 @@ const ProviderRegistration: React.FC = () => {
                                         type="time"
                                         value={formData.startTime}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        className={`w-full px-4 py-2 border ${errors.startTime ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
                                     />
+                                    {errors.startTime && <p className="text-red-500 text-xs mt-1">{errors.startTime}</p>}
                                 </div>
                                 <div className="flex-1">
                                     <label htmlFor="endTime" className="sr-only">End Time</label>
@@ -350,8 +423,9 @@ const ProviderRegistration: React.FC = () => {
                                         type="time"
                                         value={formData.endTime}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        className={`w-full px-4 py-2 border ${errors.endTime ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
                                     />
+                                    {errors.endTime && <p className="text-red-500 text-xs mt-1">{errors.endTime}</p>}
                                 </div>
                             </div>
                         </div>
@@ -373,18 +447,19 @@ const ProviderRegistration: React.FC = () => {
                                     id="agreeTerms"
                                     checked={formData.agreeTerms}
                                     onChange={handleChange}
-                                    className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary border-gray-300"
+                                    className={`form-checkbox h-5 w-5 ${errors.agreeTerms ? 'text-red-500' : 'text-primary'} rounded focus:ring-primary border-gray-300`}
                                 />
                                 <span className="ml-2 text-gray-700 text-sm">
                                     I agree to the <a href="#" className="text-primary hover:underline">Terms & Conditions</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
                                 </span>
                             </label>
+                            {errors.agreeTerms && <p className="text-red-500 text-xs mt-1">{errors.agreeTerms}</p>}
                         </div>
 
                         <button
                             type="submit"
                             className="w-full bg-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={!formData.agreeTerms}
+                            disabled={!formData.agreeTerms} // Still disable if terms not agreed
                         >
                             Submit Registration
                         </button>

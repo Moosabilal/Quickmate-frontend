@@ -4,6 +4,8 @@ import Header from '../../components/user/Header';
 import { categoryService } from '../../services/categoryService'; 
 import { ICategoryResponse } from '../../types/category'; 
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { providerService } from '../../services/providerService';
+import { IFeaturedProviders } from '../../types/provider';
 
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
@@ -31,13 +33,6 @@ const StarRating = ({ rating }: { rating: number }) => {
     );
 };
 
-const featuredProviders = [
-    { id: 1, name: 'Olivia R.', rating: 5, imageUrl: 'https://tse4.mm.bing.net/th?id=OIP.Mvcr0QDsGXOx29cSBfXd6AHaE7&pid=Api&P=0&h=180?text=OR' },
-    { id: 2, name: 'Marcus P.', rating: 4.8, imageUrl: 'https://via.placeholder.com/64/34d399/ffffff?text=MP' },
-    { id: 3, name: 'Emily C.', rating: 4.9, imageUrl: 'https://via.placeholder.com/64/facc15/ffffff?text=EC' },
-    { id: 4, name: 'Jonathan S.', rating: 5, imageUrl: 'https://via.placeholder.com/64/fb7185/ffffff?text=JS' },
-];
-
 const testimonials = [
     {
         id: 1,
@@ -59,7 +54,7 @@ const Home = () => {
     const [fetchedCategories, setFetchedCategories] = useState<ICategoryResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [featuredProviders, setFeaturedProviders] = useState<IFeaturedProviders[]>([])
     const [popularServices, setPopularServices] = useState<ICategoryResponse[]>([]);
     const [trendingServices, setTrendingServices] = useState<ICategoryResponse[]>([]);
 
@@ -69,14 +64,18 @@ const Home = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await categoryService.getAllCategories();
-                if(!response){
+                const categories = await categoryService.getAllCategories();
+
+                const providers = await providerService.getFeaturedProviders()
+                setFeaturedProviders(providers)
+                
+                if(!categories){
                     console.log('error in respoinse')
                 }
-                setFetchedCategories(response);
+                setFetchedCategories(categories);
 
                 const allSubCategories: ICategoryResponse[] = [];
-                response.forEach(cat => {
+                categories.forEach(cat => {
                     if (cat.subCategories && cat.subCategories.length > 0) {
                         const activeSubCategories = cat.subCategories.filter(sub => sub.status === true);
                         allSubCategories.push(...activeSubCategories);
@@ -221,10 +220,10 @@ const Home = () => {
                             <div className="flex space-x-6">
                                 {featuredProviders.map((provider) => (
                                     <Link to={`/provider/${provider.id}`} key={provider.id} className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                        <img src={getCloudinaryUrl(provider.imageUrl)} alt={provider.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
-                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.name}</h3>
-                                        <StarRating rating={provider.rating} />
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p>
+                                        <img src={getCloudinaryUrl(provider.profilePhoto)} alt={provider.fullName} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.fullName}</h3>
+                                        {/* <StarRating rating={provider?.rating ?? ''} /> */}
+                                        {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p> */}
                                     </Link>
                                 ))}
                             </div>
@@ -248,7 +247,7 @@ const Home = () => {
                 <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
                     <div className="container mx-auto flex flex-col md:flex-row items-center gap-10">
                         <div className="md:w-1/2">
-                            <img src="/images/how-it-works.png" alt="How QuickMate Works" className="rounded-lg shadow-lg w-full h-auto object-cover" />
+                            <img src="/booking_image.png" alt="How QuickMate Works" className="rounded-lg shadow-lg w-full max-h-96 object-cover" />
                         </div>
                         <div className="md:w-1/2 text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-6">How It Works</h2>

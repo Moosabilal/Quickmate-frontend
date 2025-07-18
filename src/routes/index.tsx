@@ -4,6 +4,8 @@ import CategoryDetailsPage from '../pages/admin/CategoryDetailsPage';
 import RegistrationOTPVerification from '../components/OtpVerification';
 import ForgotPasswordRequest from '../pages/ForgotPasswordRequest';
 import AdminProvidersPage from '../pages/admin/ProviderList';
+import ServicesPage from '../pages/user/Services';
+import ProviderPage from '../pages/user/Providers';
 
 const Home = lazy(() => import('../pages/user/Home'));
 const Login = lazy(() => import('../pages/Login'));
@@ -27,6 +29,8 @@ const router = createBrowserRouter([
   { path: '/forgot-password', element: <ForgotPasswordRequest /> },
   { path: '/reset-password/:token', element: <ResetPasswordForm /> },
   { path: '/verify-otp', element: <RegistrationOTPVerification /> },
+  { path: '/services', element: <ServicesPage /> },
+  { path: '/providers', element: <ProviderPage /> },
   { element: <ProtectedRoute roles={['Customer','ServiceProvider']} />,
     children: [
       { path: '/profile', element: <ProfileSettings /> },

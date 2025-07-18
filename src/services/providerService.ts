@@ -5,8 +5,8 @@ const PROVIDER_URL = `/provider`;
 
 export const providerService = {
     register: async (formData: FormData) => {
-        
-        const response = await axiosInstance.post(`${PROVIDER_URL}/register`,formData)
+
+        const response = await axiosInstance.post(`${PROVIDER_URL}/register`, formData)
         return response;
     },
 
@@ -15,9 +15,23 @@ export const providerService = {
         return response.data
     },
 
-    getProvidersForAdmin: async () => {
-        const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderList`)
-        console.log('this ithe serive', response)
+    getProvidersForAdmin: async (filters: {
+        search?: string;
+        status?: string;
+        verification?: string;
+        rating?: string;
+        page?: number;
+        limit?: number;
+    }) => {
+        const queryParams = new URLSearchParams(filters as any).toString();
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderList?${queryParams}`);
         return response.data
-    }
+
+    },
+
+    getFeaturedProviders: async () => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getFeaturedProviders`)
+        return response.data
+    },
+
 }

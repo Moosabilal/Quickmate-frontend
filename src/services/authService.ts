@@ -47,8 +47,10 @@ export const authService = {
     return response.data;
   },
 
-  getUserWithAllDetails: async () => {
-    const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`);
+  getUserWithAllDetails: async ({ page, limit, search, status }) => {
+  const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`, {
+    params: { page, limit, search, status },
+  });
     return response.data;
   },
 

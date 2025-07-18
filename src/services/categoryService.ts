@@ -76,4 +76,17 @@ export const categoryService = {
             throw error;
         }
     },
+
+    async getAllSubCategories({page, limit, search}){
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/getAllSubCategories`, {
+                params: { page, limit, search}
+            })
+            console.log('the return subcategoies', response)
+            return response.data
+        } catch (error) {
+            console.log('error in getAllSubCategories', error)
+            throw error
+        }
+    }
 };

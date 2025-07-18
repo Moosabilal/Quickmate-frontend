@@ -1,3 +1,4 @@
+
 import { MdDelete, MdEdit, MdHome, MdWork } from 'react-icons/md';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import React, { useEffect, useState } from 'react';
@@ -5,7 +6,6 @@ import { authService } from '../../services/authService';
 import { useRef } from 'react';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
-import homeServiceVector from '../../assets/home-service-vector.webp';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
@@ -57,8 +57,6 @@ const ProfileSetting: React.FC = () => {
             fetchUser();
         }
     }, []);
-
-    console.log('profile picutre', profilePicture)
 
 
     const handleEditProfile = () => {
@@ -272,7 +270,7 @@ const ProfileSetting: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6 mt-10">
                 <div className="w-full md:w-1/2 flex justify-center">
                     <img
-                        src={homeServiceVector}
+                        src="/home-service-vector.webp"
                         alt="Start Earning"
                         className="w-56 h-auto"
                     />

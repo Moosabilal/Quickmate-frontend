@@ -6,6 +6,7 @@ import { ICategoryResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { providerService } from '../../services/providerService';
 import { IFeaturedProviders } from '../../types/provider';
+import Footer from '../../components/user/Footer';
 
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
@@ -66,13 +67,14 @@ const Home = () => {
             try {
                 const categories = await categoryService.getAllCategories();
 
-                const providers = await providerService.getFeaturedProviders()
-                setFeaturedProviders(providers)
+                const response = await providerService.getFeaturedProviders()
+                setFeaturedProviders(response.providers)
                 
                 if(!categories){
                     console.log('error in respoinse')
                 }
                 setFetchedCategories(categories);
+
 
                 const allSubCategories: ICategoryResponse[] = [];
                 categories.forEach(cat => {
@@ -100,6 +102,7 @@ const Home = () => {
 
         loadCategories();
     }, []);
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -222,6 +225,7 @@ const Home = () => {
                                     <Link to={`/provider/${provider.id}`} key={provider.id} className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
                                         <img src={getCloudinaryUrl(provider.profilePhoto)} alt={provider.fullName} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
                                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.fullName}</h3>
+                                        <p className=" text-gray-800 dark:text-gray-100">{provider.serviceName}</p>
                                         {/* <StarRating rating={provider?.rating ?? ''} /> */}
                                         {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p> */}
                                     </Link>
@@ -274,16 +278,7 @@ const Home = () => {
                 </section>
             </main>
 
-            <footer className="bg-gray-800 dark:bg-gray-900 text-gray-300 dark:text-gray-400 py-8">
-                <div className="container mx-auto px-4 text-center text-sm">
-                    <div className="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 mb-4">
-                        <Link to="/contact" className="hover:text-white">Contact</Link>
-                        <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white">Terms of Service</Link>
-                    </div>
-                    <p>&copy; {new Date().getFullYear()} QuickMate. All rights reserved.</p>
-                </div>
-            </footer>
+            <Footer/>
         </div>
     );
 };

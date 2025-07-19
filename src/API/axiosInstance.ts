@@ -27,19 +27,11 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    console.log('thie roginal request', originalRequest)
-    console.log('thie roginal status', error.response?.status)
-
-    // Handle 401 Unauthorized (Refresh Token)
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log('the retry becimgnggggg true',!originalRequest._retry)
       originalRequest._retry = true;
-            console.log('the retry became true',!originalRequest._retry)
 
       try {
-        console.log('the refresh token calling')
         const refreshResponse = await authService.refreshToken();
-        console.log('the refresh token called', refreshResponse)
         if (refreshResponse.status === 200) {
           return axiosInstance(originalRequest);
         }
@@ -51,7 +43,6 @@ axiosInstance.interceptors.response.use(
 
     // Handle other errors globally
     const status = error.response?.status;
-    console.log('error status', status)
 
     switch (status) {
       case 400:

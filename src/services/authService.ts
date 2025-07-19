@@ -37,6 +37,11 @@ export const authService = {
     return response
   },
 
+  contactUsSubmission: async (formData) => {
+    const response = await axiosInstance.post(`${API_URL}/contactUsSubmission`,formData)
+    return response.data
+  },
+
   getUser: async () => {
     const response = await axiosInstance.get(`${API_URL}/getUser`);
     return response.data;

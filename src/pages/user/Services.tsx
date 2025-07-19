@@ -4,16 +4,15 @@ import Pagination from '../../components/user/Pagination';
 import { categoryService } from '../../services/categoryService';
 import { IserviceResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-
+import Footer from '../../components/user/Footer';
 
 const ServicesPage: React.FC = () => {
-  const servicesPerPage = 3;
+  const servicesPerPage = 2;
   const [currentPage, setCurrentPage] = useState(1);
-  const [allServices, setAllServices] = useState<IserviceResponse[]>([])
+  const [allServices, setAllServices] = useState<IserviceResponse[]>([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalServices, setTotalServices] = useState(0)
+  const [totalServices, setTotalServices] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-
 
   useEffect(() => {
     const getServices = async () => {
@@ -21,77 +20,98 @@ const ServicesPage: React.FC = () => {
         const response = await categoryService.getAllSubCategories({
           page: currentPage,
           limit: servicesPerPage,
-          search: searchTerm
-        })
-        console.log('servicex', response)
-        setAllServices(response.allServices)
-        setTotalPages(response.totalPages)
-        setTotalServices(response.total)
+          search: searchTerm,
+        });
+        setAllServices(response.allServices);
+        setTotalPages(response.totalPages);
+        setTotalServices(response.total);
       } catch (error) {
-        console.error('Failed to fetch services:', error)
+        console.error('Failed to fetch services:', error);
       }
-    }
-    getServices()
-  }, [currentPage, searchTerm])
+    };
+    getServices();
+  }, [currentPage, searchTerm]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1)
-  }
+    setCurrentPage(1);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <Header />
 
-      <main className="container mx-auto px-4 py-16">
-        <div className="mb-8 mt-12 relative shadow-sm rounded-lg overflow-hidden max-w-2xl mx-auto">
-          <input
-            type="text"
-            placeholder="Search for services..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full p-4 pl-12 text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 ease-in-out"
-          />
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      <main className="container mx-auto px-4 py-16 pt-28">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">
+          Discover Our Service Categories
+        </h1>
+
+        {/* Styled Search Bar */}
+        <div className="mb-12 flex justify-center">
+          <div className="relative w-full max-w-2xl shadow-lg rounded-full overflow-hidden focus-within:ring-4 focus-within:ring-blue-300 transition-all duration-300">
+            <input
+              type="text"
+              placeholder="Search for services..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full py-4 pl-16 pr-6 text-lg rounded-full border-2 border-gray-200 focus:outline-none focus:border-blue-500 transition-all duration-300 placeholder-gray-500"
+            />
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg
+                className="w-7 h-7"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
           </div>
         </div>
 
-        <h2 className="text-3xl font-extrabold text-gray-800 mb-6 border-b-2 border-blue-300 pb-2">Featured Services</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-blue-600 pl-4">
+          Featured Services
+        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
-          {allServices.length > 0 ? (
-            allServices.map((service) => (
+        {allServices.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
+            {allServices.map((service) => (
               <div
                 key={service.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden group border border-gray-200"
               >
-                <img
-                  className="w-full h-36 object-cover object-center"
-                  src={getCloudinaryUrl(service.iconUrl || '')}
-                  alt={service.name}
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1">{service.name}</h3>
-                  {/* <div className="flex items-center mb-2">
-                  <span className="text-sm text-gray-600">
-                    {service.rating} ({service.reviews} reviews)
-                  </span>
+                <div className="relative h-36 w-full overflow-hidden">
+                  <img
+                    src={getCloudinaryUrl(service.iconUrl || '')}
+                    alt={service.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                    <span className="text-white text-sm sm:text-base font-semibold">{service.name}</span>
+                  </div>
                 </div>
-                <p className="text-gray-700 text-md font-bold"> 
-                  Starting at <span className="text-blue-600">${service.price}</span>
-                </p> */}
+                <div className="p-4 text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">
+                    {service.name}
+                  </h3>
+                  <button className="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-300 text-sm font-medium shadow">
+                    View Details
+                  </button>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="flex justify-center items-center py-12 ml-0">
-              <p className="text-xl text-gray-700 font-medium">No services available</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-600 text-xl py-10">
+            No services found matching your search.
+          </p>
+        )}
 
         <Pagination
           currentPage={currentPage}
@@ -99,6 +119,7 @@ const ServicesPage: React.FC = () => {
           onPageChange={setCurrentPage}
         />
       </main>
+      <Footer />
     </div>
   );
 };

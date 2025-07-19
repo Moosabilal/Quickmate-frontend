@@ -16,7 +16,6 @@ interface User {
   phone: string;
   bookings: number;
   status: 'Active' | 'Inactive' | 'Blocked';
-  joinDate: string;
 }
 
 const USERS_PER_PAGE = 2;

@@ -29,8 +29,11 @@ export const providerService = {
 
     },
 
-    getFeaturedProviders: async () => {
-        const response = await axiosInstance.get(`${PROVIDER_URL}/getFeaturedProviders`)
+    getFeaturedProviders: async ({page, limit, search}: { page?: number, limit?: number, search?: string} = {}) => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getFeaturedProviders`, {
+            params: { page, limit, search}
+        })
+        console.log('the responxse', response)
         return response.data
     },
 

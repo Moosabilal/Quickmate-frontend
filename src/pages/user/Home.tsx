@@ -132,8 +132,8 @@ const Home = () => {
 
             <main className="pt-20"> 
                 <section
-                    className="relative bg-cover bg-center h-[500px] md:h-[600px] flex items-center justify-center text-white"
-                    style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
+                    className="relative bg-contain bg-no-repeat bg-center h-[500px] md:h-[600px] flex items-center justify-center text-white"
+                    style={{ backgroundImage: "url('/landing_heroSection.png')",backgroundSize: '1300px 620px' }}
                 >
                     <div className="absolute inset-0 bg-black opacity-50"></div>
                     <div className="relative z-10 text-center px-4">
@@ -165,7 +165,7 @@ const Home = () => {
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Browse by Category</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
                         {fetchedCategories.filter(category => category.status).slice(0,4).map((category) => (
-                            <Link to={`/category/${category._id}`} key={category._id} className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
+                            <Link to={`/booking_serviceList/${category._id}`} key={category._id} className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
                                     <img src={getCloudinaryUrl(category.iconUrl) || 'https://via.placeholder.com/64?text=Category'} alt={category.name} className='rounded-full w-24 h-24 object-cover' />
                                 </div>
@@ -258,7 +258,7 @@ const Home = () => {
                             <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                                 QuickMate connects you with skilled local professionals for all your needs. Simply search for the service you need, browse through profiles and reviews, book your service, and get things done! It's that easy.
                             </p>
-                            <Link to="/how-it-works" className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                            <Link to="/working" className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                                 Learn More
                                 <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                             </Link>

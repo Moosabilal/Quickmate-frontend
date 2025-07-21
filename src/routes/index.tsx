@@ -7,6 +7,8 @@ import AdminProvidersPage from '../pages/admin/ProviderList';
 import ServicesPage from '../pages/user/Services';
 import ProviderPage from '../pages/user/Providers';
 import AboutPage from '../pages/user/About_us';
+import HowItWorksPage from '../pages/user/HowitWorks';
+import ServiceDetailsPage from '../pages/user/ServiceDetailsPage';
 
 
 const Home = lazy(() => import('../pages/user/Home'));
@@ -20,6 +22,7 @@ const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
 const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
 const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
+const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
 
 
 
@@ -34,6 +37,9 @@ const router = createBrowserRouter([
   { path: '/services', element: <ServicesPage /> },
   { path: '/providers', element: <ProviderPage /> },
   { path: '/about', element: <AboutPage /> },
+  { path: '/working', element: <HowItWorksPage /> },
+  { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },
+  { path: '/service-detailsPage/:serviceId', element: <ServiceDetailsPage /> },
   { element: <ProtectedRoute roles={['Customer','ServiceProvider']} />,
     children: [
       { path: '/profile', element: <ProfileSettings /> },

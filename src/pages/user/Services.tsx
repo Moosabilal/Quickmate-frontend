@@ -5,6 +5,7 @@ import { categoryService } from '../../services/categoryService';
 import { IserviceResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import Footer from '../../components/user/Footer';
+import { useNavigate } from 'react-router-dom';
 
 const ServicesPage: React.FC = () => {
   const servicesPerPage = 2;
@@ -13,6 +14,8 @@ const ServicesPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalServices, setTotalServices] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const getServices = async () => {
@@ -100,7 +103,9 @@ const ServicesPage: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">
                     {service.name}
                   </h3>
-                  <button className="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-300 text-sm font-medium shadow">
+                  <button
+                  onClick={() => navigate(`/service-detailsPage/${service.id}`)}
+                   className="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-300 text-sm font-medium shadow">
                     View Details
                   </button>
                 </div>

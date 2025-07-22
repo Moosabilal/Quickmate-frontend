@@ -23,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
-  console.log('user',user)
+  console.log('user from sidebar',user)
 
   const navItems = [
     { name: 'Profile Settings', icon: MdOutlineSettings, path: '/profile' },
@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   ];
 
   const manageServicesItems = [
-    { name: 'Manage Your Services', icon: MdOutlineMiscellaneousServices, path: '/profile/manage-services' },
+    { name: 'Manage Your Services', icon: MdOutlineMiscellaneousServices, path: `/providerProfile/${user?.id}` },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);

@@ -16,7 +16,7 @@ const ProfileSetting: React.FC = () => {
 
     const [name, setName] = useState(user?.name || 'N/A');
     const [email, setEmail] = useState(user?.email || 'N/A');
-    const [profilePicture, setProfilePicture] = useState<string | File | null>('nothing');
+    const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || 'nothing');
 
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
@@ -29,7 +29,7 @@ const ProfileSetting: React.FC = () => {
 
     const isCustomer = user?.role === "Customer"
 
-    const dispatch = useAppDispatch();
+   
 
     const addresses = [
         { id: '1', type: 'Home', street: '123 Maple Street', city: 'Anytown', country: 'USA', zip: '12345' },
@@ -37,26 +37,7 @@ const ProfileSetting: React.FC = () => {
     ];
 
 
-    useEffect(() => {
-        const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-        const isRefresh = navigationEntries[0]?.type === 'reload';
-
-        if (isRefresh) {
-            const fetchUser = async () => {
-                try {
-                    const userData = await authService.getUser();
-                    setName(userData.name);
-                    setEmail(userData.email);
-                    setProfilePicture(userData.profilePicture || 'nothing');
-                    dispatch(updateProfile({ user: userData }));
-                } catch (error) {
-                    console.error('Failed to fetch user data:', error);
-                }
-            };
-
-            fetchUser();
-        }
-    }, []);
+    
 
 
     const handleEditProfile = () => {

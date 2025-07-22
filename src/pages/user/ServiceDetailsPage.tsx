@@ -141,7 +141,7 @@ const ServiceDetailsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-sans text-gray-900 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 flex-grow">
+      <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8 flex-grow">
         <button
           onClick={() => window.history.back()}
           className="flex items-center text-indigo-700 hover:text-indigo-900 transition-colors duration-200 mb-8 text-lg font-medium group"
@@ -159,19 +159,21 @@ const ServiceDetailsPage: React.FC = () => {
         </button>
 
         <div className="flex flex-col md:flex-row gap-10 max-w-6xl mx-auto">
-          <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">
+          <div className="w-full md:w-2/2 bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-center mb-8">
               <img
                 src={getCloudinaryUrl(serviceDetails.iconUrl || '')}
                 alt={serviceDetails.name}
-                className="w-full max-w-sm h-64 object-cover rounded-xl shadow-lg border border-gray-200 transform transition-transform duration-300 hover:scale-105"
+                className="w-full max-w-sm h-64 object-cover rounded-xl shadow-lg border-2 border-gray-300 transform transition-transform duration-300 hover:scale-105"
               />
             </div>
-            <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
-            <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ${serviceDetails.status}</p>
-            <p className="text-gray-700 leading-relaxed text-lg mb-8">
-              {serviceDetails.description || 'No detailed description available.'}
-            </p>
+            <div className="md:ml-14">
+    <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
+    <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ${serviceDetails.status}</p>
+    <p className="text-gray-700 leading-relaxed text-lg mb-8">
+      {serviceDetails.description || 'No detailed description available.'}
+    </p>
+  </div>
           </div>
 
           <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">

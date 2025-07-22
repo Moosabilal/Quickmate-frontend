@@ -1,9 +1,32 @@
-import React, { Suspense } from 'react'; 
+import React, { Suspense, useEffect } from 'react'; 
 import { RouterProvider } from 'react-router-dom';
 import router from './routes';
 import { ToastContainer } from 'react-toastify'; 
+import { authService } from './services/authService';
+import { useAppDispatch } from './hooks/useAppDispatch';
+import { updateProfile } from './features/auth/authSlice';
 
 const App = () => {
+           const dispatch = useAppDispatch();
+
+  useEffect(() => {
+        const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+        const isRefresh = navigationEntries[0]?.type === 'reload';
+
+        if (isRefresh) {
+            const fetchUser = async () => {
+                try {
+                    const userData = await authService.getUser();
+                    
+                    dispatch(updateProfile({ user: userData }));
+                } catch (error) {
+                    console.error('Failed to fetch user data:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, []);
   return (
     <>
       <ToastContainer

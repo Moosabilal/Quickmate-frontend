@@ -4,6 +4,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import { providerService } from '../../services/providerService';
 import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 export enum ProviderStatus {
   Active = 'Active',
@@ -92,9 +93,9 @@ const AdminProvidersPage: React.FC = () => {
         <main className="p-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Providers</h1>
-            <button onClick={() =>navigate('/provider-registration')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            {/* <button onClick={() =>navigate('/provider-registration')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               Create Provider
-            </button>
+            </button> */}
           </div>
 
           {/* Search & Filters */}
@@ -142,7 +143,6 @@ const AdminProvidersPage: React.FC = () => {
             </select> */}
           </div>
 
-          {/* Provider Table */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -159,7 +159,7 @@ const AdminProvidersPage: React.FC = () => {
                   providers.map((provider) => (
                     <tr key={provider.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <img src={provider.profilePhoto} alt={provider.fullName} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={getCloudinaryUrl(provider.profilePhoto)} alt={provider.fullName} className="w-10 h-10 rounded-full object-cover" />
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{provider.fullName}</td>
                       <td className="px-6 py-4 text-sm text-gray-700">{provider.servicesOffered}</td>

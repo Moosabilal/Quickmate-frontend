@@ -74,19 +74,14 @@ const Booking_servicePage: React.FC = () => {
 
   const { categoryId } = useParams<{categoryId?: string}>()
 
-  console.log('the caegoyr', categoryId)
-
   useEffect(() => {
     const fetchServices = async () => {
         const response = await categoryService.getCategoryById(categoryId || '')
         setServices(response.subCategories)
         setCategoryName(response.name)
-        console.log('the respnse', response)
     }
     fetchServices()
   },[categoryId])
-
-  console.log('the services', services)
 
   const filteredServices = (services ?? []).filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -9,7 +9,6 @@ import ProviderPage from '../pages/user/Providers';
 import AboutPage from '../pages/user/About_us';
 import HowItWorksPage from '../pages/user/HowitWorks';
 import ServiceDetailsPage from '../pages/user/ServiceDetailsPage';
-import ProviderProfile from '../pages/provider/ProfileSetingPage';
 
 
 const Home = lazy(() => import('../pages/user/Home'));
@@ -24,6 +23,7 @@ const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
 const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
+const Provider_profile = lazy(() => import('../pages/provider/ProfileSetingPage'))
 
 
 
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
   { element: <ProtectedRoute roles={['Customer','ServiceProvider']} />,
     children: [
       { path: '/profile', element: <ProfileSettings /> },
-      { path: '/providerProfile/:userId', element: <ProviderProfile /> },
+      { path: '/providerProfile/:userId', element: <Provider_profile /> },
     ],
   },
   

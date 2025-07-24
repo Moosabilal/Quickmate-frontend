@@ -7,13 +7,17 @@ export const providerService = {
     register: async (formData: FormData) => {
 
         const response = await axiosInstance.post(`${PROVIDER_URL}/register`, formData)
-        return response;
+        return response.data;
     },
 
-    getProviderById: async (userId: string) => {
-        const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderById/${userId}`)
-        console.log('the userid response', response)
-        return response
+    updateProvider: async (formData: FormData) => {
+        const { data } = await axiosInstance.post(`${PROVIDER_URL}/updateProvider`, formData)
+        return data
+    },
+
+    getProvider: async () => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getProvider`)
+        return response.data
     },
 
     getProvidersWithAllDetails: async () => {
@@ -35,19 +39,24 @@ export const providerService = {
 
     },
 
-    getFeaturedProviders: async ({page, limit, search}: { page?: number, limit?: number, search?: string} = {}) => {
+    getFeaturedProviders: async ({ page, limit, search }: { page?: number, limit?: number, search?: string } = {}) => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getFeaturedProviders`, {
-            params: { page, limit, search}
+            params: { page, limit, search }
         })
-        console.log('the responxse', response)
         return response.data
     },
 
-    // getState: async ({lat: string, lng: string}) => {
-    //     console.log('the location',lat,lng)
-    //     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-    //     const data = await response.json();
-    //     console.log('the locain result', data)
-    // }
+    getState: async (lat: number, lng: number) => {
+
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error('Failed to fetch location:', err);
+        }
+    }
 
 }

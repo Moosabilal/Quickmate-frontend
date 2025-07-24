@@ -1,17 +1,17 @@
 import axios from 'axios';
-import config from './config'; 
+import config from './config';
 import { authService } from '../services/authService';
 
 const axiosInstance = axios.create({
   baseURL: config.API_BASE_URL,
   withCredentials: true
-  
+
 });
 
 axiosInstance.interceptors.request.use(
   (config) => {
 
-    if(!config){
+    if (!config) {
       console.log('config error')
     }
 
@@ -21,19 +21,24 @@ axiosInstance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh-token');
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
       originalRequest._retry = true;
 
       try {
         const refreshResponse = await authService.refreshToken();
         if (refreshResponse.status === 200) {
-          return axiosInstance(originalRequest);
+          return axiosInstance(originalRequest); // retry original request
         }
       } catch (refreshError) {
         console.error('🔁 Refresh token failed:', refreshError);
@@ -41,9 +46,8 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // Handle other errors globally
+    // Global error logging (optional)
     const status = error.response?.status;
-
     switch (status) {
       case 400:
         console.warn('Bad Request:', error.response.data?.message);
@@ -61,8 +65,9 @@ axiosInstance.interceptors.response.use(
         console.warn('Unhandled error:', error.response?.data?.message || error.message);
     }
 
-    return Promise.reject(error); // Pass to catch block in component
+    return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;

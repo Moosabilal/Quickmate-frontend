@@ -7,6 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { toast } from 'react-toastify';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { updateProviderProfile } from '../../features/provider/providerSlice';
 
 interface FormData {
     fullName: string;
@@ -33,7 +37,7 @@ interface CategoryTableDisplay extends ICategoryResponse {
     commissionRule?: ICommissionRuleResponse | null;
 }
 
-const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
+export const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
     useMapEvents({
         click(e) {
             onSelect(e.latlng.lat, e.latlng.lng);
@@ -62,7 +66,7 @@ const ProviderRegistration: React.FC = () => {
         businessCertifications: null,
         agreeTerms: false,
     });
-    
+
     const [categories, setCategories] = useState<CategoryTableDisplay[]>([]);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +77,9 @@ const ProviderRegistration: React.FC = () => {
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
     const profilePhotoRef = useRef<HTMLInputElement>(null);
     const businessCertificationsRef = useRef<HTMLInputElement>(null);
+
+    const dispatch = useAppDispatch()
+
 
     useEffect(() => {
         const selectedCategory = categories.find(cat => cat._id === formData.category);
@@ -89,7 +96,7 @@ const ProviderRegistration: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
-        
+
         if (type === 'checkbox') {
             const checkboxValue = (e.target as HTMLInputElement).value;
             if (id === 'agreeTerms') {
@@ -136,7 +143,7 @@ const ProviderRegistration: React.FC = () => {
 
     const validateForm = () => {
         const newErrors: Partial<Record<keyof FormData, string>> = {};
-        
+
         if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required.';
         if (!formData.phoneNumber.trim()) {
             newErrors.phoneNumber = 'Phone Number is required.';
@@ -169,7 +176,7 @@ const ProviderRegistration: React.FC = () => {
         if (!formData.aadhaarIdProof) newErrors.aadhaarIdProof = 'Aadhaar/ID Proof is required.';
         if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile Photo is required.';
         if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the Terms & Conditions.';
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -180,7 +187,7 @@ const ProviderRegistration: React.FC = () => {
             console.log('Form has validation errors:', errors);
             return;
         }
-        
+
         const data = new FormData();
         data.append('fullName', formData.fullName);
         data.append('phoneNumber', formData.phoneNumber);
@@ -189,27 +196,30 @@ const ProviderRegistration: React.FC = () => {
         data.append('serviceId', formData.servicesOffered);
         data.append('serviceName', formData.serviceName);
         data.append('serviceArea', formData.serviceArea);
-        
+
         if (formData.serviceLocation) {
             const { lat, lng } = formData.serviceLocation;
             data.append('serviceLocation', `${lat},${lng}`);
         }
-        
+
         data.append('experience', String(formData.experience));
-        data.append('startTime', formData.startTime);
-        data.append('endTime', formData.endTime);
+        data.append('timeSlot', JSON.stringify({
+            startTime: formData.startTime,
+            endTime: formData.endTime,
+        }));
         data.append('averageChargeRange', formData.averageChargeRange);
         data.append('availableDays', JSON.stringify(formData.availableDays));
-        
+
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
         if (formData.businessCertifications) data.append('businessCertifications', formData.businessCertifications);
-        
+
         try {
-            console.log('the serinding dat', data)
-            await providerService.register(data);
-            alert('Registration form submitted successfully!');
-            navigate('/profile');
+            const { provider, message } = await providerService.register(data);
+            dispatch(updateProviderProfile({ provider }))
+
+            toast.success(message)
+            navigate(`/providerProfile/${provider.userId}`);
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('Something went wrong. Please try again.');
@@ -232,13 +242,13 @@ const ProviderRegistration: React.FC = () => {
     }, []);
 
     const dayOptions = [
-        { value: 'monday', label: 'Monday' },
-        { value: 'tuesday', label: 'Tuesday' },
-        { value: 'wednesday', label: 'Wednesday' },
-        { value: 'thursday', label: 'Thursday' },
-        { value: 'friday', label: 'Friday' },
-        { value: 'saturday', label: 'Saturday' },
-        { value: 'sunday', label: 'Sunday' },
+        { value: 'Monday', label: 'Monday' },
+        { value: 'Tuesday', label: 'Tuesday' },
+        { value: 'Wednesday', label: 'Wednesday' },
+        { value: 'Thursday', label: 'Thursday' },
+        { value: 'Friday', label: 'Friday' },
+        { value: 'Saturday', label: 'Saturday' },
+        { value: 'Sunday', label: 'Sunday' },
     ];
 
     const renderInputField = (label: string, id: keyof FormData, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
@@ -361,7 +371,7 @@ const ProviderRegistration: React.FC = () => {
         );
     }
 
-const mapCenter: LatLngExpression = [20.5937, 78.9629]; 
+    const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
@@ -383,7 +393,7 @@ const mapCenter: LatLngExpression = [20.5937, 78.9629];
                             <h2 className="text-xl font-semibold text-gray-700">Service Details</h2>
                             {renderCustomSelectField("Select Category", "category", categories.map(cat => ({ value: cat._id, label: cat.name })), "Select your main service category")}
                             {renderCustomSelectField("Select Services Offered", "servicesOffered", services, "Select your service")}
-                            
+
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-semibold mb-2">
                                     Service Location
@@ -503,8 +513,8 @@ const mapCenter: LatLngExpression = [20.5937, 78.9629];
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
                         <h2 className="text-lg font-semibold p-4 border-b">Select Service Location</h2>
-                        <button 
-                            onClick={() => setIsMapOpen(false)} 
+                        <button
+                            onClick={() => setIsMapOpen(false)}
                             className="absolute top-3 right-4 text-xl hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center"
                         >
                             ×

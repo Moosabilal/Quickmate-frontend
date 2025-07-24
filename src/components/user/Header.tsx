@@ -16,7 +16,7 @@ const Header = () => {
     const { user, isAuthenticated } = useAppSelector(state => state.auth);
     const location = useLocation();
 
-    const isProfilePage = location.pathname.startsWith('/profile');
+    const isProfilePage = location.pathname.startsWith('/profile/*');
 
     React.useEffect(() => {
         const handleClickOutside = (event) => {

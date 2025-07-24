@@ -1,5 +1,4 @@
-
-import { MdDelete, MdEdit, MdHome, MdWork } from 'react-icons/md';
+import { MdDelete, MdEdit, MdHome, MdWork, MdClose } from 'react-icons/md';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import React, { useEffect, useState } from 'react';
 import { authService } from '../../services/authService';
@@ -8,6 +7,13 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { LocationSelector } from '../provider/Register';
+import AddressPopup from '../../components/user/AddressPopup';
+import { addressService } from '../../services/addressService';
+import { IAddress } from '../../types/address';
+import { toast } from 'react-toastify';
+
 
 
 const ProfileSetting: React.FC = () => {
@@ -21,24 +27,47 @@ const ProfileSetting: React.FC = () => {
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
+    const [isMapOpen, setIsMapOpen] = useState(false)
 
-    const navigate = useNavigate()
+    // Address modal states
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
+    const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
+    const [addressPopup, setAddressPopup] = useState(false);
+
+
+    const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
+    const [addressList, setAddressList] = useState<IAddress[]>([]);
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
+    const [editAddressId, setEditAddressId] = useState<string | null>(null);
+    const [currentAddress, setCurrentAddress] = useState<IAddress>({
+        id: '',
+        label: '',
+        userId: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+    });
+
+
+
+    const navigate = useNavigate();
 
     const nameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
 
-    const isCustomer = user?.role === "Customer"
+    useEffect(() => {
+        const fetchAddress = async () => {
+            const address = await addressService.getAddress()
+            console.log('the respnse addres taken from backend', address)
+            setAddressList(address)
+        }
+        fetchAddress()
+    },[])
 
-   
-
-    const addresses = [
-        { id: '1', type: 'Home', street: '123 Maple Street', city: 'Anytown', country: 'USA', zip: '12345' },
-        { id: '2', type: 'Work', street: '456 Oak Avenue', city: 'Anytown', country: 'USA', zip: '67890' },
-    ];
-
-
-    
-
+    const isCustomer = user?.role === "Customer";
 
     const handleEditProfile = () => {
         setEditingName(name);
@@ -63,14 +92,13 @@ const ProfileSetting: React.FC = () => {
             setEmail(editingEmail);
             setProfilePicture(editingProfilePicture);
 
-            alert('Profile saved!');
+            toast.success('profile Updated Successfully')
             setIsEditing(false);
         } catch (error) {
             console.error('Failed to update profile:', error);
             alert('Failed to save profile. Please try again.');
         }
     };
-
 
     const handleCancel = () => {
         setEditingName(name);
@@ -79,13 +107,77 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(false);
     };
 
-    const handleEditAddress = (id: string) => alert(`Edit Address ${id} clicked!`);
-    const handleDeleteAddress = (id: string) => {
-        if (window.confirm(`Are you sure you want to delete address ${id}?`)) {
-            alert(`Delete Address ${id} confirmed!`);
+
+    const handleAddAddress = async () => {
+        const { label, street, city, state, zip } = currentAddress;
+
+        if (label && street && city && state && zip) {
+            const newAddr = { ...currentAddress };
+
+            try {
+                let savedAddress;
+
+                console.log('the divide conqou', isEditing, currentAddress)
+
+                if (isEditingAddress && currentAddress.id) {
+                    console.log('editing')
+                    savedAddress = await addressService.updateAddress(currentAddress.id, newAddr);
+
+                    setAddressList(prev =>
+                        prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
+                    );
+                    toast.success("Address Updated")
+                } else {
+                    console.log('the address', newAddr)
+                    savedAddress = await addressService.createAddress(newAddr);
+                    setAddressList(prev => [...prev, savedAddress]);
+                    toast.success("Address Created")
+                }
+
+                setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
+                setIsEditingAddress(false);
+                setEditAddressId(null);
+                setAddressPopup(false);
+
+            } catch (error) {
+                console.error('Failed to save address:', error);
+                alert('Something went wrong while saving the address. Please try again.');
+            }
         }
     };
-    const handleAddAddress = () => alert('Add Address clicked!');
+
+
+
+    const handleAddressConfirm = (address: IAddress) => {
+        setSelectedAddress(address);
+        setAddressPopup(false);
+    };
+
+    const handleEditAddress = (id: string) => {
+        const addressToEdit = addressList.find(addr => addr.id === id);
+        if (addressToEdit) {
+            setCurrentAddress(addressToEdit);
+            setIsEditingAddress(true);
+            setEditAddressId(id);
+            setAddressPopup(true);
+        }
+    };
+
+
+    const handleDeleteAddress = (id: string) => {
+        setDeleteAddressId(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteAddress = async () => {
+        if (deleteAddressId) {
+            const data = await addressService.deleteAddress(deleteAddressId)
+            setAddressList(prev => prev.filter(addr => addr.id !== deleteAddressId));
+            setDeleteAddressId(null);
+            setShowDeleteModal(false);
+            toast.success(data.message)
+        }
+    };
 
     const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -98,6 +190,7 @@ const ProfileSetting: React.FC = () => {
         <div className="p-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">Account</h1>
 
+            {/* Profile Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center md:items-start justify-between">
                 {isEditing ? (
                     <>
@@ -202,22 +295,22 @@ const ProfileSetting: React.FC = () => {
                 )}
             </div>
 
-            {/* Addresses Section
+            {/* Addresses Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Addresses</h2>
                 <div className="space-y-4">
-                    {addresses.map((address) => (
+                    {addressList.map((address) => (
                         <div key={address.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                             <div className="flex items-center">
-                                {address.type === 'Home' ? (
+                                {address.label === 'Home' ? (
                                     <MdHome className="w-6 h-6 text-blue-500 dark:text-blue-300 mr-3 flex-shrink-0" />
                                 ) : (
                                     <MdWork className="w-6 h-6 text-purple-500 dark:text-purple-300 mr-3 flex-shrink-0" />
                                 )}
                                 <div>
-                                    <p className="text-gray-800 dark:text-gray-100 font-medium">{address.type}</p>
+                                    <p className="text-gray-800 dark:text-gray-100 font-medium">{address.label}</p>
                                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                        {address.street}, {address.city}, {address.country}
+                                        {address.street}, {address.city}, {address.state} - {address.zip}
                                     </p>
                                 </div>
                             </div>
@@ -225,14 +318,14 @@ const ProfileSetting: React.FC = () => {
                                 <button
                                     onClick={() => handleEditAddress(address.id)}
                                     className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                    aria-label={`Edit ${address.type} address`}
+                                    aria-label={`Edit ${address.label} address`}
                                 >
                                     <MdEdit className="w-5 h-5" />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteAddress(address.id)}
                                     className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                                    aria-label={`Delete ${address.type} address`}
+                                    aria-label={`Delete ${address.label} address`}
                                 >
                                     <MdDelete className="w-5 h-5" />
                                 </button>
@@ -241,39 +334,115 @@ const ProfileSetting: React.FC = () => {
                     ))}
                 </div>
                 <button
-                    onClick={handleAddAddress}
+                    onClick={() => setAddressPopup(true)}
                     className="mt-6 px-4 py-2 border border-blue-500 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm font-semibold"
                 >
                     Add address
                 </button>
-            </div> */}
-            {isCustomer &&
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6 mt-10">
-                <div className="w-full md:w-1/2 flex justify-center">
-                    <img
-                        src="/home-service-vector.webp"
-                        alt="Start Earning"
-                        className="w-56 h-auto"
-                    />
+            </div>
 
+            {isCustomer && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6 mt-10">
+                    <div className="w-full md:w-1/2 flex justify-center">
+                        <img
+                            src="/home-service-vector.webp"
+                            alt="Start Earning"
+                            className="w-56 h-auto"
+                        />
+                    </div>
+
+                    <div className="w-full md:w-1/2">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            Start Earning with Your Skills
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4">
+                            Join thousands of professionals offering trusted services in your city.
+                        </p>
+                        <button
+                            onClick={() => navigate('/provider-registration')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200"
+                        >
+                            Register as a Provider
+                        </button>
+                    </div>
                 </div>
+            )}
 
-                <div className="w-full md:w-1/2">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Start Earning with Your Skills
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        Join thousands of professionals offering trusted services in your city.
-                    </p>
-                    <button
-                        onClick={() => navigate('/provider-registration')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200"
-                    >
-                        Register as a Provider
-                    </button>
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm">
+                        <div className="p-6">
+                            <div className="text-center">
+                                <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                                    <MdDelete className="w-6 h-6 text-red-600 dark:text-red-400" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                                    Delete Address
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                    Are you sure you want to delete this address? This action cannot be undone.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={confirmDeleteAddress}
+                                    className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setDeleteAddressId(null);
+                                    }}
+                                    className="flex-1 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>}
+            )}
 
+            {/* {isMapOpen && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
+                        <h2 className="text-lg font-semibold p-4 border-b">Select Service Location</h2>
+                        <button 
+                            onClick={() => setIsMapOpen(false)} 
+                            className="absolute top-3 right-4 text-xl hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center"
+                        >
+                            ×
+                        </button>
+
+                        <MapContainer center={mapCenter} zoom={5} className="h-[400px] w-full rounded-b-lg">
+                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <LocationSelector onSelect={(lat, lng) => {
+                                setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
+                                setErrors(prev => ({ ...prev, serviceLocation: undefined }));
+                                setIsMapOpen(false);
+                            }} />
+                            {formData.serviceLocation && (
+                                <Marker position={[formData.serviceLocation.lat, formData.serviceLocation.lng]} />
+                            )}
+                        </MapContainer>
+                    </div>
+                </div>
+            )} */}
+
+            <AddressPopup
+                addressPopup={addressPopup}
+                setAddressPopup={setAddressPopup}
+                selectedAddress={selectedAddress}
+                handleAddressConfirm={handleAddressConfirm}
+                setShowAddAddress={() => { }}
+                showAddAddress={true}
+                newAddress={currentAddress}
+                setNewAddress={setCurrentAddress}
+                handleAddAddress={handleAddAddress}
+            />
         </div>
     );
 };

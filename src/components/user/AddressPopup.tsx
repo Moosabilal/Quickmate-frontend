@@ -29,6 +29,7 @@ const mockAddresses: Address[] = [
 
 
 const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAddressConfirm, setShowAddAddress, showAddAddress, newAddress, setNewAddress, handleAddAddress}) => {
+  
     if (!addressPopup) return null;
 
     return (
@@ -44,7 +45,6 @@ const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAdd
             </button>
           </div>
           <div className="p-6 space-y-6">
-            {/* Address Selection */}
             <div>
               <label className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
@@ -75,7 +75,6 @@ const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAdd
                 </button>
               </div>
             </div>
-            {/* Add New Address Form */}
             {showAddAddress && (
               <div className="border-t pt-4">
                 <h4 className="text-lg font-semibold text-gray-700 mb-3">Add New Address</h4>

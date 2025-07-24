@@ -1,5 +1,8 @@
 import { Calendar, User, Settings, Star, DollarSign, CheckCircle } from 'lucide-react';
 import React from 'react'
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { getCloudinaryUrl } from '../../util/cloudinary';
+import { IProviderProfile } from '../../types/provider';
 
 interface ProfileData {
     name: string;
@@ -13,16 +16,10 @@ interface ProfileData {
 }
 
 const Sidebar = () => {
-    const profileData: ProfileData = {
-        name: "Sophia Carter",
-        phone: "+1-555-123-4567",
-        email: "sophia.carter@email.com",
-        experience: 5,
-        servicePincodes: ["90210", "90048", "90069"],
-        schedule: "Monday to Friday, 9 AM - 6 PM",
-        profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-        verified: true
-    };
+
+    const { provider } = useAppSelector(state => state.provider)
+
+
         const navigationItems = [
         { icon: <User className="w-5 h-5" />, label: "Dashboard", active: false },
         { icon: <Calendar className="w-5 h-5" />, label: "Bookings", active: false },
@@ -37,17 +34,17 @@ const Sidebar = () => {
                             <div className="text-center mb-8">
                                 <div className="relative inline-block">
                                     <img
-                                        src={profileData.profileImage}
+                                        src={getCloudinaryUrl(provider.profilePhoto || '')}
                                         alt="Sophia Clark"
                                         className="w-20 h-20 rounded-full border-4 border-white shadow-lg"
                                     />
-                                    {profileData.verified && (
+                                    {provider.status == "Pending" && (
                                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                             <CheckCircle className="w-4 h-4 text-white" />
                                         </div>
                                     )}
                                 </div>
-                                <h3 className="font-semibold text-slate-800 mt-4">{profileData.name.split(' ')[0]} Clark</h3>
+                                <h3 className="font-semibold text-slate-800 mt-4">{provider.fullName?.split(' ')[0]}</h3>
                                 <p className="text-sm text-slate-500">Service Provider</p>
                             </div>
 

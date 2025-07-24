@@ -4,6 +4,7 @@ const API_URL = `/auth`;
 export const authService = {
   login: async (email: string, password: string) => {
     const response = await axiosInstance.post(`${API_URL}/login`, { email, password });
+    console.log('the errror dataaaa', response)
     return response.data;
   },
 

@@ -5,6 +5,7 @@ import { providerService } from '../../services/providerService';
 import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { toast } from 'react-toastify';
 
 export enum ProviderStatus {
   Active = 'Active',
@@ -174,8 +175,51 @@ const AdminProvidersPage: React.FC = () => {
                         <span className="ml-1 text-yellow-500">⭐</span>
                       </td>
                       <td className="px-6 py-4">
-                        <button className="text-blue-600 hover:underline text-sm">View</button>
+                        <div className="flex items-center justify-between gap-4">
+                          <select
+                            value={provider.status}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value as ProviderStatus;
+                              try {
+                                const res = await providerService.updateProviderStatus(provider.id, newStatus);
+                                console.log('the restu res', res)
+                                setProviders((prev) =>
+                                  prev.map((p) =>
+                                    p.id === provider.id ? { ...p, status: newStatus } : p
+                                  )
+                                );
+                                toast.success(res.message || "Status Updated Successfully");
+                              } catch (err) {
+                                console.error('Failed to update status:', err);
+                                toast.error('Failed to update provider status.');
+                              }
+                            }}
+                            className="text-sm px-2 py-1 border rounded-md text-gray-700"
+                          >
+                            <option value={provider.status} disabled>
+                              {provider.status}
+                            </option>
+
+                            {/* Other statuses (excluding the current one) */}
+                            {Object.values(ProviderStatus)
+                              .filter((status) => status !== provider.status)
+                              .map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                          </select>
+
+
+                          <button
+                            onClick={() => navigate(`/admin/providers/${provider.id}`)}
+                            className="text-blue-600 hover:underline text-sm"
+                          >
+                            View
+                          </button>
+                        </div>
                       </td>
+
                     </tr>
                   ))
                 ) : (

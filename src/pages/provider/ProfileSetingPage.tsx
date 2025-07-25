@@ -121,10 +121,6 @@ const ProviderProfile: React.FC = () => {
         };
     };
 
-    const formatLocationString = (location: { lat: number; lng: number } | null) => {
-        if (!location) return '';
-        return `${location.lat},${location.lng}`;
-    };
 
     useEffect(() => {
         if (provider && Object.keys(provider).length > 0) {
@@ -142,6 +138,8 @@ const ProviderProfile: React.FC = () => {
             }
         }
     }, []);
+
+
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -618,7 +616,7 @@ const ProviderProfile: React.FC = () => {
                                         Verification Documents
                                     </h2>
                                     <div className="space-y-4">
-                                        {/* <div className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
+                                        <div className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
                                             <div className="flex items-center space-x-4">
                                                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                                                     <FileText className="w-6 h-6 text-blue-600" />
@@ -669,7 +667,7 @@ const ProviderProfile: React.FC = () => {
                                                 <Eye className="w-4 h-4" />
                                                 <span>View</span>
                                             </button>
-                                        </div> */}
+                                        </div>
 
                                         <div className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
                                             <div className="flex items-center space-x-4">

@@ -35,15 +35,15 @@ axiosInstance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      try {
-        const refreshResponse = await authService.refreshToken();
-        if (refreshResponse.status === 200) {
-          return axiosInstance(originalRequest); // retry original request
-        }
-      } catch (refreshError) {
-        console.error('🔁 Refresh token failed:', refreshError);
-        window.location.href = '/login';
-      }
+      // try {
+      //   const refreshResponse = await authService.refreshToken();
+      //   if (refreshResponse.status === 200) {
+      //     return axiosInstance(originalRequest); 
+      //   }
+      // } catch (refreshError) {
+      //   console.error('🔁 Refresh token failed:', refreshError);
+      //   window.location.href = '/login';
+      // }
     }
 
     // Global error logging (optional)

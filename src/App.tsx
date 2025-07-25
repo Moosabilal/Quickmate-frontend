@@ -35,6 +35,8 @@ const App = () => {
       fetchUser();
     }
   }, []);
+
+  
   return (
     <>
       <ToastContainer

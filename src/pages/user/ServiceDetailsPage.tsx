@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Header from '../../components/user/Header';
 import Footer from '../../components/user/Footer';
 import { categoryService } from '../../services/categoryService';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
+import { IBackendProvider } from '../../types/provider';
+import { toast } from 'react-toastify';
 
 
 
- export interface IProvider {
+export interface IProvider {
   id: string;
   name: string;
   rating: number;
@@ -45,7 +47,7 @@ const ServiceDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [providerPopup, setProviderPopup] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<IProvider | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<IBackendProvider | null>(null);
   const [dateTimePopup, setDateTimePopup] = useState(false);
   const [addressPopup, setAddressPopup] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -59,6 +61,8 @@ const ServiceDetailsPage: React.FC = () => {
     zip: '',
   });
   const [showAddAddress, setShowAddAddress] = useState(false);
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -109,9 +113,7 @@ const ServiceDetailsPage: React.FC = () => {
     return `${displayHour}:${minute} ${period}`;
   });
 
-  
 
-  
 
 
   if (loading) {
@@ -168,12 +170,12 @@ const ServiceDetailsPage: React.FC = () => {
               />
             </div>
             <div className="md:ml-14">
-    <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
-    <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ${serviceDetails.status}</p>
-    <p className="text-gray-700 leading-relaxed text-lg mb-8">
-      {serviceDetails.description || 'No detailed description available.'}
-    </p>
-  </div>
+              <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
+              <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at $ 150</p>
+              <p className="text-gray-700 leading-relaxed text-lg mb-8">
+                {serviceDetails.description || 'No detailed description available.'}
+              </p>
+            </div>
           </div>
 
           <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">
@@ -280,22 +282,22 @@ const ServiceDetailsPage: React.FC = () => {
                   className="w-full px-5 py-3 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow focus:outline-none text-lg flex items-center justify-center"
                 >
                   <Award className="w-5 h-5 mr-2" />
-                  {selectedProvider ? `Selected: ${selectedProvider.name}` : 'Choose Provider'}
+                  {selectedProvider ? `Selected: ${selectedProvider.fullName}` : 'Choose Provider'}
                 </button>
                 {selectedProvider && (
                   <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-3">
                       <img
-                        src={selectedProvider.profileImage}
-                        alt={selectedProvider.name}
+                        src={getCloudinaryUrl(selectedProvider.profilePhoto)}
+                        alt={selectedProvider.fullName}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
-                        <p className="font-medium text-gray-900">{selectedProvider.name}</p>
+                        <p className="font-medium text-gray-900">{selectedProvider.fullName}</p>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                           <span>
-                            {selectedProvider.rating} • ${selectedProvider.price}/session
+                            {selectedProvider.rating} • $500
                           </span>
                         </div>
                       </div>
@@ -308,11 +310,12 @@ const ServiceDetailsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!selectedDate || !selectedTime || !selectedAddress || !selectedProvider}
-                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${
-                    !selectedDate || !selectedTime || !selectedAddress || !selectedProvider
+                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${!selectedDate || !selectedTime || !selectedAddress || !selectedProvider
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
-                  }`}
+                    }`}
+
+                    
                 >
                   Confirm Booking
                 </button>

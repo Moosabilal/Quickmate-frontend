@@ -31,6 +31,13 @@ const mockAddresses: Address[] = [
 const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAddressConfirm, setShowAddAddress, showAddAddress, newAddress, setNewAddress, handleAddAddress}) => {
   
     if (!addressPopup) return null;
+    //  useEffect(() => {
+    //   const fetchAddress = async()=> {
+    //     const res = await addressService.getAddress()
+    //     setmockAddresses(res)
+    //   }
+    //   fetchAddress
+    // },[])
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

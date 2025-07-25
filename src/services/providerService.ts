@@ -57,6 +57,13 @@ export const providerService = {
         } catch (err) {
             console.error('Failed to fetch location:', err);
         }
+    },
+
+    updateProviderStatus: async (id: string, newStatus: string) => {
+        console.log('it snote goin',newStatus)
+        const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, {newStatus})
+        console.log('the status response', response)
+        return response.data
     }
 
 }

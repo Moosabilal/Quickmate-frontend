@@ -30,3 +30,24 @@ export interface IProviderProfile {
     availableDays: string[];
   
 }
+
+export interface IBackendProvider {
+  _id: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  profilePhoto: string;
+  serviceName?: string;
+  serviceArea: string;
+  experience: number;
+  timeSlot: {
+    startTime: string;
+    endTime: string;
+  };
+  availableDays: string[];
+  status: 'Active' | 'Suspended' | 'Pending' | 'Rejected';
+  earnings: number;
+  totalBookings: number;
+  rating?: number;
+  reviews?: number;
+}

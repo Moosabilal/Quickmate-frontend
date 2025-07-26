@@ -4,6 +4,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category'; // Import shared types
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 const CategoryDetailsPage: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
@@ -198,7 +199,7 @@ const CategoryDetailsPage: React.FC = () => {
                             <div className="flex items-center space-x-6">
                                 {iconUrl && (
                                     <img
-                                        src={iconUrl}
+                                        src={getCloudinaryUrl(iconUrl)}
                                         alt={`${name} icon`}
                                         className="w-24 h-24 object-cover rounded-lg shadow-md"
                                     />
@@ -264,7 +265,7 @@ const CategoryDetailsPage: React.FC = () => {
                                                 <tr key={sub._id}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {sub.iconUrl ? (
-                                                            <img src={sub.iconUrl} alt={`${sub.name} icon`} className="w-12 h-12 object-cover rounded-md" />
+                                                            <img src={getCloudinaryUrl(sub.iconUrl)} alt={`${sub.name} icon`} className="w-12 h-12 object-cover rounded-md" />
                                                         ) : (
                                                             <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-md flex items-center justify-center text-gray-500 text-xs">No Img</div>
                                                         )}

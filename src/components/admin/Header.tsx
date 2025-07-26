@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice'; 
 import ThemeToggle from '../../components/ThemeToggle';
 import { authService } from '../../services/authService';
+import { getCloudinaryUrl } from '../../util/cloudinary';
 
 const Header = () => {
 
@@ -27,7 +28,7 @@ const Header = () => {
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               className="flex items-center space-x-2 focus:outline-none"
             >
-              <img src="https://via.placeholder.com/32" alt="Profile" className="w-8 h-8 rounded-full" />
+              <img src={getCloudinaryUrl(user?.profilePicture || '')} alt="Profile" className="w-8 h-8 rounded-full" />
               <span>{user?.name || 'Admin'}</span> 
               <svg className={`w-4 h-4 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>

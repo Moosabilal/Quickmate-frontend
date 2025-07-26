@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import Header from '../../components/user/Header';
 import { categoryService } from '../../services/categoryService'; 
 import { ICategoryResponse } from '../../types/category'; 
+import { getCloudinaryUrl } from '../../util/cloudinary';
+import { providerService } from '../../services/providerService';
+import { IFeaturedProviders } from '../../types/provider';
+import Footer from '../../components/user/Footer';
 
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
@@ -30,13 +34,6 @@ const StarRating = ({ rating }: { rating: number }) => {
     );
 };
 
-const featuredProviders = [
-    { id: 1, name: 'Olivia R.', rating: 5, imageUrl: 'https://tse4.mm.bing.net/th?id=OIP.Mvcr0QDsGXOx29cSBfXd6AHaE7&pid=Api&P=0&h=180?text=OR' },
-    { id: 2, name: 'Marcus P.', rating: 4.8, imageUrl: 'https://via.placeholder.com/64/34d399/ffffff?text=MP' },
-    { id: 3, name: 'Emily C.', rating: 4.9, imageUrl: 'https://via.placeholder.com/64/facc15/ffffff?text=EC' },
-    { id: 4, name: 'Jonathan S.', rating: 5, imageUrl: 'https://via.placeholder.com/64/fb7185/ffffff?text=JS' },
-];
-
 const testimonials = [
     {
         id: 1,
@@ -58,7 +55,7 @@ const Home = () => {
     const [fetchedCategories, setFetchedCategories] = useState<ICategoryResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [featuredProviders, setFeaturedProviders] = useState<IFeaturedProviders[]>([])
     const [popularServices, setPopularServices] = useState<ICategoryResponse[]>([]);
     const [trendingServices, setTrendingServices] = useState<ICategoryResponse[]>([]);
 
@@ -68,14 +65,19 @@ const Home = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await categoryService.getAllCategories();
-                if(!response){
+                const categories = await categoryService.getAllCategories();
+
+                const response = await providerService.getFeaturedProviders()
+                setFeaturedProviders(response.providers)
+                
+                if(!categories){
                     console.log('error in respoinse')
                 }
-                setFetchedCategories(response);
+                setFetchedCategories(categories);
+
 
                 const allSubCategories: ICategoryResponse[] = [];
-                response.forEach(cat => {
+                categories.forEach(cat => {
                     if (cat.subCategories && cat.subCategories.length > 0) {
                         const activeSubCategories = cat.subCategories.filter(sub => sub.status === true);
                         allSubCategories.push(...activeSubCategories);
@@ -100,6 +102,7 @@ const Home = () => {
 
         loadCategories();
     }, []);
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -129,8 +132,8 @@ const Home = () => {
 
             <main className="pt-20"> 
                 <section
-                    className="relative bg-cover bg-center h-[500px] md:h-[600px] flex items-center justify-center text-white"
-                    style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
+                    className="relative bg-contain bg-no-repeat bg-center h-[500px] md:h-[600px] flex items-center justify-center text-white"
+                    style={{ backgroundImage: "url('/landing_heroSection.png')",backgroundSize: '1300px 620px' }}
                 >
                     <div className="absolute inset-0 bg-black opacity-50"></div>
                     <div className="relative z-10 text-center px-4">
@@ -162,9 +165,9 @@ const Home = () => {
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Browse by Category</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
                         {fetchedCategories.filter(category => category.status).slice(0,4).map((category) => (
-                            <Link to={`/category/${category._id}`} key={category._id} className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
+                            <Link to={`/booking_serviceList/${category._id}`} key={category._id} className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-                                    <img src={category.iconUrl || 'https://via.placeholder.com/64?text=Category'} alt={category.name} className='rounded-full w-24 h-24 object-cover' />
+                                    <img src={getCloudinaryUrl(category.iconUrl) || 'https://via.placeholder.com/64?text=Category'} alt={category.name} className='rounded-full w-24 h-24 object-cover' />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center">{category.name}</h3>
                             </Link>
@@ -179,7 +182,7 @@ const Home = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                             {popularServices.map((service) => (
                                 <Link to={`/service/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                    <img src={service.iconUrl || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
+                                    <img src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
                                     <div className="p-5">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{service.name}</h3>
                                         <p className="text-blue-600 dark:text-blue-400 font-bold">{service.description || 'Service Details'}</p>
@@ -199,7 +202,7 @@ const Home = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
                             {trendingServices.map((service) => (
                                 <Link to={`/service/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                    <img src={service.iconUrl || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
+                                    <img src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
                                     <div className="p-5">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{service.name}</h3>
                                         <p className="text-blue-600 dark:text-blue-400 font-bold">{service.description || 'Service Details'}</p>
@@ -220,10 +223,11 @@ const Home = () => {
                             <div className="flex space-x-6">
                                 {featuredProviders.map((provider) => (
                                     <Link to={`/provider/${provider.id}`} key={provider.id} className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
-                                        <img src={provider.imageUrl} alt={provider.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
-                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.name}</h3>
-                                        <StarRating rating={provider.rating} />
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p>
+                                        <img src={getCloudinaryUrl(provider.profilePhoto)} alt={provider.fullName} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{provider.fullName}</h3>
+                                        <p className=" text-gray-800 dark:text-gray-100">{provider.serviceName}</p>
+                                        {/* <StarRating rating={provider?.rating ?? ''} /> */}
+                                        {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{provider.rating} Stars</p> */}
                                     </Link>
                                 ))}
                             </div>
@@ -247,14 +251,14 @@ const Home = () => {
                 <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
                     <div className="container mx-auto flex flex-col md:flex-row items-center gap-10">
                         <div className="md:w-1/2">
-                            <img src="/images/how-it-works.png" alt="How QuickMate Works" className="rounded-lg shadow-lg w-full h-auto object-cover" />
+                            <img src="/booking_image.png" alt="How QuickMate Works" className="rounded-lg shadow-lg w-full max-h-96 object-cover" />
                         </div>
                         <div className="md:w-1/2 text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-6">How It Works</h2>
                             <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                                 QuickMate connects you with skilled local professionals for all your needs. Simply search for the service you need, browse through profiles and reviews, book your service, and get things done! It's that easy.
                             </p>
-                            <Link to="/how-it-works" className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                            <Link to="/working" className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                                 Learn More
                                 <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                             </Link>
@@ -274,16 +278,7 @@ const Home = () => {
                 </section>
             </main>
 
-            <footer className="bg-gray-800 dark:bg-gray-900 text-gray-300 dark:text-gray-400 py-8">
-                <div className="container mx-auto px-4 text-center text-sm">
-                    <div className="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 mb-4">
-                        <Link to="/contact" className="hover:text-white">Contact</Link>
-                        <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white">Terms of Service</Link>
-                    </div>
-                    <p>&copy; {new Date().getFullYear()} QuickMate. All rights reserved.</p>
-                </div>
-            </footer>
+            <Footer/>
         </div>
     );
 };

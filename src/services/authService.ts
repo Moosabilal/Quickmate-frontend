@@ -4,6 +4,7 @@ const API_URL = `/auth`;
 export const authService = {
   login: async (email: string, password: string) => {
     const response = await axiosInstance.post(`${API_URL}/login`, { email, password });
+    console.log('the errror dataaaa', response)
     return response.data;
   },
 
@@ -37,6 +38,11 @@ export const authService = {
     return response
   },
 
+  contactUsSubmission: async (formData) => {
+    const response = await axiosInstance.post(`${API_URL}/contactUsSubmission`,formData)
+    return response.data
+  },
+
   getUser: async () => {
     const response = await axiosInstance.get(`${API_URL}/getUser`);
     return response.data;
@@ -47,8 +53,10 @@ export const authService = {
     return response.data;
   },
 
-  getUserWithAllDetails: async () => {
-    const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`);
+  getUserWithAllDetails: async ({ page, limit, search, status }) => {
+  const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`, {
+    params: { page, limit, search, status },
+  });
     return response.data;
   },
 

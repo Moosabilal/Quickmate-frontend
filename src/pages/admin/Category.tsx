@@ -4,7 +4,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
-import Pagination from '../../components/Pagination';
+import Pagination from '../../components/admin/Pagination';
 
 interface CategoryTableDisplay extends ICategoryResponse {
     subCategoriesCount?: number | undefined;

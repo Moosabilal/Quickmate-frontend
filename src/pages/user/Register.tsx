@@ -186,12 +186,6 @@ const Register = () => {
         }
     }, [confirmPassword, password, touched.confirmPassword]);
 
-    // useEffect(() => {
-    //     if (touched.role) {
-    //         setValidationErrors(prev => ({ ...prev, role: validateRole(role) }));
-    //     }
-    // }, [role, touched.role]);
-
     useEffect(() => {
         if (isAuthenticated) {
             if (user?.role === 'Admin') {

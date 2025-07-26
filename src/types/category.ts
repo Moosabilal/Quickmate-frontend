@@ -69,3 +69,10 @@ export interface ISubcategoryFormFetchData {
     status: boolean;
     parentid?: string | null; 
 }
+
+export interface IserviceResponse {
+    id: string;
+    name: string;
+    iconUrl?: string | null;
+    parentId?: string | null
+}

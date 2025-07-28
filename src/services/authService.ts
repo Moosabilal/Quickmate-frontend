@@ -34,7 +34,9 @@ export const authService = {
   },
 
   refreshToken: async () => {
+    console.log('the request is sending')
     const response = await axiosInstance.post(`${API_URL}/refresh-token`);
+    console.log('the refresh toke response', response)
     return response
   },
 

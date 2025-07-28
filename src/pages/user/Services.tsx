@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Header from '../../components/user/Header';
 import Pagination from '../../components/user/Pagination';
 import { categoryService } from '../../services/categoryService';
 import { IserviceResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import Footer from '../../components/user/Footer';
 import { useNavigate } from 'react-router-dom';
 
 const ServicesPage: React.FC = () => {
@@ -42,7 +40,6 @@ const ServicesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
-      <Header />
 
       <main className="container mx-auto px-4 py-16 pt-28">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">
@@ -124,7 +121,6 @@ const ServicesPage: React.FC = () => {
           onPageChange={setCurrentPage}
         />
       </main>
-      <Footer />
     </div>
   );
 };

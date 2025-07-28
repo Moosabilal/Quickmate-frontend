@@ -11,105 +11,109 @@ import {
   MdOutlineMiscellaneousServices,
   MdLogout,
 } from 'react-icons/md';
+import { CheckCircle } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
-interface SidebarProps {
-}
-
-const Sidebar: React.FC<SidebarProps> = () => {
+const Sidebar = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector(state => state.auth);
-  console.log('user from sidebar',user)
+  const { user } = useAppSelector((state) => state.auth);
 
   const navItems = [
-    { name: 'Profile Settings', icon: MdOutlineSettings, path: '/profile' },
-    { name: 'Booking History', icon: MdHistory, path: '/profile/history' },
-    { name: 'Wallet', icon: MdOutlineAccountBalanceWallet, path: '/Profile/wallet' },
-    { name: 'Live Chat', icon: MdOutlineChat, path: '/profile/chat' },
-    { name: 'Booking Assistant', icon: MdOutlineSupportAgent, path: '/profile/assistant' },
-    { name: 'Calendar', icon: MdOutlineCalendarMonth, path: '/profile/calendar' },
-    { name: 'Notifications', icon: MdOutlineNotificationsNone, path: '/profile/notifications' },
+    { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
+    { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/history' },
+    { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/Profile/wallet' },
+    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chat' },
+    { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
+    { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
+    { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },
   ];
 
-  const manageServicesItems = [
-    { name: 'Manage Your Services', icon: MdOutlineMiscellaneousServices, path: `/providerProfile/${user?.id}` },
-  ];
+  const serviceProviderItem = {
+    name: 'Manage Your Services',
+    icon: <MdOutlineMiscellaneousServices className="w-5 h-5" />,
+    path: `/providerProfile/${user?.id}`,
+  };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const handleLogout = () => {
     const confirmLogout = window.confirm('Are you sure you want to logout?');
     if (confirmLogout) {
-        dispatch(logout());
+      dispatch(logout());
     }
   };
 
-  if (!user) {
-    return null; 
-  }
+  if (!user) return null;
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg p-6 flex flex-col h-full">
-      <div className="flex items-center mb-8">
-        <img
-          src={getCloudinaryUrl(user.profilePicture || '')}
-          alt={user.name || 'User'}
-          className="w-12 h-12 rounded-full object-cover border-2 border-blue-400 mr-3"
-        />
-        <span className="font-semibold text-gray-800 dark:text-gray-100">{user.name || 'User Name'}</span>
-      </div>
+    <div className="lg:col-span-1">
+      <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-12">
+        <div className="text-center mb-8">
+          <div className="relative inline-block">
+            <img
+              src={getCloudinaryUrl(user.profilePicture || '')}
+              alt={user.name || 'User'}
+              className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover"
+            />
+            {/* <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
+            </div> */}
+          </div>
+          <h3 className="font-semibold text-slate-800 mt-4">
+            {user.name?.split(' ')[0] || 'User'}
+          </h3>
+          <p className="text-sm text-slate-500">Customer</p>
+        </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-grow">
-        <ul>
+        {/* Navigation */}
+        <nav className="space-y-2">
           {navItems.map((item) => (
-            <li key={item.name} className="mb-">
-              <Link
-                to={item.path}
-                className={`flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
-                  ${isActive(item.path) ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium' : ''}`
-                }
-              >
-                <item.icon className={`w-5 h-5 mr-3 ${isActive(item.path) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                {item.name}
-              </Link>
-            </li>
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                isActive(item.path)
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+              }`}
+            >
+              {item.icon}
+              <span className="font-medium">{item.name}</span>
+            </Link>
           ))}
 
+          {/* Provider-specific item */}
           {user?.role === 'ServiceProvider' && (
-            <li className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                {manageServicesItems.map((item) => (
-                <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`flex items-center  rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
-                    ${isActive(item.path) ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium' : ''}`
-                    }
-                >
-                    <item.icon className={`w-5 h-5 mr-3 ${isActive(item.path) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                    {item.name}
-                </Link>
-                ))}
-            </li>
+            <Link
+              to={serviceProviderItem.path}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                isActive(serviceProviderItem.path)
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+              }`}
+            >
+              {serviceProviderItem.icon}
+              <span className="font-medium">{serviceProviderItem.name}</span>
+            </Link>
           )}
-        </ul>
-      </nav>
+        </nav>
 
-      {/* Logout Button */}
-      <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={handleLogout}
-          className="flex items-center p-3 pb-12 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-colors"
-        >
-          <MdLogout className="w-5 h-5 mr-3" />
-          Logout
-        </button>
+        {/* Logout */}
+        <div className="pt-4 border-t mt-6">
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 w-full transition-all duration-200 font-medium"
+          >
+            <MdLogout className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 };
 

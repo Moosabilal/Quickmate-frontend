@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Header from '../../components/admin/Header';
-import Sidebar from '../../components/admin/Sidebar';
 import { providerService } from '../../services/providerService';
 import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
@@ -86,10 +84,8 @@ const AdminProvidersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header />
 
         <main className="p-8">
           <div className="flex justify-between items-center mb-6">

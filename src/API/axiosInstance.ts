@@ -35,18 +35,19 @@ axiosInstance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      // try {
-      //   const refreshResponse = await authService.refreshToken();
-      //   if (refreshResponse.status === 200) {
-      //     return axiosInstance(originalRequest); 
-      //   }
-      // } catch (refreshError) {
-      //   console.error('🔁 Refresh token failed:', refreshError);
-      //   window.location.href = '/login';
-      // }
+      try {
+        console.log('the provlem is here', originalRequest)
+        const refreshResponse = await authService.refreshToken();
+        console.log('the token is refreashed', refreshResponse)
+        if (refreshResponse.status === 200) {
+          return axiosInstance(originalRequest); 
+        }
+      } catch (refreshError) {
+        console.error('🔁 Refresh token failed:', refreshError);
+        window.location.href = '/login';
+      }
     }
 
-    // Global error logging (optional)
     const status = error.response?.status;
     switch (status) {
       case 400:

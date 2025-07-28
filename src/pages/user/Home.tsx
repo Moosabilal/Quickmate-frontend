@@ -1,12 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Header from '../../components/user/Header';
 import { categoryService } from '../../services/categoryService'; 
 import { ICategoryResponse } from '../../types/category'; 
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { providerService } from '../../services/providerService';
 import { IFeaturedProviders } from '../../types/provider';
-import Footer from '../../components/user/Footer';
 
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
@@ -128,7 +126,6 @@ const Home = () => {
 
     return (
         <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
-            <Header />
 
             <main className="pt-20"> 
                 <section
@@ -278,7 +275,6 @@ const Home = () => {
                 </section>
             </main>
 
-            <Footer/>
         </div>
     );
 };

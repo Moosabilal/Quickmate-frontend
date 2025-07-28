@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Header from '../../components/user/Header';
-import Footer from '../../components/user/Footer';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../types/category';
@@ -142,7 +140,6 @@ const ServiceDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans text-gray-900 flex flex-col">
-      <Header />
       <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8 flex-grow">
         <button
           onClick={() => window.history.back()}
@@ -324,7 +321,6 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
       </main>
-      <Footer />
       <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} />

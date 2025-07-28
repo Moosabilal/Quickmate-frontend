@@ -38,11 +38,11 @@ const Sidebar = () => {
                                         alt="Sophia Clark"
                                         className="w-20 h-20 rounded-full border-4 border-white shadow-lg"
                                     />
-                                    {provider.status == "Pending" && (
+                                    {/* {provider.status == "Pending" && (
                                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                             <CheckCircle className="w-4 h-4 text-white" />
                                         </div>
-                                    )}
+                                    )} */}
                                 </div>
                                 <h3 className="font-semibold text-slate-800 mt-4">{provider.fullName?.split(' ')[0]}</h3>
                                 <p className="text-sm text-slate-500">Service Provider</p>

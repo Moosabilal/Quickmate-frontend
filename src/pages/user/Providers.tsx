@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IFeaturedProviders } from '../../types/provider';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import Header from '../../components/user/Header';
 import Pagination from '../../components/user/Pagination';
-import Footer from '../../components/user/Footer';
 
 
 const ProvidersPage: React.FC = () => {
@@ -42,7 +40,6 @@ const ProvidersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 font-sans">
-      < Header />
 
       <main className="flex-grow container mx-auto px-4 py-8 pt-28">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">Find Your Perfect Service Provider</h1>
@@ -104,7 +101,6 @@ const ProvidersPage: React.FC = () => {
         onPageChange={setCurrentPage}  />
       </main>
 
-      <Footer />
     </div>
   );
 };

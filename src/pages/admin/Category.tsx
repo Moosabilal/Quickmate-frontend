@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/admin/Sidebar';
-import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
 import Pagination from '../../components/admin/Pagination';
@@ -136,9 +134,7 @@ const CategoryCommissionManagement = () => {
     if (isLoading) {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <Sidebar />
                 <div className="flex-1 flex flex-col items-center justify-center">
-                    <Header />
                     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
                     <p className="mt-4 text-xl">Loading data...</p>
                 </div>
@@ -149,9 +145,7 @@ const CategoryCommissionManagement = () => {
     if (error) {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <Sidebar />
                 <div className="flex-1 flex flex-col items-center justify-center">
-                    <Header />
                     <p className="text-xl text-red-500">Error: {error}</p>
                     <button
                         onClick={() => window.location.reload()}
@@ -170,10 +164,8 @@ const CategoryCommissionManagement = () => {
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <Sidebar />
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header />
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                     <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Category & Commission Management</h1>

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Sidebar from '../../components/admin/Sidebar';
-import Header from '../../components/admin/Header';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse } from '../../types/category';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -230,9 +228,7 @@ const CategoryForm: React.FC = () => {
     if (isDataLoading) {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <Sidebar />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
                             <div className="flex items-center justify-center h-64">
@@ -251,9 +247,7 @@ const CategoryForm: React.FC = () => {
     if (error) {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <Sidebar />
                 <div className="flex-1 flex flex-col items-center justify-center">
-                    <Header />
                     <p className="text-xl text-red-500">Error: {error}</p>
                     <button
                         onClick={() => navigate(backPath)}
@@ -269,10 +263,8 @@ const CategoryForm: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <Sidebar />
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header />
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                     <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">

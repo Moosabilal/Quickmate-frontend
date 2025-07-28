@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Header from '../../components/user/Header';
-import Footer from '../../components/user/Footer';
 import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
 
@@ -40,7 +38,6 @@ const AboutPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
-            <Header />
 
             <main className="flex-grow container mx-auto px-4 py-8">
                 <section className="bg-white p-8 rounded-lg shadow-md mb-8">
@@ -133,7 +130,6 @@ const AboutPage: React.FC = () => {
                 </section>
             </main>
 
-            <Footer />
         </div>
     );
 };

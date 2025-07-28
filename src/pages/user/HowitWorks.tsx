@@ -1,10 +1,8 @@
 import React from 'react';
-import Header from '../../components/user/Header';
 
 const HowItWorksPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
-     <Header />
 
       <main className="container mx-auto px-6 md:px-12 py-16">
         <section className="relative bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl p-8 md:p-16 mb-20 overflow-hidden shadow-lg">

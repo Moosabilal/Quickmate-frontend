@@ -13,6 +13,7 @@ import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
 import { IAddress } from '../../types/address';
 import { toast } from 'react-toastify';
+import Sidebar from '../../components/user/Sidebar';
 
 
 
@@ -187,10 +188,8 @@ const ProfileSetting: React.FC = () => {
     };
 
     return (
-        <div className="p-8">
+        <>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">Account</h1>
-
-            {/* Profile Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center md:items-start justify-between">
                 {isEditing ? (
                     <>
@@ -295,7 +294,6 @@ const ProfileSetting: React.FC = () => {
                 )}
             </div>
 
-            {/* Addresses Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Addresses</h2>
                 <div className="space-y-4">
@@ -443,7 +441,7 @@ const ProfileSetting: React.FC = () => {
                 setNewAddress={setCurrentAddress}
                 handleAddAddress={handleAddAddress}
             />
-        </div>
+        </>
     );
 };
 

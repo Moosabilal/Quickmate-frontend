@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Footer from '../../components/user/Footer';
-import Header from '../../components/user/Header';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
 import { ICategoryResponse } from '../../types/category';
@@ -90,7 +88,6 @@ const Booking_servicePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-      <Header />
 
       <main className="container mx-auto px-4 py-20 sm:px-6 lg:px-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
@@ -163,7 +160,6 @@ const Booking_servicePage: React.FC = () => {
 
       </main>
 
-      <Footer />
     </div>
   );
 };

@@ -16,10 +16,7 @@ import {
     Save,
     Upload
 } from 'lucide-react';
-import Header from '../../components/user/Header';
-import Sidebar from '../../components/provider/Sidebar';
 import { providerService } from '../../services/providerService';
-import { useParams } from 'react-router-dom';
 import { IProviderProfile } from '../../types/provider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -339,11 +336,9 @@ const ProviderProfile: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <Header />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <Sidebar />
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-6">
                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
                                 <div className="flex justify-between items-start">

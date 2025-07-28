@@ -4,8 +4,6 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch'; 
 import { logout } from '../../features/auth/authSlice'; 
 import ThemeToggle from '../../components/ThemeToggle';
-import Header from '../../components/admin/Header';
-import Sidebar from '../../components/admin/Sidebar';
 
 const dashboardStats = [
   { label: 'Total Users', value: '12,345', change: '+12%', color: 'text-green-500' },
@@ -33,10 +31,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
           <p className="text-gray-600 dark:text-gray-400 mb-6">Overview of key metrics and recent activities</p>

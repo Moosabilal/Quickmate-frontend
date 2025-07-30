@@ -1,23 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-    User,
-    Phone,
-    Mail,
-    MapPin,
-    Clock,
-    FileText,
-    Award,
-    CheckCircle,
-    XCircle,
-    Ban,
-    Eye,
-    Edit3,
-    X,
-    Save,
-    Upload
-} from 'lucide-react';
+import {User,Phone,Mail,MapPin,Clock,FileText,Award,CheckCircle,XCircle,Ban,Eye,Edit3,X,Save,Upload} from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile } from '../../types/provider';
+import { IProviderProfile } from '../../interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -760,17 +744,13 @@ const ProviderProfile: React.FC = () => {
                                 center={currentLocation ? [currentLocation.lat, currentLocation.lng] : mapCenter}
                                 zoom={currentLocation ? 10 : 5}
                                 className="h-full w-full rounded-b-lg"
-                                style={{ height: '100%', width: '100%' }}
                             >
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 />
                                 <LocationSelector onSelect={(lat, lng) => {
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        serviceLocation: { lat, lng }
-                                    }));
+                                    setFormData(prev => ({...prev, serviceLocation: { lat, lng }}));
                                     setIsMapOpen(false);
                                 }} />
                                 {currentLocation && (

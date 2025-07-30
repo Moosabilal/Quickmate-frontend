@@ -11,9 +11,8 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
-import { IAddress } from '../../types/address';
+import { IAddress } from '../../interface/IAddress';
 import { toast } from 'react-toastify';
-import Sidebar from '../../components/user/Sidebar';
 
 
 
@@ -62,7 +61,6 @@ const ProfileSetting: React.FC = () => {
     useEffect(() => {
         const fetchAddress = async () => {
             const address = await addressService.getAddress()
-            console.log('the respnse addres taken from backend', address)
             setAddressList(address)
         }
         fetchAddress()

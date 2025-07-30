@@ -1,5 +1,6 @@
 import axios from "axios";
 import axiosInstance from "../API/axiosInstance";
+import { FilterParams } from "../pages/user/ProviderPopupPage";
 
 const PROVIDER_URL = `/provider`;
 
@@ -60,10 +61,13 @@ export const providerService = {
     },
 
     updateProviderStatus: async (id: string, newStatus: string) => {
-        console.log('it snote goin',newStatus)
         const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, {newStatus})
-        console.log('the status response', response)
         return response.data
-    }
+    },
+
+    getserviceProvider: async (serviceId: string, filters: FilterParams) => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getFilteredServiceProvider`, {params: {serviceId, ...filters}})
+        return response.data
+    },
 
 }

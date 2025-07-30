@@ -86,7 +86,6 @@ const Sidebar = () => {
             </Link>
           ))}
 
-          {/* Provider-specific item */}
           {user?.role === 'ServiceProvider' && (
             <Link
               to={serviceProviderItem.path}
@@ -102,7 +101,6 @@ const Sidebar = () => {
           )}
         </nav>
 
-        {/* Logout */}
         <div className="pt-4 border-t mt-6">
           <button
             onClick={handleLogout}

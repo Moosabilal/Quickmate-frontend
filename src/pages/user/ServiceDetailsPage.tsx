@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ICategoryResponse } from '../../types/category';
+import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
-import { IBackendProvider } from '../../types/provider';
+import { IBackendProvider } from '../../interface/IProvider';
 import { toast } from 'react-toastify';
+import { bookingService } from '../../services/bookingService';
 
 
 
@@ -59,6 +60,9 @@ const ServiceDetailsPage: React.FC = () => {
     zip: '',
   });
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [instructions, setInstructions] = useState('');
 
   const navigate = useNavigate()
 
@@ -92,24 +96,56 @@ const ServiceDetailsPage: React.FC = () => {
     }
   };
 
-  const handleDateTimeConfirm = (date: string, time: string) => {
-    setSelectedDate(date);
-    setSelectedTime(time);
-    setDateTimePopup(false);
-  };
+  // const handleDateTimeConfirm = (date: string, time: string) => {
+  //   setSelectedDate(date);
+  //   setSelectedTime(time);
+  //   setDateTimePopup(false);
+  // };
 
   const handleAddressConfirm = (address: Address) => {
     setSelectedAddress(address);
     setAddressPopup(false);
   };
 
-  const timeSlots = Array.from({ length: 24 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 8;
-    const minute = i % 2 === 0 ? '00' : '30';
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}:${minute} ${period}`;
-  });
+  // const timeSlots = Array.from({ length: 24 }, (_, i) => {
+  //   const hour = Math.floor(i / 2) + 8;
+  //   const minute = i % 2 === 0 ? '00' : '30';
+  //   const period = hour >= 12 ? 'PM' : 'AM';
+  //   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  //   return `${displayHour}:${minute} ${period}`;
+  // });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAddress || !selectedProvider || !fullName || !phone) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    const bookingPayload = {
+      serviceId: serviceId!,
+      providerId: selectedProvider._id,
+      customerName: fullName,
+      phone: phone,
+      instructions: instructions,
+      addressId: selectedAddress.id,
+      // scheduledDate: selectedDate,
+      // scheduledTime: selectedTime,
+    };
+
+    try {
+      console.log('the backen d bookingsend', bookingPayload)
+      const res = await bookingService.createBooking(bookingPayload);
+      toast.success(res.message)
+      // toast.success("Booking confirmed!");
+      navigate('/');
+    } catch (err) {
+      console.error("Booking failed:", err);
+      toast.error("Failed to confirm booking. Please try again.");
+    }
+  };
+
 
 
 
@@ -170,7 +206,8 @@ const ServiceDetailsPage: React.FC = () => {
               <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
               <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at $ 150</p>
               <p className="text-gray-700 leading-relaxed text-lg mb-8">
-                {serviceDetails.description || 'No detailed description available.'}
+                {serviceDetails.description || 'No detailed description available.'}<br />
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </p>
             </div>
           </div>
@@ -178,7 +215,7 @@ const ServiceDetailsPage: React.FC = () => {
           <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">
             <h2 className="text-4xl font-extrabold text-indigo-800 mb-10 text-center">Book Your Service</h2>
             <form className="space-y-7">
-              <div>
+              {/* <div>
                 <label htmlFor="dateTime" className="block text-base font-semibold text-gray-700 mb-2">
                   Select Date and Time
                 </label>
@@ -204,7 +241,7 @@ const ServiceDetailsPage: React.FC = () => {
                   </svg>
                   {selectedDate && selectedTime ? `${selectedDate} at ${selectedTime}` : 'Choose Date & Time'}
                 </button>
-              </div>
+              </div> */}
 
               <div>
                 <label htmlFor="address" className="block text-base font-semibold text-gray-700 mb-2">
@@ -242,6 +279,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <input
                   type="text"
                   id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-lg"
                 />
@@ -254,6 +293,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <input
                   type="tel"
                   id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   placeholder="(123) 456 7890"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-lg"
                 />
@@ -266,6 +307,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <textarea
                   id="instructions"
                   rows={4}
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
                   placeholder="Any special requests or details about your home?"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none transition duration-200 text-lg"
                 />
@@ -294,7 +337,7 @@ const ServiceDetailsPage: React.FC = () => {
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                           <span>
-                            {selectedProvider.rating} • $500
+                            {selectedProvider.rating} • ${selectedProvider.price}
                           </span>
                         </div>
                       </div>
@@ -306,13 +349,12 @@ const ServiceDetailsPage: React.FC = () => {
               <div className="pt-6">
                 <button
                   type="submit"
-                  disabled={!selectedDate || !selectedTime || !selectedAddress || !selectedProvider}
-                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${!selectedDate || !selectedTime || !selectedAddress || !selectedProvider
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
+                  disabled={!selectedAddress || !selectedProvider}
+                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${!selectedAddress || !selectedProvider
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
                     }`}
-
-                    
+                  onClick={handleSubmit}
                 >
                   Confirm Booking
                 </button>
@@ -321,8 +363,8 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
       </main>
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} />
-      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
+      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} />
+      {/* <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} /> */}
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} />
     </div>
   );

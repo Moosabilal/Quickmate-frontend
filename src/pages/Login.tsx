@@ -6,6 +6,8 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login } from '../features/auth/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
 import { toast } from 'react-toastify';
+import { providerService } from '../services/providerService';
+import { updateProviderProfile } from '../features/provider/providerSlice';
 
 interface ValidationErrors {
     email?: string;
@@ -87,6 +89,10 @@ const Login = () => {
         try {
             const { user } = await authService.login(email.trim(), password);
             dispatch(login({ user}));
+            if(user.role === "ServiceProvider"){
+                const providerData = await providerService.getProvider()
+                dispatch(updateProviderProfile({ provider: providerData }))
+            }
             toast.success(`Welcome back, ${user.name}!`);
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';

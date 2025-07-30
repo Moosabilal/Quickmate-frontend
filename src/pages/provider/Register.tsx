@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
+import { ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
+import { MapPin } from 'lucide-react';
 
 interface FormData {
     fullName: string;
@@ -71,6 +72,7 @@ const ProviderRegistration: React.FC = () => {
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [services, setServices] = useState<{ value: string; label: string }[]>([]);
+    const [address, setAddress] = useState('')
     const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
     const navigate = useNavigate();
 
@@ -207,7 +209,7 @@ const ProviderRegistration: React.FC = () => {
             startTime: formData.startTime,
             endTime: formData.endTime,
         }));
-        data.append('averageChargeRange', formData.averageChargeRange);
+        data.append('price', formData.averageChargeRange);
         data.append('availableDays', JSON.stringify(formData.availableDays));
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
@@ -222,7 +224,7 @@ const ProviderRegistration: React.FC = () => {
             navigate(`/providerProfile/${provider.userId}`);
         } catch (error) {
             console.error('Error submitting form:', error);
-            alert('Something went wrong. Please try again.');
+            toast.error('Something went wrong. Please try again.');
         }
     };
 
@@ -240,6 +242,25 @@ const ProviderRegistration: React.FC = () => {
         };
         fetchData();
     }, []);
+
+    useEffect(() => {
+        const fetchAddress = async () => {
+            let location = formData.serviceLocation;
+
+            if (!location?.lat || !location?.lng) return;
+
+            try {
+                const locationData = await providerService.getState(location.lat, location.lng);
+                setFormData(prev => ({ ...prev, serviceArea: locationData.address.village || locationData.address.town || locationData.address.city || 'Unknown' }))
+                setAddress(locationData.address.village || locationData.address.town || locationData.address.city || 'Unknown');
+            } catch (err) {
+                console.error('Failed to fetch address:', err);
+                setAddress('Unknown');
+            }
+        };
+
+        fetchAddress();
+    }, [formData.serviceLocation]);
 
     const dayOptions = [
         { value: 'Monday', label: 'Monday' },
@@ -396,7 +417,11 @@ const ProviderRegistration: React.FC = () => {
 
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-semibold mb-2">
-                                    Service Location
+                                    <span className="flex items-center">
+                                        <MapPin className="w-4 h-4 mr-1" />
+                                        Service Location
+                                    </span>
+
                                 </label>
                                 <button
                                     type="button"
@@ -407,6 +432,9 @@ const ProviderRegistration: React.FC = () => {
                                         ? `Selected: (${formData.serviceLocation.lat.toFixed(4)}, ${formData.serviceLocation.lng.toFixed(4)})`
                                         : 'Select Location from Map'}
                                 </button>
+                                {address && (
+                                    <p className="mt-2 text-purple-800 text-sm font-semibold" >Area: {address}</p>
+                                )}
                                 {errors.serviceLocation && (
                                     <p className="text-red-500 text-xs mt-2 animate-pulse">
                                         {errors.serviceLocation}
@@ -414,7 +442,7 @@ const ProviderRegistration: React.FC = () => {
                                 )}
                             </div>
 
-                            {renderInputField("Service Area (District)", "serviceArea", "text", "Enter the district where you offer services")}
+                            {/* {renderInputField("Service Area (District)", "serviceArea", "text", "Enter the district where you offer services")} */}
                         </div>
 
                         <hr className="my-8 border-gray-200" />
@@ -470,7 +498,7 @@ const ProviderRegistration: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            {renderInputField("Average Charge Range", "averageChargeRange", "text", "Enter your average charge range (e.g., ₹500-₹1500)")}
+                            {renderInputField("Charge", "averageChargeRange", "number", "Enter your average charge range (e.g., ₹500)")}
                         </div>
 
                         <hr className="my-8 border-gray-200" />
@@ -508,7 +536,6 @@ const ProviderRegistration: React.FC = () => {
                 </div>
             </main>
 
-            {/* Map Modal */}
             {isMapOpen && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
@@ -520,7 +547,7 @@ const ProviderRegistration: React.FC = () => {
                             ×
                         </button>
 
-                        <MapContainer center={mapCenter} zoom={5} className="h-[400px] w-full rounded-b-lg">
+                        <MapContainer center={mapCenter} zoom={5} className="h-[400px] w-full rounded-b-lg " style={{ height: '100%', width: '100%' }}>
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <LocationSelector onSelect={(lat, lng) => {
                                 setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));

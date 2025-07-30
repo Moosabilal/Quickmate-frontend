@@ -1,9 +1,6 @@
-import { createBrowserRouter } from 'react-router-dom';
 import React, { lazy } from 'react'; 
-import CategoryDetailsPage from '../pages/admin/CategoryDetailsPage';
 import RegistrationOTPVerification from '../components/OtpVerification';
 import ForgotPasswordRequest from '../pages/ForgotPasswordRequest';
-import AdminProvidersPage from '../pages/admin/ProviderList';
 import ServicesPage from '../pages/user/Services';
 import ProviderPage from '../pages/user/Providers';
 import AboutPage from '../pages/user/About_us';
@@ -16,18 +13,14 @@ const Home = lazy(() => import('../pages/user/Home'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/user/Register'));
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
-const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
-const CategoryCommissionManagement = lazy(() => import('../pages/admin/Category'));
-const CategoryForm = lazy(() => import('../pages/admin/Add&EditCategory'));
 const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
 const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
-const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
-const Provider_profile = lazy(() => import('../pages/provider/ProfileSetingPage'))
 import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
+import BookingConfirmation from '../pages/user/bookingConfirmation';
 const userRoutes = [
   LayoutRoute(UserLayout, [
     { path: '/', element: <Home /> },
@@ -49,6 +42,8 @@ const userRoutes = [
       element: <ProtectedRoute roles={['Customer', 'ServiceProvider']} />,
       children: [
         { path: '/profile', element: <ProfileSettings /> },
+        { path: '/confirmationModel', element: <BookingConfirmation /> },
+
         { path: '/provider-registration', element: <ProviderRegistration /> },
 
       ],

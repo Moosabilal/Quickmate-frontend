@@ -1,11 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { categoryService } from '../../services/categoryService'; 
-import { ICategoryResponse } from '../../types/category'; 
+import { ICategoryResponse } from '../../interface/ICategory'; 
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { providerService } from '../../services/providerService';
-import { IFeaturedProviders } from '../../types/provider';
-
+import { IFeaturedProviders } from '../../interface/IProvider';
 const StarRating = ({ rating }: { rating: number }) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -69,7 +68,7 @@ const Home = () => {
                 setFeaturedProviders(response.providers)
                 
                 if(!categories){
-                    console.log('error in respoinse')
+                    console.log('error in response')
                 }
                 setFetchedCategories(categories);
 
@@ -178,7 +177,7 @@ const Home = () => {
                         <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Popular Services Near You</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                             {popularServices.map((service) => (
-                                <Link to={`/service/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
+                                <Link to={`/service-detailsPage/${service._id}`} key={service._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1">
                                     <img src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'} alt={service.name} className="w-full h-48 object-cover" />
                                     <div className="p-5">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{service.name}</h3>

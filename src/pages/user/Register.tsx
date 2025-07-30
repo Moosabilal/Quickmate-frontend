@@ -13,7 +13,6 @@ interface ValidationErrors {
     email?: string;
     password?: string;
     confirmPassword?: string;
-    role?: string;
 }
 
 interface FormTouched {
@@ -21,7 +20,6 @@ interface FormTouched {
     email: boolean;
     password: boolean;
     confirmPassword: boolean;
-    // role: boolean;
 }
 
 const Register = () => {
@@ -29,7 +27,6 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [role, setRole] = useState('Customer');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
@@ -38,7 +35,6 @@ const Register = () => {
         email: false,
         password: false,
         confirmPassword: false,
-        // role: false
     });
     
     const navigate = useNavigate();
@@ -111,24 +107,12 @@ const Register = () => {
         return undefined;
     };
 
-    // const validateRole = (role: string): string | undefined => {
-    //     const validRoles = ['Customer', 'ServiceProvider'];
-    //     if (!role) {
-    //         return 'Please select an account type';
-    //     }
-    //     if (!validRoles.includes(role)) {
-    //         return 'Please select a valid account type';
-    //     }
-    //     return undefined;
-    // };
-
     const validateAllFields = (): ValidationErrors => {
         return {
             name: validateName(name),
             email: validateEmail(email),
             password: validatePassword(password),
             confirmPassword: validateConfirmPassword(confirmPassword, password),
-            // role: validateRole(role)
         };
     };
 
@@ -152,9 +136,7 @@ const Register = () => {
             case 'confirmPassword':
                 errors.confirmPassword = validateConfirmPassword(confirmPassword, password);
                 break;
-            // case 'role':
-            //     errors.role = validateRole(role);
-            //     break;
+
         }
         setValidationErrors(errors);
     };
@@ -205,7 +187,6 @@ const Register = () => {
             email: true,
             password: true,
             confirmPassword: true,
-            // role: true
         });
 
         const errors = validateAllFields();
@@ -221,11 +202,8 @@ const Register = () => {
         setError('');
         
         try {
-            await authService.register(name.trim(), email.trim(), password, role);
+            await authService.register(name.trim(), email.trim(), password);
 
-            // if(role === "ServiceProvider"){
-            //     navigate('/provider-registration',{state: {email: email.trim()}})
-            // }else{
                 navigate('/verify-otp', {state: {email: email.trim()}});
 
             
@@ -271,7 +249,7 @@ const Register = () => {
                 </h2>
 
                 {error && (
-                    <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md relative mb-4" role="alert">
+                    <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md relative mb-4">
                         <span className="block sm:inline">{error}</span>
                     </div>
                 )}
@@ -296,7 +274,7 @@ const Register = () => {
                             aria-describedby={touched.name && validationErrors.name ? 'name-error' : undefined}
                         />
                         {touched.name && validationErrors.name && (
-                            <p id="name-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                            <p id="name-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.name}
                             </p>
                         )}
@@ -321,7 +299,7 @@ const Register = () => {
                             aria-describedby={touched.email && validationErrors.email ? 'email-error' : undefined}
                         />
                         {touched.email && validationErrors.email && (
-                            <p id="email-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                            <p id="email-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.email}
                             </p>
                         )}
@@ -346,7 +324,7 @@ const Register = () => {
                             aria-describedby={touched.password && validationErrors.password ? 'password-error' : 'password-help'}
                         />
                         {touched.password && validationErrors.password && (
-                            <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                            <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.password}
                             </p>
                         )}
@@ -376,45 +354,12 @@ const Register = () => {
                             aria-describedby={touched.confirmPassword && validationErrors.confirmPassword ? 'confirm-password-error' : undefined}
                         />
                         {touched.confirmPassword && validationErrors.confirmPassword && (
-                            <p id="confirm-password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                            <p id="confirm-password-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.confirmPassword}
                             </p>
                         )}
                     </div>
 
-                    {/* <div>
-                        <label
-                            htmlFor="role"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >
-                            Account Type <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                            <select
-                                id="role"
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
-                                onBlur={() => handleBlur('role')}
-                                className={`${getInputClasses('role')} appearance-none pr-8`}
-                                aria-invalid={touched.role && validationErrors.role ? 'true' : 'false'}
-                                aria-describedby={touched.role && validationErrors.role ? 'role-error' : undefined}
-                            >
-                                <option value="">Select account type</option>
-                                <option value="Customer">I need services (Customer)</option>
-                                <option value="ServiceProvider">I offer services (Service Provider)</option>
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-                        {touched.role && validationErrors.role && (
-                            <p id="role-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-                                {validationErrors.role}
-                            </p>
-                        )}
-                    </div> */}
 
                     <button
                         type="submit"

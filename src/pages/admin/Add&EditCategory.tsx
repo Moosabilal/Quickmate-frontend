@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryResponse } from '../../types/category';
+import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
 interface ICategoryFormData {
@@ -229,7 +229,6 @@ const CategoryForm: React.FC = () => {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
                             <div className="flex items-center justify-center h-64">
                                 <div className="flex flex-col items-center">
@@ -238,7 +237,6 @@ const CategoryForm: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </main>
                 </div>
             </div>
         );
@@ -266,7 +264,7 @@ const CategoryForm: React.FC = () => {
 
             <div className="flex-1 flex flex-col overflow-hidden">
 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
+                <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                     <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                             {pageTitle}
@@ -521,7 +519,7 @@ const CategoryForm: React.FC = () => {
                             </div>
                         </form>
                     </div>
-                </main>
+                </div>
             </div>
         </div>
     );

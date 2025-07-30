@@ -27,7 +27,7 @@ const App = () => {
             dispatch(updateProviderProfile({ provider: providerData }))
           }
         } catch (error) {
-          console.error('Failed to fetch user data:', error);
+          console.error('Failed to fetch user/provider data:', error);
         }
       };
 

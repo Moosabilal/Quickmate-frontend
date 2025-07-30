@@ -1,3 +1,4 @@
+
 export interface IFeaturedProviders {
   id: string;
   userId: string;
@@ -45,8 +46,9 @@ export interface IBackendProvider {
     endTime: string;
   };
   availableDays: string[];
-  status: 'Active' | 'Suspended' | 'Pending' | 'Rejected';
+  status: string;
   earnings: number;
+  price: number;
   totalBookings: number;
   rating?: number;
   reviews?: number;

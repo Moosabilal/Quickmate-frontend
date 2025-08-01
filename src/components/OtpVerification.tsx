@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { authService } from '../services/authService'; 
+import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
-import ThemeToggle from '../components/ThemeToggle'; 
+import ThemeToggle from '../components/ThemeToggle';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { login } from '../features/auth/authSlice';
+import { login, updateProfile } from '../features/auth/authSlice';
+import { providerService } from '../services/providerService';
+import { updateProviderProfile } from '../features/provider/providerSlice';
 
 const OTP_RESEND_TIMEOUT_SECONDS = 60;
 
@@ -13,7 +15,7 @@ const RegistrationOTPVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const registrationEmail = (location.state as { email: string })?.email;
+  const { email: registrationEmail, role } = location.state as { email: string, role: string };
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,8 +23,10 @@ const RegistrationOTPVerification = () => {
   const [timer, setTimer] = useState(OTP_RESEND_TIMEOUT_SECONDS);
   const [canResend, setCanResend] = useState(false);
 
+  const dispatch = useAppDispatch()
 
-    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!registrationEmail) {
@@ -31,14 +35,14 @@ const RegistrationOTPVerification = () => {
       return;
     }
 
-    setCanResend(false); 
+    setCanResend(false);
     setTimer(OTP_RESEND_TIMEOUT_SECONDS);
 
     timerRef.current = setInterval(() => {
       setTimer((prevTimer) => {
         if (prevTimer <= 1) {
           clearInterval(timerRef.current!);
-          setCanResend(true); 
+          setCanResend(true);
           return 0;
         }
         return prevTimer - 1;
@@ -47,10 +51,10 @@ const RegistrationOTPVerification = () => {
 
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current); 
+        clearInterval(timerRef.current);
       }
     };
-  }, [registrationEmail, navigate]); 
+  }, [registrationEmail, navigate]);
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +69,7 @@ const RegistrationOTPVerification = () => {
       return;
     }
 
-    if (!otp.trim() || otp.length !== 6) { 
+    if (!otp.trim() || otp.length !== 6) {
       setError('Please enter a valid 6-digit OTP.');
       toast.error('Please enter a valid 6-digit OTP.');
       setLoading(false);
@@ -73,9 +77,19 @@ const RegistrationOTPVerification = () => {
     }
 
     try {
-      await authService.verifyRegistrationOtp(registrationEmail, otp);
-      toast.success('Account verified successfully! You can now log in.');
-      navigate('/login', { replace: true }); 
+      if (role === "Customer") {
+        await authService.verifyRegistrationOtp(registrationEmail, otp);
+        toast.success('Account verified successfully! You can now log in.');
+        navigate('/login', { replace: true });
+      } else {
+        const {user, provider, message} = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+        console.log('the response', user, provider, message)
+        dispatch(updateProfile({user}))
+        dispatch(updateProviderProfile({provider}))
+        toast.success(message);
+        navigate(`/providerProfile/${user.id}`, { replace: true });
+      }
+
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'OTP verification failed. Please try again.';
       setError(errorMessage);
@@ -98,7 +112,11 @@ const RegistrationOTPVerification = () => {
     }
 
     try {
-      await authService.resendRegistrationOtp(registrationEmail);
+      if (role === "Customer") {
+        await authService.resendRegistrationOtp(registrationEmail);
+      } else {
+        await providerService.resendRegistrationOtp(registrationEmail);
+      }
       toast.info('New OTP sent! Please check your inbox/spam folder.');
       setCanResend(false);
       setTimer(OTP_RESEND_TIMEOUT_SECONDS);
@@ -174,14 +192,14 @@ const RegistrationOTPVerification = () => {
             </label>
             <input
               id="otp"
-              type="text" 
+              type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
               className="mt-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition duration-200"
               placeholder="______"
               maxLength={6}
               disabled={loading}
-              autoComplete="one-time-code" 
+              autoComplete="one-time-code"
             />
           </div>
 

@@ -36,7 +36,7 @@ const Register = () => {
         password: false,
         confirmPassword: false,
     });
-    
+
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
@@ -118,7 +118,7 @@ const Register = () => {
 
     const handleBlur = (field: keyof FormTouched) => {
         setTouched(prev => ({ ...prev, [field]: true }));
-        
+
         const errors = { ...validationErrors };
         switch (field) {
             case 'name':
@@ -200,15 +200,15 @@ const Register = () => {
 
         setLoading(true);
         setError('');
-        
+
         try {
             await authService.register(name.trim(), email.trim(), password);
 
-                navigate('/verify-otp', {state: {email: email.trim()}});
+            navigate('/verify-otp', { state: { email: email.trim(), role: "Customer" } });
 
-            
 
-            
+
+
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
             toast.error(errorMessage);
@@ -220,11 +220,11 @@ const Register = () => {
     const getInputClasses = (field: keyof ValidationErrors) => {
         const baseClasses = "mt-1 w-full p-3 border rounded-lg transition duration-200 focus:outline-none focus:ring-2";
         const hasError = touched[field] && validationErrors[field];
-        
+
         if (hasError) {
             return `${baseClasses} border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-gray-100 focus:ring-red-500 focus:border-red-500`;
         }
-        
+
         return `${baseClasses} border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-transparent`;
     };
 
@@ -379,23 +379,23 @@ const Register = () => {
                         )}
                     </button>
                     <div className="w-full flex justify-center">
-                    <GoogleLogin 
-                        onSuccess={async (credentialResponse) => {
-                            const idToken = credentialResponse.credential;
-                            if (!idToken) return toast.error('No ID token received from Google');
-                    
-                            try {
-                                const res = await authService.googleAuthLogin(idToken);
-                                dispatch(login({ user: res.data.user}));
-                                toast.success(`Welcome, ${res.data.user.name}`);
-                                navigate('/');
-                            } catch (error: any) {
-                                console.error(error);
-                                toast.error('Google login failed. Try again.');
-                            }
-                        }}
-                        onError={() => toast.error('Google login failed')}
-                    />
+                        <GoogleLogin
+                            onSuccess={async (credentialResponse) => {
+                                const idToken = credentialResponse.credential;
+                                if (!idToken) return toast.error('No ID token received from Google');
+
+                                try {
+                                    const res = await authService.googleAuthLogin(idToken);
+                                    dispatch(login({ user: res.data.user }));
+                                    toast.success(`Welcome, ${res.data.user.name}`);
+                                    navigate('/');
+                                } catch (error: any) {
+                                    console.error(error);
+                                    toast.error('Google login failed. Try again.');
+                                }
+                            }}
+                            onError={() => toast.error('Google login failed')}
+                        />
                     </div>
                 </form>
 

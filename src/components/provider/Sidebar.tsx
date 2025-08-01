@@ -2,7 +2,7 @@ import { Calendar, User, Settings, Star, DollarSign, CheckCircle } from 'lucide-
 import React from 'react'
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { IProviderProfile } from '../../types/provider';
+import { IProviderProfile } from '../../interface/IProvider';
 
 interface ProfileData {
     name: string;

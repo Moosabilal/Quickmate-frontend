@@ -422,10 +422,10 @@ const ProviderProfile: React.FC = () => {
                                 <section>
                                     <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
                                         <Award className="w-6 h-6 mr-3 text-blue-600" />
-                                        Experience & Service Area
+                                        Service Area
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                                        {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
                                             <label className="text-sm font-medium text-green-600 mb-2 block">Years of Experience</label>
                                             {isEditing ? (
                                                 <input
@@ -438,7 +438,7 @@ const ProviderProfile: React.FC = () => {
                                             ) : (
                                                 <p className="text-3xl font-bold text-green-700">{providerDetails?.experience} years</p>
                                             )}
-                                        </div>
+                                        </div> */}
                                         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
                                             <label className="text-sm font-medium text-purple-600 mb-2 block flex items-center">
                                                 <MapPin className="w-4 h-4 mr-1" />

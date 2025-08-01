@@ -17,19 +17,16 @@ interface FormData {
     fullName: string;
     phoneNumber: string;
     email: string;
-    category: string;
-    servicesOffered: string;
-    serviceName: string;
-    serviceArea: string;
+    serviceArea: string | null; //change to address
     serviceLocation: { lat: number; lng: number } | null;
-    experience: number | '';
+    // experience: number | '';
     availableDays: string[];
     startTime: string;
     endTime: string;
-    averageChargeRange: string;
+    // averageChargeRange: string;
     aadhaarIdProof: File | null;
     profilePhoto: File | null;
-    businessCertifications: File | null;
+    // businessCertifications: File | null;
     agreeTerms: boolean;
 }
 
@@ -52,25 +49,25 @@ const ProviderRegistration: React.FC = () => {
         fullName: '',
         phoneNumber: '',
         email: '',
-        category: '',
-        servicesOffered: '',
-        serviceName: '',
+        // category: '',
+        // servicesOffered: '',
+        // serviceName: '',
         serviceArea: '',
         serviceLocation: null,
-        experience: '',
+        // experience: '',
         availableDays: [],
         startTime: '',
         endTime: '',
-        averageChargeRange: '',
+        // averageChargeRange: '',
         aadhaarIdProof: null,
         profilePhoto: null,
-        businessCertifications: null,
+        // businessCertifications: null,
         agreeTerms: false,
     });
 
     const [categories, setCategories] = useState<CategoryTableDisplay[]>([]);
     const [isMapOpen, setIsMapOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [services, setServices] = useState<{ value: string; label: string }[]>([]);
     const [address, setAddress] = useState('')
     const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -83,17 +80,17 @@ const ProviderRegistration: React.FC = () => {
     const dispatch = useAppDispatch()
 
 
-    useEffect(() => {
-        const selectedCategory = categories.find(cat => cat._id === formData.category);
-        if (selectedCategory && selectedCategory.subCategories) {
-            const mappedServices = selectedCategory.subCategories
-                .filter(sub => sub.parentId === selectedCategory._id)
-                .map(sub => ({ value: sub._id, label: sub.name }));
-            setServices(mappedServices);
-        } else {
-            setServices([]);
-        }
-    }, [formData.category, categories]);
+    // useEffect(() => {
+    //     const selectedCategory = categories.find(cat => cat._id === formData.category);
+    //     if (selectedCategory && selectedCategory.subCategories) {
+    //         const mappedServices = selectedCategory.subCategories
+    //             .filter(sub => sub.parentId === selectedCategory._id)
+    //             .map(sub => ({ value: sub._id, label: sub.name }));
+    //         setServices(mappedServices);
+    //     } else {
+    //         setServices([]);
+    //     }
+    // }, [formData.category, categories]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type } = e.target;
@@ -157,26 +154,26 @@ const ProviderRegistration: React.FC = () => {
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid.';
         }
-        if (!formData.category) newErrors.category = 'Category is required.';
-        if (!formData.servicesOffered) newErrors.servicesOffered = 'Service is required.';
-        if (!formData.serviceArea.trim()) newErrors.serviceArea = 'Service Area (district) is required.';
+        // if (!formData.category) newErrors.category = 'Category is required.';
+        // if (!formData.servicesOffered) newErrors.servicesOffered = 'Service is required.';
+        // if (!formData.serviceArea.trim()) newErrors.serviceArea = 'Service Area (district) is required.';
         if (!formData.serviceLocation) {
             newErrors.serviceLocation = 'Service location is required.';
         }
-        if (formData.experience === '') {
-            newErrors.experience = 'Experience is required.';
-        } else if (formData.experience < 0) {
-            newErrors.experience = 'Experience cannot be negative.';
-        }
+        // if (formData.experience === '') {
+        //     newErrors.experience = 'Experience is required.';
+        // } else if (formData.experience < 0) {
+        //     newErrors.experience = 'Experience cannot be negative.';
+        // }
         if (formData.availableDays.length === 0) newErrors.availableDays = 'Select at least one available day.';
         if (!formData.startTime) newErrors.startTime = 'Start Time is required.';
         if (!formData.endTime) newErrors.endTime = 'End Time is required.';
         if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
             newErrors.endTime = 'End Time must be after Start Time.';
         }
-        if (!formData.averageChargeRange.trim()) newErrors.averageChargeRange = 'Average Charge Range is required.';
+        // if (!formData.averageChargeRange.trim()) newErrors.averageChargeRange = 'Average Charge Range is required.';
         if (!formData.aadhaarIdProof) newErrors.aadhaarIdProof = 'Aadhaar/ID Proof is required.';
-        if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile Photo is required.';
+        // if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile Photo is required.';
         if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the Terms & Conditions.';
 
         setErrors(newErrors);
@@ -194,54 +191,63 @@ const ProviderRegistration: React.FC = () => {
         data.append('fullName', formData.fullName);
         data.append('phoneNumber', formData.phoneNumber);
         data.append('email', formData.email);
-        data.append('categoryId', formData.category);
-        data.append('serviceId', formData.servicesOffered);
-        data.append('serviceName', formData.serviceName);
-        data.append('serviceArea', formData.serviceArea);
+        // data.append('categoryId', formData.category);
+        // data.append('serviceId', formData.servicesOffered);
+        // data.append('serviceName', formData.serviceName);
+        data.append('serviceArea', formData.serviceArea || 'unknown');
 
         if (formData.serviceLocation) {
             const { lat, lng } = formData.serviceLocation;
             data.append('serviceLocation', `${lat},${lng}`);
         }
 
-        data.append('experience', String(formData.experience));
+        // data.append('experience', String(formData.experience));
         data.append('timeSlot', JSON.stringify({
             startTime: formData.startTime,
             endTime: formData.endTime,
         }));
-        data.append('price', formData.averageChargeRange);
+        // data.append('price', formData.averageChargeRange);
         data.append('availableDays', JSON.stringify(formData.availableDays));
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
-        if (formData.businessCertifications) data.append('businessCertifications', formData.businessCertifications);
+        // if (formData.businessCertifications) data.append('businessCertifications', formData.businessCertifications);
 
         try {
-            const { provider, message } = await providerService.register(data);
-            dispatch(updateProviderProfile({ provider }))
+            for(const [key, value] of data.entries()){
+                console.log(`${key} : ${value}`)
+            }
+            setIsLoading(true)
+            const res = await providerService.register(data);
+            navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
-            toast.success(message)
-            navigate(`/providerProfile/${provider.userId}`);
+            // dispatch(updateProviderProfile({ provider }))
+
+
+            toast.success(res.message)
+            // navigate(`/providerProfile/${provider.userId}`);
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false)
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            try {
-                const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
-                setCategories(fetchedCategories);
-            } catch (error: any) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         setIsLoading(true);
+    //         try {
+    //             const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
+    //             setCategories(fetchedCategories);
+    //         } catch (error: any) {
+    //             console.error("Error fetching data:", error);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+    //     fetchData();
+    // }, []);
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -303,34 +309,34 @@ const ProviderRegistration: React.FC = () => {
         </div>
     );
 
-    const renderCustomSelectField = (label: string, id: keyof FormData, options: { value: string; label: string }[], placeholder?: string) => (
-        <div className="mb-6">
-            <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
-                {label}
-            </label>
-            <div className="relative">
-                <select
-                    id={id as string}
-                    name={id as string}
-                    value={formData[id] as string}
-                    onChange={handleChange}
-                    className={`block appearance-none w-full bg-white border ${errors[id] ? 'border-red-500' : 'border-gray-200'} text-gray-700 py-3 px-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
-                >
-                    {placeholder && <option value="" disabled>{placeholder}</option>}
-                    {options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col items-center justify-center px-3 text-gray-500">
-                    <ChevronUpIcon className="h-4 w-4 -mb-1" />
-                    <ChevronDownIcon className="h-4 w-4 -mt-1" />
-                </div>
-            </div>
-            {errors[id] && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors[id]}</p>}
-        </div>
-    );
+    // const renderCustomSelectField = (label: string, id: keyof FormData, options: { value: string; label: string }[], placeholder?: string) => (
+    //     <div className="mb-6">
+    //         <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
+    //             {label}
+    //         </label>
+    //         <div className="relative">
+    //             <select
+    //                 id={id as string}
+    //                 name={id as string}
+    //                 value={formData[id] as string}
+    //                 onChange={handleChange}
+    //                 className={`block appearance-none w-full bg-white border ${errors[id] ? 'border-red-500' : 'border-gray-200'} text-gray-700 py-3 px-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
+    //             >
+    //                 {placeholder && <option value="" disabled>{placeholder}</option>}
+    //                 {options.map((option) => (
+    //                     <option key={option.value} value={option.value}>
+    //                         {option.label}
+    //                     </option>
+    //                 ))}
+    //             </select>
+    //             <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col items-center justify-center px-3 text-gray-500">
+    //                 <ChevronUpIcon className="h-4 w-4 -mb-1" />
+    //                 <ChevronDownIcon className="h-4 w-4 -mt-1" />
+    //             </div>
+    //         </div>
+    //         {errors[id] && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors[id]}</p>}
+    //     </div>
+    // );
 
     const renderFileUploadField = (label: string, subLabel: string, id: keyof FormData, fileRef: React.RefObject<HTMLInputElement | null>, optional?: boolean) => (
         <div className="mb-6">
@@ -412,8 +418,8 @@ const ProviderRegistration: React.FC = () => {
 
                         <div className="space-y-6">
                             <h2 className="text-xl font-semibold text-gray-700">Service Details</h2>
-                            {renderCustomSelectField("Select Category", "category", categories.map(cat => ({ value: cat._id, label: cat.name })), "Select your main service category")}
-                            {renderCustomSelectField("Select Services Offered", "servicesOffered", services, "Select your service")}
+                            {/* {renderCustomSelectField("Select Category", "category", categories.map(cat => ({ value: cat._id, label: cat.name })), "Select your main service category")}
+                            {renderCustomSelectField("Select Services Offered", "servicesOffered", services, "Select your service")} */}
 
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-semibold mb-2">
@@ -448,8 +454,8 @@ const ProviderRegistration: React.FC = () => {
                         <hr className="my-8 border-gray-200" />
 
                         <div className="space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-700">Professional Details</h2>
-                            {renderInputField("Experience (Years)", "experience", "number", "Enter your experience in years", undefined, 0)}
+                            {/* <h2 className="text-xl font-semibold text-gray-700">Professional Details</h2>
+                            {renderInputField("Experience (Years)", "experience", "number", "Enter your experience in years", undefined, 0)} */}
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-semibold mb-2">Available Days</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -498,16 +504,16 @@ const ProviderRegistration: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            {renderInputField("Charge", "averageChargeRange", "number", "Enter your average charge range (e.g., ₹500)")}
+                            {/* {renderInputField("Charge", "averageChargeRange", "number", "Enter your average charge range (e.g., ₹500)")} */}
                         </div>
 
                         <hr className="my-8 border-gray-200" />
 
                         <div className="space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-700">Documents</h2>
+                            {/* <h2 className="text-xl font-semibold text-gray-700">Documents</h2> */}
                             {renderFileUploadField("Aadhaar/ID Proof", "Upload your ID proof", "aadhaarIdProof", aadhaarIdProofRef)}
-                            {renderFileUploadField("Profile Photo", "Upload your profile photo", "profilePhoto", profilePhotoRef)}
-                            {renderFileUploadField("Business Certifications", "Upload any business certifications", "businessCertifications", businessCertificationsRef, true)}
+                            {renderFileUploadField("Profile Photo(Optional)", "Upload your profile photo", "profilePhoto", profilePhotoRef)}
+                            {/* {renderFileUploadField("Business Certifications", "Upload any business certifications", "businessCertifications", businessCertificationsRef, true)} */}
                         </div>
 
                         <div className="mt-10 space-y-6">

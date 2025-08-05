@@ -31,6 +31,12 @@ export const providerService = {
         return response.data
     },
 
+    getServicesForAddpage: async () => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getServicesForAddPage`)
+        console.log('the respnse in frontend', response)
+        return response.data
+    },
+
     getProvidersWithAllDetails: async () => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getAllProviders`)
         return response.data

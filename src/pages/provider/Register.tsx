@@ -17,16 +17,13 @@ interface FormData {
     fullName: string;
     phoneNumber: string;
     email: string;
-    serviceArea: string | null; //change to address
+    serviceArea: string | null; 
     serviceLocation: { lat: number; lng: number } | null;
-    // experience: number | '';
     availableDays: string[];
     startTime: string;
     endTime: string;
-    // averageChargeRange: string;
     aadhaarIdProof: File | null;
     profilePhoto: File | null;
-    // businessCertifications: File | null;
     agreeTerms: boolean;
 }
 
@@ -49,19 +46,13 @@ const ProviderRegistration: React.FC = () => {
         fullName: '',
         phoneNumber: '',
         email: '',
-        // category: '',
-        // servicesOffered: '',
-        // serviceName: '',
         serviceArea: '',
         serviceLocation: null,
-        // experience: '',
         availableDays: [],
         startTime: '',
         endTime: '',
-        // averageChargeRange: '',
         aadhaarIdProof: null,
         profilePhoto: null,
-        // businessCertifications: null,
         agreeTerms: false,
     });
 
@@ -75,7 +66,6 @@ const ProviderRegistration: React.FC = () => {
 
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
     const profilePhotoRef = useRef<HTMLInputElement>(null);
-    const businessCertificationsRef = useRef<HTMLInputElement>(null);
 
     const dispatch = useAppDispatch()
 
@@ -211,7 +201,6 @@ const ProviderRegistration: React.FC = () => {
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
-        // if (formData.businessCertifications) data.append('businessCertifications', formData.businessCertifications);
 
         try {
             for(const [key, value] of data.entries()){
@@ -513,7 +502,6 @@ const ProviderRegistration: React.FC = () => {
                             {/* <h2 className="text-xl font-semibold text-gray-700">Documents</h2> */}
                             {renderFileUploadField("Aadhaar/ID Proof", "Upload your ID proof", "aadhaarIdProof", aadhaarIdProofRef)}
                             {renderFileUploadField("Profile Photo(Optional)", "Upload your profile photo", "profilePhoto", profilePhotoRef)}
-                            {/* {renderFileUploadField("Business Certifications", "Upload any business certifications", "businessCertifications", businessCertificationsRef, true)} */}
                         </div>
 
                         <div className="mt-10 space-y-6">

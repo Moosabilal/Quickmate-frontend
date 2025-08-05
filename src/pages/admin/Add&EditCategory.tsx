@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryResponse } from '../../interface/ICategory';
+import { CommissionTypes, ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { toast } from 'react-toastify'
 
 interface ICategoryFormData {
     name: string;
     description: string;
     status: boolean;
-    commissionType: 'percentage' | 'flatFee' | 'none';
+    commissionType: CommissionTypes;
     commissionValue: number | '';
     commissionStatus: boolean;
     icon: File | string | null;
@@ -26,7 +27,7 @@ const CategoryForm: React.FC = () => {
         name: '',
         description: '',
         status: true,
-        commissionType: 'none',
+        commissionType: CommissionTypes.NONE,
         commissionValue: '',
         commissionStatus: true,
         icon: null,
@@ -55,7 +56,7 @@ const CategoryForm: React.FC = () => {
                         name: response.name,
                         description: response.description || '',
                         status: response.status ?? true,
-                        commissionType: response.commissionType as 'percentage' | 'flatFee' | 'none' || 'none',
+                        commissionType: response.commissionType as CommissionTypes || 'None',
                         commissionValue: response.commissionValue || '',
                         commissionStatus: response.commissionStatus ?? true,
                         icon: response.iconUrl || null,
@@ -73,7 +74,7 @@ const CategoryForm: React.FC = () => {
                     name: '',
                     description: '',
                     status: true,
-                    commissionType: 'none',
+                    commissionType: CommissionTypes.NONE,
                     commissionValue: '',
                     commissionStatus: true,
                     icon: null,
@@ -94,8 +95,14 @@ const CategoryForm: React.FC = () => {
             errors.name = "Name must be at least 3 characters.";
         }
 
+        if (!formData.description){
+            errors.description = "Description is needed"
+        } else if (formData.description.length < 5) {
+            errors.description = "Description must be at least 5 characters."
+        }
+
         if (
-            formData.commissionType !== 'none' &&
+            formData.commissionType !== 'None' &&
             (formData.commissionValue === '' || Number(formData.commissionValue) <= 0)
         ) {
             errors.commissionValue = "Commission value must be a positive number.";
@@ -170,7 +177,7 @@ const CategoryForm: React.FC = () => {
             data.append('parentId', parentId);
         }
         data.append('commissionType', formData.commissionType);
-        if (formData.commissionType !== 'none') {
+        if (formData.commissionType !== 'None') {
             data.append('commissionValue', String(formData.commissionValue));
             data.append('commissionStatus', String(formData.commissionStatus));
         } else {
@@ -188,10 +195,10 @@ const CategoryForm: React.FC = () => {
         try {
             if (isEditMode && currentEntityId) {
                 await categoryService.updateCategory(currentEntityId, data);
-                alert(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
+                toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
             } else {
                 const response = await categoryService.createCategory(data);
-                alert(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
+                toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
 
                 const newEntityId = response?._id;
                 if (newEntityId && submitAction === 'addSubcategory' && !isSubCategoryMode) {
@@ -317,6 +324,9 @@ const CategoryForm: React.FC = () => {
                                             placeholder="Briefly describe this category"
                                             disabled={isLoading}
                                         ></textarea>
+                                        {formErrors.description && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -388,8 +398,8 @@ const CategoryForm: React.FC = () => {
                                                 type="radio"
                                                 className="form-radio text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400"
                                                 name="commissionType"
-                                                value="none"
-                                                checked={formData.commissionType === 'none'}
+                                                value="None"
+                                                checked={formData.commissionType === 'None'}
                                                 onChange={handleChange}
                                                 disabled={isLoading}
                                             />
@@ -400,8 +410,8 @@ const CategoryForm: React.FC = () => {
                                                 type="radio"
                                                 className="form-radio text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400"
                                                 name="commissionType"
-                                                value="percentage"
-                                                checked={formData.commissionType === 'percentage'}
+                                                value="Percentage"
+                                                checked={formData.commissionType === 'Percentage'}
                                                 onChange={handleChange}
                                                 disabled={isLoading}
                                             />
@@ -412,8 +422,8 @@ const CategoryForm: React.FC = () => {
                                                 type="radio"
                                                 className="form-radio text-blue-600 focus:ring-blue-500 focus:ring-4 dark:focus:ring-blue-400"
                                                 name="commissionType"
-                                                value="flatFee"
-                                                checked={formData.commissionType === 'flatFee'}
+                                                value="FlatFee"
+                                                checked={formData.commissionType === 'FlatFee'}
                                                 onChange={handleChange}
                                                 disabled={isLoading}
                                             />
@@ -422,11 +432,11 @@ const CategoryForm: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {formData.commissionType !== 'none' && (
+                                {formData.commissionType !== 'None' && (
                                     <>
                                         <div>
                                             <label htmlFor="commissionValue" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Commission Value ({formData.commissionType === 'percentage' ? '%' : '₹'})
+                                                Commission Value ({formData.commissionType === 'Percentage' ? '%' : '₹'})
                                             </label>
                                             <input
                                                 type="number"
@@ -435,9 +445,9 @@ const CategoryForm: React.FC = () => {
                                                 value={formData.commissionValue}
                                                 onChange={handleChange}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                                                placeholder={formData.commissionType === 'percentage' ? 'e.g., 10' : 'e.g., 50'}
+                                                placeholder={formData.commissionType === 'Percentage' ? 'e.g., 10' : 'e.g., 50'}
                                                 min="0"
-                                                step={formData.commissionType === 'percentage' ? "0.01" : "1"}
+                                                step={formData.commissionType === 'Percentage' ? "0.01" : "1"}
                                                 disabled={isLoading}
                                             />
                                             {formErrors.commissionValue && (

@@ -36,9 +36,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        console.log('the provlem is here', originalRequest)
         const refreshResponse = await authService.refreshToken();
-        console.log('the token is refreashed', refreshResponse)
         if (refreshResponse.status === 200) {
           return axiosInstance(originalRequest); 
         }

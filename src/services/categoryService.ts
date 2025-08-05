@@ -9,9 +9,13 @@ export const categoryService = {
 
     async createCategory(formData: FormData): Promise<ICategoryResponse> {
         try {
+            console.log('createding category', formData)
+            for(const [key, value] of formData.entries()){
+                console.log(`${key} : ${ value}`)
+            }
             const response = await axiosInstance.post(CATEGORIES_PATH, formData);
             return response.data.category || response.data;
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error creating category/subcategory in service:", error);
             throw error;
         }
@@ -41,12 +45,8 @@ export const categoryService = {
     },
 
 
-    async getAllCategories(parentId?: string): Promise<ICategoryResponse[]> { 
+    async getAllCategories(): Promise<ICategoryResponse[]> { 
         try {
-            const params: { parentId?: string } = {}; 
-            if (parentId) { 
-                params.parentId = parentId; 
-            }
             const response = await axiosInstance.get(CATEGORIES_PATH);
             return response.data.categories || response.data;
         } catch (error: any) {

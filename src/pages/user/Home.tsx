@@ -47,7 +47,6 @@ const testimonials = [
 ];
 
 const Home = () => {
-    const navigate = useNavigate();
 
     const [fetchedCategories, setFetchedCategories] = useState<ICategoryResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);

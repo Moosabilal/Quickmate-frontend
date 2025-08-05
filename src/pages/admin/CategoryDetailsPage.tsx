@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category'; // Import shared types
+import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory'; // Import shared types
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
 const CategoryDetailsPage: React.FC = () => {
@@ -24,6 +24,7 @@ const CategoryDetailsPage: React.FC = () => {
             setError(null);
             try {
                 const response = await categoryService.getCategoryById(categoryId);
+                console.log('the fetched categories', response)
                 setCategoryDetails(response);
             } catch (err) {
                 console.error("Failed to fetch category details:", err);
@@ -57,6 +58,9 @@ const CategoryDetailsPage: React.FC = () => {
                 } else {
                     formData.append('icon', 'null');
                 }
+                formData.append("commissionType", subCategoryToUpdate.commissionType || CommissionTypes.NONE)
+                formData.append("commissionValue", subCategoryToUpdate.commissionValue?.toString() || '')
+                formData.append("commissionStatus", String(subCategoryToUpdate.commissionStatus))
             } else {
                 console.warn(`subCategory with ID ${subcategoryId} not found for status toggle.`);
                 setError("subCategory not found for status update.");
@@ -96,7 +100,7 @@ const CategoryDetailsPage: React.FC = () => {
             formData.append('commissionStatus', String(!currentCommissionStatus));
             formData.append('commissionType', subCategoryToUpdate.commissionType ?? "")
             formData.append('commissionValue', subCategoryToUpdate.commissionValue?.toString() ?? "")
-            formData.append('parentId',subCategoryToUpdate.parentId ?? '')
+            formData.append('parentId', subCategoryToUpdate.parentId ?? '')
             formData.append('name', subCategoryToUpdate.name);
             formData.append('description', subCategoryToUpdate.description || '');
             if (subCategoryToUpdate.icon) {
@@ -208,9 +212,9 @@ const CategoryDetailsPage: React.FC = () => {
                                         Category Commission:{' '}
                                         {commissionStatus ? (
                                             <>
-                                                {commissionType === 'percentage' ? (
+                                                {commissionType === 'Percentage' ? (
                                                     ` ${commissionValue}% (Percentage)`
-                                                ) : (` ₹${commissionValue} (Flat Fee)`)
+                                                ) : (` ₹${commissionValue} (FlatFee)`)
                                                 }
                                             </>
                                         ) : (
@@ -323,12 +327,12 @@ const CategoryDetailsPage: React.FC = () => {
                                                 <tr key={category._id}>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "percentage"
+                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "Percentage"
                                                             ? `${category.commissionValue}%`
                                                             : 'N/A'}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flatFee"
+                                                        {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "FlatFee"
                                                             ? `₹${category.commissionValue}`
                                                             : 'N/A'}
                                                     </td>

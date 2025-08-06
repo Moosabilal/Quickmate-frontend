@@ -16,7 +16,7 @@ const providerRoutes = [
                 { path: '/providerProfile/:userId', element: <Provider_profile /> },
                 { path: '/providerService', element: <ProviderServicesPage /> },
                 { path: '/providerService/new', element: <ServiceManagementPage /> },
-                { path: '/providerService/new/:serviceId', element: <ServiceManagementPage /> },
+                { path: '/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
 
             ],
         },

@@ -33,7 +33,6 @@ export const providerService = {
 
     getServicesForAddpage: async () => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getServicesForAddPage`)
-        console.log('the respnse in frontend', response)
         return response.data
     },
 

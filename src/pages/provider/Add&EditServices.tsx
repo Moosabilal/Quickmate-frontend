@@ -22,7 +22,7 @@ import {
     AlertCircle,
     Backpack
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { IAddAndEditServiceForm } from '../../interface/IService';
@@ -37,6 +37,7 @@ interface ICategory {
 
 
 const ServiceManagementPage: React.FC = () => {
+    const { serviceId } = useParams<{ serviceId?: string }>()
     const [categories, setCategories] = useState<ICategory[]>([])
     const [subCategories, setSubCategories] = useState<ICategory[]>([])
     const [editingService, setEditingService] = useState<IAddAndEditServiceForm | null>(null);
@@ -64,7 +65,6 @@ const ServiceManagementPage: React.FC = () => {
     useEffect(() => {
         const categories = async () => {
             const response = await providerService.getServicesForAddpage()
-            console.log('the response ', response)
             setCategories(response.mainCategories)
             setSubCategories(response.services)
         }
@@ -92,7 +92,7 @@ const ServiceManagementPage: React.FC = () => {
         },
     ]);
 
-    const handleAddService = () => {
+    const handleDeleteService = () => {
         setEditingService(null);
     };
 
@@ -100,11 +100,17 @@ const ServiceManagementPage: React.FC = () => {
         setEditingService(service);
     };
 
-    const handleDelete = (serviceId: string) => {
-        if (confirm('Are you sure you want to delete this service?')) {
-            setServices(prevServices => prevServices.filter(service => service.id !== serviceId));
+    useEffect(() => {
+        if (serviceId) {
+            const getService = async () => {
+                const response = await serviceService.getServiceById(serviceId)
+                console.log('the service response', response)
+                handleEditService(response)
+            }
+            getService()
         }
-    };
+
+    }, [serviceId])
 
 
     useEffect(() => {
@@ -187,10 +193,19 @@ const ServiceManagementPage: React.FC = () => {
         try {
             const data = new FormData();
             let hasChanges = false;
+
+            const normalize = (val: any) => {
+                if (val instanceof File) return val.name;
+                if (typeof val === 'boolean' || typeof val === 'number') return val;
+                if (typeof val === 'string') return val.trim();
+                if (val === null || val === undefined) return '';
+                return JSON.stringify(val);
+            };
+
             for (const [key, value] of Object.entries(formData)) {
                 const prevValue = editingService?.[key as keyof IAddAndEditServiceForm];
 
-                const isValueChanged = JSON.stringify(value) !== JSON.stringify(prevValue);
+                const isValueChanged = normalize(value) !== normalize(prevValue);
 
                 if (isValueChanged) {
                     hasChanges = true;
@@ -198,7 +213,7 @@ const ServiceManagementPage: React.FC = () => {
 
                 if (value !== undefined && value !== null) {
                     if (value instanceof File) {
-                        data.append(key, value); 
+                        data.append(key, value);
                     } else {
                         data.append(key, String(value));
                     }
@@ -206,14 +221,39 @@ const ServiceManagementPage: React.FC = () => {
             }
 
             if (editingService && !hasChanges) {
-                toast.success("No changes detected. Skipping update.");
+                toast.info("No changes detected.");
                 setIsSubmitting(false);
                 return;
             }
 
-            const {message} = await serviceService.createdService(data);
-            toast.success(message)
-            navigate('/providerService')
+
+            if (editingService) {
+                try {
+                    const {message, success} = await serviceService.updateService(serviceId || '',data)
+                    if (success) {
+                    toast.success(message)
+                    navigate('/providerService')
+                } else {
+                    toast.info(message)
+                }
+
+                } catch (error) {
+                    console.log('the error occurs here', error)
+                    toast.error(error.response.data.message)
+                }
+            } else {
+                console.log('this is not working')
+                const { message, success } = await serviceService.createdService(data);
+                if (success) {
+                    toast.success(message)
+                    navigate('/providerService')
+                } else {
+                    toast.info(message)
+                }
+            }
+
+
+
 
         } catch (error) {
             console.error('Error saving service:', error);
@@ -322,7 +362,7 @@ const ServiceManagementPage: React.FC = () => {
                             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                         </div>
 
-                        <div>
+                        {!editingService && <div>
                             <label htmlFor="businessCertification" className="block text-sm font-medium text-gray-700 mb-2">
                                 Business Certification <span className="text-gray-400" >(optional)</span>
                             </label>
@@ -340,14 +380,14 @@ const ServiceManagementPage: React.FC = () => {
 
 
                             </div>
-                        </div>
+                        </div>}
                     </div>
 
                     <div className="space-y-6">
 
                         <div>
                             <label htmlFor="basePrice" className="block text-sm font-medium text-gray-700 mb-2">
-                                Experience <span className='text-gray-400'>optional</span>
+                                Experience <span className='text-gray-400'>(Yearly/optional)</span>
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -357,12 +397,12 @@ const ServiceManagementPage: React.FC = () => {
                                     type="number"
                                     id="experience"
                                     min="0"
-                                    step="0.01"
+                                    step="0"
                                     value={formData.experience || ''}
                                     onChange={(e) => setFormData({ ...formData, experience: parseFloat(e.target.value) || 0 })}
                                     className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.basePrice ? 'border-red-300' : 'border-gray-300'
                                         }`}
-                                    placeholder="0.00"
+                                    placeholder="0"
                                 />
                             </div>
                         </div>

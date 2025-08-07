@@ -185,7 +185,7 @@ const ProviderServicesPage: React.FC = () => {
 
                         </div>
 
-                        {services.length > 0 && <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {/* {services.length > 0 && <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="bg-white rounded-xl p-6 border border-gray-200">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-blue-100 rounded-lg">
@@ -232,7 +232,7 @@ const ProviderServicesPage: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>}
+                        </div>} */}
                     </div>
                 </div>
             </div>

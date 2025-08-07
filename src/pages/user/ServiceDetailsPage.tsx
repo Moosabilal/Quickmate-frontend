@@ -10,24 +10,9 @@ import AddressPopup from '../../components/user/AddressPopup';
 import { IBackendProvider } from '../../interface/IProvider';
 import { toast } from 'react-toastify';
 import { bookingService } from '../../services/bookingService';
-
-
-
-export interface IProvider {
-  id: string;
-  name: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  availableTime: string;
-  specialty?: string;
-  experience?: string;
-  location?: string;
-  phone?: string;
-  email?: string;
-  profileImage?: string;
-  description?: string;
-}
+import { IProvider } from '../../interface/IProvider';
+import { useAppSelector } from '../../hooks/useAppSelector';
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 interface Address {
   id: string;
@@ -37,10 +22,14 @@ interface Address {
   state: string;
   zip: string;
 }
+declare var Razorpay: any;
+
 
 
 
 const ServiceDetailsPage: React.FC = () => {
+  const { user } = useAppSelector(state => state.auth)
+  console.log('the user ', user)
   const { serviceId } = useParams<{ serviceId: string }>();
   const [serviceDetails, setServiceDetails] = useState<ICategoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -111,9 +100,62 @@ const ServiceDetailsPage: React.FC = () => {
   //   const hour = Math.floor(i / 2) + 8;
   //   const minute = i % 2 === 0 ? '00' : '30';
   //   const period = hour >= 12 ? 'PM' : 'AM';
-  //   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  //   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? \12 : hour;
   //   return `${displayHour}:${minute} ${period}`;
   // });
+
+
+  const handlePayment = async (e: React.FormEvent) => {
+
+    e.preventDefault()
+        const amount = selectedProvider?.price;
+    const currency = "INR";
+    const receipt = `receipt_${Date.now()}`
+    console.log('the amont in hand', amount, phone)
+
+    const response = await bookingService.confirmPayment(Number(amount), currency, receipt)
+    console.log(response)
+
+    var options = {
+      "key": paymentKey, // Enter the Key ID generated from the Dashboard
+      amount, // Amount is in currency subunits.
+      currency,
+      "name": "QuickMate", //your business name
+      "description": "Test Transaction",
+      "image": "https://example.com/your_logo",
+      "order_id": response.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+      "handler": async function (response) {
+        const {razorpay_order_id, razorpay_payment_id, razorpay_signature} = response
+        const validationRes = await bookingService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
+        console.log('the validation', validationRes)
+        toast.success(`Order ${validationRes.orderId} ${validationRes.message}`)
+      },
+      "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
+        "name": fullName, //your customer's name
+        "email": user?.email,
+        "contact": phone  //Provide the customer's phone number for better conversion rates 
+      },
+      "notes": {
+        "address": "Razorpay Corporate Office"
+      },
+      "theme": {
+        "color": "#3399cc"
+      }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response) {
+      alert(response.error.code);
+      alert(response.error.description);
+      alert(response.error.source);
+      alert(response.error.step);
+      alert(response.error.reason);
+      alert(response.error.metadata.order_id);
+      alert(response.error.metadata.payment_id);
+    });
+    rzp1.open();
+    e.preventDefault();
+
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -354,10 +396,11 @@ const ServiceDetailsPage: React.FC = () => {
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                     }`}
-                  onClick={handleSubmit}
+                  onClick={handlePayment}
                 >
                   Confirm Booking
                 </button>
+
               </div>
             </form>
           </div>

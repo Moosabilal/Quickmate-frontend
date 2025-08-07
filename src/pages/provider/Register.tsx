@@ -17,7 +17,7 @@ interface FormData {
     fullName: string;
     phoneNumber: string;
     email: string;
-    serviceArea: string | null; 
+    serviceArea: string | null;
     serviceLocation: { lat: number; lng: number } | null;
     availableDays: string[];
     startTime: string;
@@ -203,17 +203,18 @@ const ProviderRegistration: React.FC = () => {
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
 
         try {
-            for(const [key, value] of data.entries()){
+            for (const [key, value] of data.entries()) {
                 console.log(`${key} : ${value}`)
             }
             setIsLoading(true)
             const res = await providerService.register(data);
+            toast.success(res.message)
+
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
             // dispatch(updateProviderProfile({ provider }))
 
 
-            toast.success(res.message)
             // navigate(`/providerProfile/${provider.userId}`);
         } catch (error) {
             console.error('Error submitting form:', error);

@@ -339,7 +339,7 @@ const CategoryForm: React.FC = () => {
                                     >
                                         {iconPreview ? (
                                             <>
-                                                <img src={iconPreview} alt="Icon Preview" className="max-h-full max-w-full object-contain rounded-md" />
+                                                <img src={getCloudinaryUrl(iconPreview)} alt="Icon Preview" className="max-h-full max-w-full object-contain rounded-md" />
                                                 <button
                                                     type="button"
                                                     onClick={handleRemoveIcon}

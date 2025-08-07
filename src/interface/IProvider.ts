@@ -1,3 +1,18 @@
+export interface IProvider {
+  id: string;
+  name: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  availableTime: string;
+  specialty?: string;
+  experience?: string;
+  location?: string;
+  phone?: string;
+  email?: string;
+  profileImage?: string;
+  description?: string;
+}
 
 export interface IFeaturedProviders {
   id: string;

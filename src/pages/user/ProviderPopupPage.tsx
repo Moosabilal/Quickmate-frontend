@@ -54,6 +54,7 @@ const ProviderPopup = ({
         )
       ) as FilterParams
       const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
+      console.log('the fetched providers', providers)
       setAllProviders(providers);
     } catch (error: any) {
       console.error(error);

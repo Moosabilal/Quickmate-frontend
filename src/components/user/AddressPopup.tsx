@@ -22,7 +22,8 @@ const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAdd
       }
       fetchAddress()
     },[])
-        if (!addressPopup) return null;
+    
+    if (!addressPopup) return null;
 
 
     return (

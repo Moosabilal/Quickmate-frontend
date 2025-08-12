@@ -72,25 +72,6 @@ const ServiceManagementPage: React.FC = () => {
     }, [])
 
 
-    // Mock services data
-    const [services, setServices] = useState<IAddAndEditServiceForm[]>([
-        {
-            id: '1',
-            title: 'Home Cleaning',
-            description: 'Professional residential cleaning services with eco-friendly products and experienced staff',
-            experience: 5,
-            categoryId: '1',
-            subCategoryId: null,
-            duration: "2:30",
-            categoryName: 'Home & Maintenance',
-            basePrice: 25,
-            priceUnit: 'PerHour',
-            providerId: 'provider1',
-            status: true,
-            price: 120,
-            businessCertification: 'certificate1.pdf',
-        },
-    ]);
 
     const handleDeleteService = () => {
         setEditingService(null);

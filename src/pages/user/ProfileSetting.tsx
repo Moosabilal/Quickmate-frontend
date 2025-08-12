@@ -29,7 +29,6 @@ const ProfileSetting: React.FC = () => {
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
     const [isMapOpen, setIsMapOpen] = useState(false)
 
-    // Address modal states
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);

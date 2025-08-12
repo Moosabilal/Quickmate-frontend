@@ -35,7 +35,7 @@ export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
     commissionStatus: boolean,
     commissionType: string | null,
     commissionValue: number | null 
-    subCategories?: ICategoryResponse[]; 
+    subCategories?: ICategoryResponse[];
 }
 
 export interface ICommissionRuleInput {

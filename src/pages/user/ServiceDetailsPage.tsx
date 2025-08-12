@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { bookingService } from '../../services/bookingService';
 import { IProvider } from '../../interface/IProvider';
 import { useAppSelector } from '../../hooks/useAppSelector';
+import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPayment';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 interface Address {
@@ -29,7 +30,6 @@ declare var Razorpay: any;
 
 const ServiceDetailsPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth)
-  console.log('the user ', user)
   const { serviceId } = useParams<{ serviceId: string }>();
   const [serviceDetails, setServiceDetails] = useState<ICategoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,72 +85,89 @@ const ServiceDetailsPage: React.FC = () => {
     }
   };
 
-  // const handleDateTimeConfirm = (date: string, time: string) => {
-  //   setSelectedDate(date);
-  //   setSelectedTime(time);
-  //   setDateTimePopup(false);
-  // };
+  const handleDateTimeConfirm = (date: string, time: string) => {
+    setSelectedDate(date);
+    setSelectedTime(time);
+    setDateTimePopup(false);
+  };
 
   const handleAddressConfirm = (address: Address) => {
     setSelectedAddress(address);
     setAddressPopup(false);
   };
 
-  // const timeSlots = Array.from({ length: 24 }, (_, i) => {
-  //   const hour = Math.floor(i / 2) + 8;
-  //   const minute = i % 2 === 0 ? '00' : '30';
-  //   const period = hour >= 12 ? 'PM' : 'AM';
-  //   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? \12 : hour;
-  //   return `${displayHour}:${minute} ${period}`;
-  // });
+  const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 8;
+    const minute = i % 2 === 0 ? '00' : '30';
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${minute} ${period}`;
+  });
 
 
   const handlePayment = async (e: React.FormEvent) => {
 
     e.preventDefault()
-        const amount = selectedProvider?.price;
+    const amount = selectedProvider?.price;
     const currency = "INR";
     const receipt = `receipt_${Date.now()}`
-    console.log('the amont in hand', amount, phone)
 
-    const response = await bookingService.confirmPayment(Number(amount), currency, receipt)
-    console.log(response)
+    const orderResponse = await bookingService.confirmPayment(Number(amount), currency, receipt)
 
     var options = {
-      "key": paymentKey, // Enter the Key ID generated from the Dashboard
-      amount, // Amount is in currency subunits.
+      "key": paymentKey,
+      amount: Number(amount) * 100,
       currency,
-      "name": "QuickMate", //your business name
-      "description": "Test Transaction",
+      "name": "QuickMate",
+      "description": "Service Booking Payment",
       "image": "https://example.com/your_logo",
-      "order_id": response.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-      "handler": async function (response) {
-        const {razorpay_order_id, razorpay_payment_id, razorpay_signature} = response
-        const validationRes = await bookingService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
-        console.log('the validation', validationRes)
-        toast.success(`Order ${validationRes.orderId} ${validationRes.message}`)
+      "order_id": orderResponse.id,
+      handler: async function (paymentResponse: any) {
+        try {
+          const bookingRes = await handleSubmit(e);
+          if (!bookingRes?.bookingId) {
+            toast.error("Booking failed before payment verification.");
+            return;
+          }
+          if (!selectedProvider) {
+            throw new Error("No provider selected.");
+          }
+
+          const paymentRequest: paymentVerificationRequest = {
+            providerId: selectedProvider._id,
+            bookingId: bookingRes.bookingId,
+            paymentMethod: PaymentMethod.BANK,
+            paymentDate: new Date(),
+            amount: Number(amount),
+            razorpay_order_id: paymentResponse.razorpay_order_id,
+            razorpay_payment_id: paymentResponse.razorpay_payment_id,
+            razorpay_signature: paymentResponse.razorpay_signature,
+          };
+
+          const validationRes = await bookingService.verifyPayment(paymentRequest);
+          toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
+          console.log('the booking result id', bookingRes.bookingId)
+          navigate(`/confirmationModel/${bookingRes.bookingId}`)
+        } catch (err) {
+          console.error("Payment handler error:", err);
+          toast.error("Payment verification failed.");
+        }
       },
-      "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
-        "name": fullName, //your customer's name
+      "prefill": {
+        "name": fullName,
         "email": user?.email,
-        "contact": phone  //Provide the customer's phone number for better conversion rates 
+        "contact": phone,
       },
       "notes": {
         "address": "Razorpay Corporate Office"
       },
       "theme": {
-        "color": "#3399cc"
+        "color": "#3057b0ff"
       }
     };
     var rzp1 = new Razorpay(options);
     rzp1.on('payment.failed', function (response) {
-      alert(response.error.code);
-      alert(response.error.description);
-      alert(response.error.source);
-      alert(response.error.step);
-      alert(response.error.reason);
-      alert(response.error.metadata.order_id);
-      alert(response.error.metadata.payment_id);
+      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
     });
     rzp1.open();
     e.preventDefault();
@@ -166,22 +183,23 @@ const ServiceDetailsPage: React.FC = () => {
     }
 
     const bookingPayload = {
+      userId: user?.id,
       serviceId: serviceId!,
       providerId: selectedProvider._id,
       customerName: fullName,
       phone: phone,
+      amount: Number(selectedProvider.price),
       instructions: instructions,
       addressId: selectedAddress.id,
-      // scheduledDate: selectedDate,
-      // scheduledTime: selectedTime,
+      scheduledDate: selectedDate,
+      scheduledTime: selectedTime,
     };
 
     try {
-      console.log('the backen d bookingsend', bookingPayload)
       const res = await bookingService.createBooking(bookingPayload);
-      toast.success(res.message)
-      // toast.success("Booking confirmed!");
-      navigate('/');
+      return res
+      // // toast.success("Booking confirmed!");
+      // navigate('/');
     } catch (err) {
       console.error("Booking failed:", err);
       toast.error("Failed to confirm booking. Please try again.");
@@ -257,7 +275,7 @@ const ServiceDetailsPage: React.FC = () => {
           <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">
             <h2 className="text-4xl font-extrabold text-indigo-800 mb-10 text-center">Book Your Service</h2>
             <form className="space-y-7">
-              {/* <div>
+              <div>
                 <label htmlFor="dateTime" className="block text-base font-semibold text-gray-700 mb-2">
                   Select Date and Time
                 </label>
@@ -283,7 +301,7 @@ const ServiceDetailsPage: React.FC = () => {
                   </svg>
                   {selectedDate && selectedTime ? `${selectedDate} at ${selectedTime}` : 'Choose Date & Time'}
                 </button>
-              </div> */}
+              </div>
 
               <div>
                 <label htmlFor="address" className="block text-base font-semibold text-gray-700 mb-2">
@@ -407,7 +425,7 @@ const ServiceDetailsPage: React.FC = () => {
         </div>
       </main>
       <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} />
-      {/* <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} /> */}
+      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} />
     </div>
   );

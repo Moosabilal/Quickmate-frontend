@@ -20,49 +20,6 @@ const IMAGES = {
   objectCleaning: '/images/object-cleaning.png',
 };
 
-const DUMMY_SERVICES: Service[] = [
-  {
-    id: '1',
-    name: 'Floor Cleaning',
-    price: 180,
-    priceUnit: '/hr',
-    description: 'Quickly refresh your floors with our professional floor cleaning service. Perfect for daily upkeep, leaving your home spotless.',
-    imageUrl: IMAGES.floorCleaning,
-  },
-  {
-    id: '2',
-    name: 'Deep Cleaning',
-    price: 200,
-    priceUnit: '/hr',
-    description: 'Experience a meticulous clean from top to bottom. Our deep cleaning service targets hidden dirt and grime for a truly refreshed home.',
-    imageUrl: IMAGES.deepCleaning,
-  },
-  {
-    id: '3',
-    name: 'Move-in/Out Cleaning',
-    price: 200,
-    priceUnit: '/hr',
-    description: 'Make your move stress-free with our comprehensive cleaning. We ensure your old or new home is sparkling clean and ready for occupancy.',
-    imageUrl: IMAGES.moveOutCleaning,
-  },
-  {
-    id: '4',
-    name: 'Object Cleaning',
-    price: 150,
-    priceUnit: '/hr',
-    description: 'Specialized cleaning for your valuable items, from delicate decor to large appliances. We handle with care for a renewed look.',
-    imageUrl: IMAGES.objectCleaning,
-  },
-  {
-    id: '5',
-    name: 'Window Cleaning',
-    price: 120,
-    priceUnit: '/hr',
-    description: 'Crystal clear windows, inside and out. Our window cleaning service leaves your panes spotless and streak-free.',
-    imageUrl: IMAGES.objectCleaning, 
-  },
-];
-
 const Booking_servicePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState<ICategoryResponse[]>()

@@ -16,6 +16,7 @@ const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
 const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
+const BookingHistory = lazy(() => import('../pages/user/BookingHistory'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
 import { LayoutRoute } from './LayoutRoute';
 
@@ -35,6 +36,14 @@ const userRoutes = [
   { path: '/working', element: <HowItWorksPage /> },
   { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },
   { path: '/service-detailsPage/:serviceId', element: <ServiceDetailsPage /> },
+  {
+  element: <ProtectedRoute roles={['Customer', 'ServiceProvider']} />,
+  children: [
+    { path: '/confirmationModel/:bookingId', element: <BookingConfirmation /> },
+  ],
+}
+
+
   ]),
 
   LayoutRoute(UserSidebarLayout, [
@@ -42,9 +51,9 @@ const userRoutes = [
       element: <ProtectedRoute roles={['Customer', 'ServiceProvider']} />,
       children: [
         { path: '/profile', element: <ProfileSettings /> },
-        { path: '/confirmationModel', element: <BookingConfirmation /> },
-
         { path: '/provider-registration', element: <ProviderRegistration /> },
+        { path: '/profile/booking-history', element: <BookingHistory /> },
+
 
       ],
     },

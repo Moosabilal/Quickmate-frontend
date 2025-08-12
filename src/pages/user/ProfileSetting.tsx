@@ -11,9 +11,8 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
-import { IAddress } from '../../types/address';
+import { IAddress } from '../../interface/IAddress';
 import { toast } from 'react-toastify';
-import Sidebar from '../../components/user/Sidebar';
 
 
 
@@ -30,7 +29,6 @@ const ProfileSetting: React.FC = () => {
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
     const [isMapOpen, setIsMapOpen] = useState(false)
 
-    // Address modal states
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
@@ -62,7 +60,6 @@ const ProfileSetting: React.FC = () => {
     useEffect(() => {
         const fetchAddress = async () => {
             const address = await addressService.getAddress()
-            console.log('the respnse addres taken from backend', address)
             setAddressList(address)
         }
         fetchAddress()

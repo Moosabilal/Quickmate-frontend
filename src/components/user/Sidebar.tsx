@@ -24,7 +24,7 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
-    { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/history' },
+    { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
     { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/Profile/wallet' },
     { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chat' },
     { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
@@ -86,7 +86,6 @@ const Sidebar = () => {
             </Link>
           ))}
 
-          {/* Provider-specific item */}
           {user?.role === 'ServiceProvider' && (
             <Link
               to={serviceProviderItem.path}
@@ -102,7 +101,6 @@ const Sidebar = () => {
           )}
         </nav>
 
-        {/* Logout */}
         <div className="pt-4 border-t mt-6">
           <button
             onClick={handleLogout}

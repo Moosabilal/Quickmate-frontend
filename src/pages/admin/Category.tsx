@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../types/category';
+import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory';
 import Pagination from '../../components/admin/Pagination';
 
 interface CategoryTableDisplay extends ICategoryResponse {
@@ -38,12 +38,13 @@ const CategoryCommissionManagement = () => {
             setError(null);
             try {
                 const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
+                console.log('the fetched categories', fetchedCategories)
                 setCategories(fetchedCategories);
             } catch (err: any) {
                 console.error("Error fetching data:", err);
                 setError(err.message || "Failed to load data.");
             } finally {
-                setIsLoading(false);
+                setIsLoading(false); 
             }
         };
 
@@ -60,6 +61,7 @@ const CategoryCommissionManagement = () => {
             formData.append('status', String(!currentStatus));
 
             const categoryToUpdate = categories.find(c => c._id === categoryId);
+            console.log('the category to udpate', categoryToUpdate)
             if (categoryToUpdate) {
                 formData.append('name', categoryToUpdate.name);
                 formData.append('description', categoryToUpdate.description || '');
@@ -68,6 +70,9 @@ const CategoryCommissionManagement = () => {
                 } else {
                     formData.append('icon', 'null');
                 }
+                formData.append("commissionType", categoryToUpdate.commissionType || CommissionTypes.NONE )
+                formData.append("commissionValue", categoryToUpdate.commissionValue?.toString() || '')
+                formData.append("commissionStatus", String(categoryToUpdate.commissionStatus))
             } else {
                 console.warn(`Category with ID ${categoryId} not found for status toggle.`);
                 setError("Category not found for status update.");
@@ -75,6 +80,10 @@ const CategoryCommissionManagement = () => {
                 return;
             }
 
+            console.log('the udpate status', categoryId)
+            for(const [key, value] of formData.entries()){
+                console.log(`${key} : ${value}`)
+            }
             await categoryService.updateCategory(categoryId, formData);
 
             setCategories(prevCategories =>
@@ -271,12 +280,12 @@ const CategoryCommissionManagement = () => {
                                         <tr key={category._id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "percentage"
+                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "Percentage"
                                                     ? `${category.commissionValue}%`
                                                     : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "flatFee"
+                                                {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "FlatFee"
                                                     ? `₹${category.commissionValue}`
                                                     : 'N/A'}
                                             </td>

@@ -1,32 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ICategoryResponse } from '../../types/category';
+import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
-import { IBackendProvider } from '../../types/provider';
+import { IBackendProvider } from '../../interface/IProvider';
 import { toast } from 'react-toastify';
-
-
-
-export interface IProvider {
-  id: string;
-  name: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  availableTime: string;
-  specialty?: string;
-  experience?: string;
-  location?: string;
-  phone?: string;
-  email?: string;
-  profileImage?: string;
-  description?: string;
-}
+import { bookingService } from '../../services/bookingService';
+import { IProvider } from '../../interface/IProvider';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPayment';
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 interface Address {
   id: string;
@@ -36,10 +23,13 @@ interface Address {
   state: string;
   zip: string;
 }
+declare var Razorpay: any;
+
 
 
 
 const ServiceDetailsPage: React.FC = () => {
+  const { user } = useAppSelector(state => state.auth)
   const { serviceId } = useParams<{ serviceId: string }>();
   const [serviceDetails, setServiceDetails] = useState<ICategoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +49,9 @@ const ServiceDetailsPage: React.FC = () => {
     zip: '',
   });
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [instructions, setInstructions] = useState('');
 
   const navigate = useNavigate()
 
@@ -110,6 +103,109 @@ const ServiceDetailsPage: React.FC = () => {
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
     return `${displayHour}:${minute} ${period}`;
   });
+
+
+  const handlePayment = async (e: React.FormEvent) => {
+
+    e.preventDefault()
+    const amount = selectedProvider?.price;
+    const currency = "INR";
+    const receipt = `receipt_${Date.now()}`
+
+    const orderResponse = await bookingService.confirmPayment(Number(amount), currency, receipt)
+
+    var options = {
+      "key": paymentKey,
+      amount: Number(amount) * 100,
+      currency,
+      "name": "QuickMate",
+      "description": "Service Booking Payment",
+      "image": "https://example.com/your_logo",
+      "order_id": orderResponse.id,
+      handler: async function (paymentResponse: any) {
+        try {
+          const bookingRes = await handleSubmit(e);
+          if (!bookingRes?.bookingId) {
+            toast.error("Booking failed before payment verification.");
+            return;
+          }
+          if (!selectedProvider) {
+            throw new Error("No provider selected.");
+          }
+
+          const paymentRequest: paymentVerificationRequest = {
+            providerId: selectedProvider._id,
+            bookingId: bookingRes.bookingId,
+            paymentMethod: PaymentMethod.BANK,
+            paymentDate: new Date(),
+            amount: Number(amount),
+            razorpay_order_id: paymentResponse.razorpay_order_id,
+            razorpay_payment_id: paymentResponse.razorpay_payment_id,
+            razorpay_signature: paymentResponse.razorpay_signature,
+          };
+
+          const validationRes = await bookingService.verifyPayment(paymentRequest);
+          toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
+          console.log('the booking result id', bookingRes.bookingId)
+          navigate(`/confirmationModel/${bookingRes.bookingId}`)
+        } catch (err) {
+          console.error("Payment handler error:", err);
+          toast.error("Payment verification failed.");
+        }
+      },
+      "prefill": {
+        "name": fullName,
+        "email": user?.email,
+        "contact": phone,
+      },
+      "notes": {
+        "address": "Razorpay Corporate Office"
+      },
+      "theme": {
+        "color": "#3057b0ff"
+      }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response) {
+      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
+    });
+    rzp1.open();
+    e.preventDefault();
+
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAddress || !selectedProvider || !fullName || !phone) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    const bookingPayload = {
+      userId: user?.id,
+      serviceId: serviceId!,
+      providerId: selectedProvider._id,
+      customerName: fullName,
+      phone: phone,
+      amount: Number(selectedProvider.price),
+      instructions: instructions,
+      addressId: selectedAddress.id,
+      scheduledDate: selectedDate,
+      scheduledTime: selectedTime,
+    };
+
+    try {
+      const res = await bookingService.createBooking(bookingPayload);
+      return res
+      // // toast.success("Booking confirmed!");
+      // navigate('/');
+    } catch (err) {
+      console.error("Booking failed:", err);
+      toast.error("Failed to confirm booking. Please try again.");
+    }
+  };
+
 
 
 
@@ -170,7 +266,8 @@ const ServiceDetailsPage: React.FC = () => {
               <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
               <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at $ 150</p>
               <p className="text-gray-700 leading-relaxed text-lg mb-8">
-                {serviceDetails.description || 'No detailed description available.'}
+                {serviceDetails.description || 'No detailed description available.'}<br />
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </p>
             </div>
           </div>
@@ -242,6 +339,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <input
                   type="text"
                   id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-lg"
                 />
@@ -254,6 +353,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <input
                   type="tel"
                   id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   placeholder="(123) 456 7890"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-lg"
                 />
@@ -266,6 +367,8 @@ const ServiceDetailsPage: React.FC = () => {
                 <textarea
                   id="instructions"
                   rows={4}
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
                   placeholder="Any special requests or details about your home?"
                   className="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none transition duration-200 text-lg"
                 />
@@ -294,7 +397,7 @@ const ServiceDetailsPage: React.FC = () => {
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                           <span>
-                            {selectedProvider.rating} • $500
+                            {selectedProvider.rating} • ${selectedProvider.price}
                           </span>
                         </div>
                       </div>
@@ -306,22 +409,22 @@ const ServiceDetailsPage: React.FC = () => {
               <div className="pt-6">
                 <button
                   type="submit"
-                  disabled={!selectedDate || !selectedTime || !selectedAddress || !selectedProvider}
-                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${!selectedDate || !selectedTime || !selectedAddress || !selectedProvider
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
+                  disabled={!selectedAddress || !selectedProvider}
+                  className={`w-full bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-lg transform hover:-translate-y-1 ${!selectedAddress || !selectedProvider
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
                     }`}
-
-                    
+                  onClick={handlePayment}
                 >
                   Confirm Booking
                 </button>
+
               </div>
             </form>
           </div>
         </div>
       </main>
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} />
+      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} />
     </div>

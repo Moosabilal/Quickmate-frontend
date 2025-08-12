@@ -1,5 +1,11 @@
 import { Types, Document } from 'mongoose';
 
+export const enum CommissionTypes {
+    PERCENTAGE = "Percentage",
+    FLATFEE = "FlatFee",
+    NONE = "None"
+}
+
 export interface ICategoryInput {
     name: string;
     description?: string | null; 
@@ -29,14 +35,12 @@ export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
     commissionStatus: boolean,
     commissionType: string | null,
     commissionValue: number | null 
-    subCategories?: ICategoryResponse[]; 
+    subCategories?: ICategoryResponse[];
 }
 
 export interface ICommissionRuleInput {
     categoryid?: string | null; 
-    globalCommission?: number; 
-    flatFee?: number; 
-    categoryCommission?: number; 
+    commissionType: CommissionTypes;
     status?: boolean; 
 }
 
@@ -56,7 +60,7 @@ export interface ICategoryFormCombinedData {
     status: boolean; 
     parentid?: string | null; 
 
-    commissionType: 'percentage' | 'flatFee' | 'none'; 
+    commissionType: CommissionTypes; 
     commissionValue: number | '';
     commissionStatus: boolean; 
 }

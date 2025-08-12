@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, UserCheck, UserX, Clock } from 'lucide-react';
+import { Search, Filter, UserCheck, UserX, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { updateProfile } from '../../features/auth/authSlice';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -13,7 +13,6 @@ interface User {
   isVerified: boolean;
   phone: string;
   bookings: number;
-  status: 'Active' | 'Inactive' | 'Blocked';
 }
 
 const USERS_PER_PAGE = 2;
@@ -52,23 +51,21 @@ const AdminUsersPage = () => {
     fetchUsers();
   }, [currentPage, searchTerm, statusFilter]);
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      Active: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300',
-      Inactive: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300',
-      Blocked: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300',
-    };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
-  };
+  console.log('the usersssss', users)
 
-  const getStatusIcon = (status: string) => {
-    const icons = {
-      Active: <UserCheck className="w-3 h-3" />,
-      Inactive: <Clock className="w-3 h-3" />,
-      Blocked: <UserX className="w-3 h-3" />,
-    };
-    return icons[status as keyof typeof icons] || null;
-  };
+ const getStatusColor = (isVerified: boolean) => {
+  return isVerified
+    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
+    : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300';
+};
+
+const getStatusIcon = (isVerified: boolean) => {
+  return isVerified ? (
+    <CheckCircle className="w-4 h-4 text-green-500" />
+  ) : (
+    <XCircle className="w-4 h-4 text-red-500" />
+  );
+};
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -163,9 +160,9 @@ const AdminUsersPage = () => {
                     <td className="py-4 px-6 font-medium">{user.name}</td>
                     <td className="py-4 px-6 text-sm">{user.email}</td>
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                        {getStatusIcon(user.status)}
-                        <span className="ml-1">{user.status}</span>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.isVerified)}`}>
+                        {getStatusIcon(user.isVerified)}
+                        <span className="ml-1">{user.isVerified ? "Active" : "InActive"}</span>
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">

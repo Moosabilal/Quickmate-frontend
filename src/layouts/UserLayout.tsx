@@ -8,7 +8,7 @@ const userLayout = () => {
   return (
     <>
     <Header />
-    <main className='p-4 top-20 h-fit'>
+    <main className='p-4 pt-20 h-fit '>
         <Outlet />
     </main>
     <Footer />

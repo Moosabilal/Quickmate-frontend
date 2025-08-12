@@ -31,7 +31,6 @@ const DateTimePopup = ({dateTimePopup, setDateTimePopup, selectedDate, setSelect
                 min={new Date().toISOString().split('T')[0]}
               />
             </div>
-            {/* Time Selection */}
             <div>
               <label className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Clock className="w-5 h-5" />
@@ -50,7 +49,6 @@ const DateTimePopup = ({dateTimePopup, setDateTimePopup, selectedDate, setSelect
                 ))}
               </select>
             </div>
-            {/* Confirm Button */}
             <button
               onClick={() => handleDateTimeConfirm(selectedDate, selectedTime)}
               disabled={!selectedDate || !selectedTime}

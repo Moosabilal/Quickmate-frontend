@@ -1,4 +1,6 @@
 import { MapPin, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { addressService } from "../../services/addressService";
 interface Address {
   id: string;
   label: string;
@@ -8,36 +10,21 @@ interface Address {
   zip: string;
 }
 
-const mockAddresses: Address[] = [
-  {
-    id: '1',
-    label: 'Home',
-    street: '123 Main St',
-    city: 'Springfield',
-    state: 'IL',
-    zip: '62701',
-  },
-  {
-    id: '2',
-    label: 'Work',
-    street: '456 Oak Ave',
-    city: 'Springfield',
-    state: 'IL',
-    zip: '62702',
-  },
-];
-
 
 const AddressPopup = ({addressPopup, setAddressPopup, selectedAddress, handleAddressConfirm, setShowAddAddress, showAddAddress, newAddress, setNewAddress, handleAddAddress}) => {
+  const [mockAddresses, setMockAddresses] = useState<Address[]>([])
   
+    
+     useEffect(() => {
+      const fetchAddress = async()=> {
+        const res = await addressService.getAddress()
+        setMockAddresses(res)
+      }
+      fetchAddress()
+    },[])
+    
     if (!addressPopup) return null;
-    //  useEffect(() => {
-    //   const fetchAddress = async()=> {
-    //     const res = await addressService.getAddress()
-    //     setmockAddresses(res)
-    //   }
-    //   fetchAddress
-    // },[])
+
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

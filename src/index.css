@@ -2,3 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #A0AEC0;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4A5568;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #2D3748;
+}
+
+@media (max-width: 640px) {
+    .chatbot-mobile-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 50 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1rem !important;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+}

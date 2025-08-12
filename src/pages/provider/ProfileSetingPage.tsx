@@ -1,23 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-    User,
-    Phone,
-    Mail,
-    MapPin,
-    Clock,
-    FileText,
-    Award,
-    CheckCircle,
-    XCircle,
-    Ban,
-    Eye,
-    Edit3,
-    X,
-    Save,
-    Upload
-} from 'lucide-react';
+import {User,Phone,Mail,MapPin,Clock,FileText,Award,CheckCircle,XCircle,Ban,Eye,Edit3,X,Save,Upload} from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile } from '../../types/provider';
+import { IProviderProfile } from '../../interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -88,7 +72,6 @@ const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
 interface IEditedProviderProfile extends Partial<IProviderProfile> {
     profilePhotoFile?: File;
     aadhaarIdProofFile?: File;
-    businessCertificationsFile?: File;
 }
 
 const ProviderProfile: React.FC = () => {
@@ -169,7 +152,7 @@ const ProviderProfile: React.FC = () => {
                 setProviderDetails(updatedProvider);
                 toast.success('Profile updated successfully!');
             } catch (error) {
-                console.error('Error updating provider:', error);
+                toast.error('Error updating provider:', error);
                 toast.error('Error updating profile. Please try again.');
             } finally {
                 setIsSaving(false);
@@ -269,11 +252,6 @@ const ProviderProfile: React.FC = () => {
                 formDataToSend.append('aadhaarIdProof', editedDetails.aadhaarIdProofFile);
                 hasChanges = true;
             }
-            if (editedDetails.businessCertificationsFile) {
-                formDataToSend.append('businessCertifications', editedDetails.businessCertificationsFile);
-                hasChanges = true;
-            }
-
 
             if (hasChanges) {
                 const updatedProvider = await providerService.updateProvider(formDataToSend);
@@ -438,10 +416,10 @@ const ProviderProfile: React.FC = () => {
                                 <section>
                                     <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
                                         <Award className="w-6 h-6 mr-3 text-blue-600" />
-                                        Experience & Service Area
+                                        Service Area
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                                        {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
                                             <label className="text-sm font-medium text-green-600 mb-2 block">Years of Experience</label>
                                             {isEditing ? (
                                                 <input
@@ -454,7 +432,7 @@ const ProviderProfile: React.FC = () => {
                                             ) : (
                                                 <p className="text-3xl font-bold text-green-700">{providerDetails?.experience} years</p>
                                             )}
-                                        </div>
+                                        </div> */}
                                         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
                                             <label className="text-sm font-medium text-purple-600 mb-2 block flex items-center">
                                                 <MapPin className="w-4 h-4 mr-1" />
@@ -618,10 +596,10 @@ const ProviderProfile: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <h3 className="font-semibold text-slate-800">Aadhaar/ID Proof</h3>
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {/* <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                         <CheckCircle className="w-3 h-3 mr-1" />
                                                         Verified
-                                                    </span>
+                                                    </span> */}
                                                     {isEditing && (
                                                         <div className="mt-2 space-y-2">
                                                             <input
@@ -655,60 +633,7 @@ const ProviderProfile: React.FC = () => {
                                                 onClick={() => {
                                                     const imageUrl = editedDetails.aadhaarIdProofFile
                                                         ? URL.createObjectURL(editedDetails.aadhaarIdProofFile)
-                                                        : getCloudinaryUrl(providerDetails?.verificationDocs?.aadhaarIdProof || '');
-                                                    openModal(imageUrl);
-                                                }}
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                <span>View</span>
-                                            </button>
-                                        </div>
-
-                                        <div className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
-                                            <div className="flex items-center space-x-4">
-                                                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                                                    <Award className="w-6 h-6 text-purple-600" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-slate-800">Business Certifications</h3>
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        <CheckCircle className="w-3 h-3 mr-1" />
-                                                        Verified
-                                                    </span>
-                                                    {isEditing && (
-                                                        <div className="mt-2 space-y-2">
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*,.pdf"
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) {
-                                                                        setEditedDetails((prev) => ({
-                                                                            ...prev,
-                                                                            businessCertificationsFile: file,
-                                                                        }));
-                                                                    }
-                                                                }}
-                                                                className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700"
-                                                            />
-                                                            {editedDetails.businessCertificationsFile &&
-                                                                editedDetails.businessCertificationsFile.type.startsWith("image/") && (
-                                                                    <img
-                                                                        src={URL.createObjectURL(editedDetails.businessCertificationsFile)}
-                                                                        alt="Certification Preview"
-                                                                        className="mt-1 w-48 rounded-lg border border-gray-300 shadow"
-                                                                    />
-                                                                )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <button
-                                                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
-                                                onClick={() => {
-                                                    const imageUrl = editedDetails.businessCertificationsFile
-                                                        ? URL.createObjectURL(editedDetails.businessCertificationsFile)
-                                                        : getCloudinaryUrl(providerDetails?.verificationDocs?.businessCertifications || '');
+                                                        : getCloudinaryUrl(providerDetails?.aadhaarIdProof || '');
                                                     openModal(imageUrl);
                                                 }}
                                             >
@@ -760,17 +685,13 @@ const ProviderProfile: React.FC = () => {
                                 center={currentLocation ? [currentLocation.lat, currentLocation.lng] : mapCenter}
                                 zoom={currentLocation ? 10 : 5}
                                 className="h-full w-full rounded-b-lg"
-                                style={{ height: '100%', width: '100%' }}
                             >
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 />
                                 <LocationSelector onSelect={(lat, lng) => {
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        serviceLocation: { lat, lng }
-                                    }));
+                                    setFormData(prev => ({...prev, serviceLocation: { lat, lng }}));
                                     setIsMapOpen(false);
                                 }} />
                                 {currentLocation && (

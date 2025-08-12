@@ -1,5 +1,6 @@
 import axios from "axios";
 import axiosInstance from "../API/axiosInstance";
+import { FilterParams } from "../pages/user/ProviderPopupPage";
 
 const PROVIDER_URL = `/provider`;
 
@@ -10,6 +11,16 @@ export const providerService = {
         return response.data;
     },
 
+    verifyRegistrationOtp: async (email: string, otp: string) => {
+        const response = await axiosInstance.post(`${PROVIDER_URL}/verify-registration-otp`, { email, otp });
+        return response.data;
+    },
+
+    resendRegistrationOtp: async (email: string) => {
+        const response = await axiosInstance.post(`${PROVIDER_URL}/resend-registration-otp`, { email });
+        return response.data;
+    },
+
     updateProvider: async (formData: FormData) => {
         const { data } = await axiosInstance.post(`${PROVIDER_URL}/updateProvider`, formData)
         return data
@@ -17,6 +28,11 @@ export const providerService = {
 
     getProvider: async () => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getProvider`)
+        return response.data
+    },
+
+    getServicesForAddpage: async () => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getServicesForAddPage`)
         return response.data
     },
 
@@ -60,10 +76,13 @@ export const providerService = {
     },
 
     updateProviderStatus: async (id: string, newStatus: string) => {
-        console.log('it snote goin',newStatus)
-        const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, {newStatus})
-        console.log('the status response', response)
+        const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, { newStatus })
         return response.data
-    }
+    },
+
+    getserviceProvider: async (serviceId: string, filters: FilterParams) => {
+        const response = await axiosInstance.get(`${PROVIDER_URL}/getFilteredServiceProvider`, { params: { serviceId, ...filters } })
+        return response.data
+    },
 
 }

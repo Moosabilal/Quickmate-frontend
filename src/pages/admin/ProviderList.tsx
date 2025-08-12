@@ -21,7 +21,7 @@ interface ProviderList {
   serviceId: string;
   serviceArea: string;
   profilePhoto: string;
-  servicesOffered: string;
+  serviceOffered: string[];
   status: ProviderStatus;
   rating?: number;
 }
@@ -44,7 +44,7 @@ const AdminProvidersPage: React.FC = () => {
 
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchProviders = async () => {
       try {
         const response = await providerService.getProvidersForAdmin({
           search: searchTerm || '',
@@ -65,7 +65,7 @@ const AdminProvidersPage: React.FC = () => {
       }
     };
 
-    fetchUsers();
+    fetchProviders();
   }, [searchTerm, approvalStatus, verificationStatus, ratingFilter, currentPage]);
 
 
@@ -81,6 +81,8 @@ const AdminProvidersPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  console.log('the provideers ', providers)
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -159,7 +161,19 @@ const AdminProvidersPage: React.FC = () => {
                         <img src={getCloudinaryUrl(provider.profilePhoto)} alt={provider.fullName} className="w-10 h-10 rounded-full object-cover" />
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{provider.fullName}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{provider.servicesOffered}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        {provider.serviceOffered && provider.serviceOffered.length > 0 ? (
+                          <ul className="list-disc pl-5">
+                            {provider.serviceOffered.map((service, index) => (
+                              <li key={index}>{service}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span>No service offered</span>
+                        )}
+                      </td>
+
+
                       <td className="px-6 py-4 text-sm text-gray-700">{provider.serviceArea}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${getStatusClasses(provider.status ?? 'N/A')}`}>
@@ -178,7 +192,6 @@ const AdminProvidersPage: React.FC = () => {
                               const newStatus = e.target.value as ProviderStatus;
                               try {
                                 const res = await providerService.updateProviderStatus(provider.id, newStatus);
-                                console.log('the restu res', res)
                                 setProviders((prev) =>
                                   prev.map((p) =>
                                     p.id === provider.id ? { ...p, status: newStatus } : p
@@ -196,7 +209,6 @@ const AdminProvidersPage: React.FC = () => {
                               {provider.status}
                             </option>
 
-                            {/* Other statuses (excluding the current one) */}
                             {Object.values(ProviderStatus)
                               .filter((status) => status !== provider.status)
                               .map((status) => (
@@ -207,12 +219,12 @@ const AdminProvidersPage: React.FC = () => {
                           </select>
 
 
-                          <button
+                          {/* <button
                             onClick={() => navigate(`/admin/providers/${provider.id}`)}
                             className="text-blue-600 hover:underline text-sm"
                           >
                             View
-                          </button>
+                          </button> */}
                         </div>
                       </td>
 

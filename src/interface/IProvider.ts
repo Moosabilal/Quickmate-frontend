@@ -1,3 +1,19 @@
+export interface IProvider {
+  id: string;
+  name: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  availableTime: string;
+  specialty?: string;
+  experience?: string;
+  location?: string;
+  phone?: string;
+  email?: string;
+  profileImage?: string;
+  description?: string;
+}
+
 export interface IFeaturedProviders {
   id: string;
   userId: string;
@@ -12,23 +28,20 @@ export interface IProviderProfile {
     startTime: string;
     endTime: string;
   };
-  verificationDocs: {
-    aadhaarIdProof: string;
-    businessCertifications?: string;
-  }
-    id: string;
-    userId: string;
-    fullName: string;
-    phoneNumber: string;
-    email: string;
-    serviceId: string;
-    serviceLocation: string;
-    serviceArea: string;
-    experience: number
-    profilePhoto: string;
-    status: string;
-    availableDays: string[];
-  
+  aadhaarIdProof: string;
+  id: string;
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  serviceId: string[];
+  serviceLocation: string;
+  serviceArea: string;
+  experience: number
+  profilePhoto: string;
+  status: string;
+  availableDays: string[];
+
 }
 
 export interface IBackendProvider {
@@ -45,8 +58,9 @@ export interface IBackendProvider {
     endTime: string;
   };
   availableDays: string[];
-  status: 'Active' | 'Suspended' | 'Pending' | 'Rejected';
+  status: string;
   earnings: number;
+  price: number;
   totalBookings: number;
   rating?: number;
   reviews?: number;

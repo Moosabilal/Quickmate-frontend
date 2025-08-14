@@ -57,4 +57,6 @@ export interface IBookingHistoryPage {
   location: string;
   priceUnit: string;
   duration?: string;
+  description?: string;
+  createdAt?: Date;
 }

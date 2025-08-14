@@ -12,7 +12,7 @@ const Sidebar = () => {
 
   const navigationItems = [
     { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/providerProfile` },
-    { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/providerProfile` },
+    { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/providerBookingManagement` },
     { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/providerService` },
     { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/providerProfile` },
     { icon: <DollarSign className="w-5 h-5" />, label: 'Earnings', path: `/providerProfile` },

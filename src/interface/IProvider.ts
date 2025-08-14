@@ -65,3 +65,16 @@ export interface IBackendProvider {
   rating?: number;
   reviews?: number;
 }
+
+
+export interface IProviderForChatListPage {
+  id: string;
+  bookingId?: string;
+  name: string;
+  profilePicture: string;
+  services: string[];
+  location: string;
+  isOnline: boolean;
+  // completedJobs: number;
+  description: string;
+}

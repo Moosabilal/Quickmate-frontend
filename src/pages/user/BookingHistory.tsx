@@ -201,7 +201,7 @@ const BookingHistory: React.FC = () => {
                   </div>
                 </div>
 
-                {booking.status === 'Confirmed' && (
+                {/* {booking.status === 'Confirmed' && (
                   <div className="px-6 pb-4">
                     <div className="bg-blue-50 rounded-xl p-4">
                       <div className="flex items-center justify-between text-sm">
@@ -213,7 +213,7 @@ const BookingHistory: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             ))
           ) : (

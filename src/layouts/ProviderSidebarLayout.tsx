@@ -10,7 +10,7 @@ const ProviderSidebarLayout = () => {
   return (
     <>
         <Header />
-            <div className='flex pt-20 min-h-screen'>
+            <div className='flex pt-20 min-h-screen ml-12'>
                 <div className="sticky top-20 h-fit p-4">
           <Sidebar />
         </div>
@@ -18,7 +18,7 @@ const ProviderSidebarLayout = () => {
                     <Outlet />
                 </main>
             </div>
-            <Footer />
+            {/* <Footer /> */}
     </>
   )
 }

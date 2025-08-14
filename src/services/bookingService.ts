@@ -47,5 +47,25 @@ export const bookingService = {
       console.log('Error in getting getFilteredBooking', error)
       throw error
     }
+  },
+
+  getBookingFor_Prov_mngmnt: async (id: string) => {
+    try {
+      const response = await axiosInstance.get(`${BOOKING_URL}/getBookingFor_Prov_mngmnt/${id}`)
+      return response.data
+    } catch (error) {
+      console.log('Error in getting getBookingFor_Prov_mngmnt', error)
+      throw error
+    }
+  },
+
+  getAllPreviousChat: async (bookingId: string) => {
+    try {
+      const response = await axiosInstance.get(`${BOOKING_URL}/getAllPreviousChats/${bookingId}`)
+      return response.data
+    } catch (error) {
+      console.log('Error in getting getAllPreviousChat', error)
+      throw error
+    }
   }
 }

@@ -223,7 +223,7 @@ const ServiceManagementPage: React.FC = () => {
                     toast.error(error.response.data.message)
                 }
             } else {
-                console.log('this is not working')
+                console.log('this is not working',data)
                 const { message, success } = await serviceService.createdService(data);
                 if (success) {
                     toast.success(message)
@@ -338,7 +338,7 @@ const ServiceManagementPage: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.description ? 'border-red-300' : 'border-gray-300'
                                     }`}
-                                placeholder="Describe your service in detail"
+                                placeholder="Describe your service in detail, what it includes"
                             />
                             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                         </div>

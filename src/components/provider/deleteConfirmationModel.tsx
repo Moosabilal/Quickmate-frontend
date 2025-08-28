@@ -42,8 +42,8 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
         icon: <Calendar className="w-6 h-6 text-purple-600" />,
         iconBg: 'bg-purple-100',
         title: 'Cancel Booking',
-        defaultMessage: 'Are you sure you want to cancel this booking? The customer will be notified automatically.',
-        warningText: 'This may affect your provider rating if cancelled close to the appointment time.',
+        defaultMessage: 'Are you sure you want to cancel this booking?.',
+        warningText: '',
         confirmText: 'Cancel Booking'
       },
       certificate: {
@@ -137,13 +137,11 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
           )}
         </div>
 
-        {/* Content */}
         <div className="p-6">
           <p className="text-gray-700 leading-relaxed mb-4">
             {message}
           </p>
           
-          {/* Item Details Card */}
           {itemName && (
             <div className="mb-4 p-4 bg-gray-50 rounded-xl border-l-4 border-red-400">
               <div className="flex items-start justify-between">
@@ -153,7 +151,7 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
                     <span className="text-red-600 ml-2">{itemName}</span>
                   </p>
                   {itemDetails && (
-                    <p className="text-sm text-gray-600">{itemDetails}</p>
+                    <p className="text-sm text-gray-600 whitespace-pre-line">{itemDetails}</p>
                   )}
                 </div>
                 <Trash2 className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />

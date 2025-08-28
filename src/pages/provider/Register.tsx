@@ -12,6 +12,9 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { MapPin } from 'lucide-react';
+import { Availability } from '../../interface/IProvider';
+
+
 
 interface FormData {
     fullName: string;
@@ -19,9 +22,7 @@ interface FormData {
     email: string;
     serviceArea: string | null;
     serviceLocation: { lat: number; lng: number } | null;
-    availableDays: string[];
-    startTime: string;
-    endTime: string;
+    availability: Availability[];
     aadhaarIdProof: File | null;
     profilePhoto: File | null;
     agreeTerms: boolean;
@@ -48,9 +49,7 @@ const ProviderRegistration: React.FC = () => {
         email: '',
         serviceArea: '',
         serviceLocation: null,
-        availableDays: [],
-        startTime: '',
-        endTime: '',
+        availability: [],
         aadhaarIdProof: null,
         profilePhoto: null,
         agreeTerms: false,
@@ -70,17 +69,36 @@ const ProviderRegistration: React.FC = () => {
     const dispatch = useAppDispatch()
 
 
-    // useEffect(() => {
-    //     const selectedCategory = categories.find(cat => cat._id === formData.category);
-    //     if (selectedCategory && selectedCategory.subCategories) {
-    //         const mappedServices = selectedCategory.subCategories
-    //             .filter(sub => sub.parentId === selectedCategory._id)
-    //             .map(sub => ({ value: sub._id, label: sub.name }));
-    //         setServices(mappedServices);
-    //     } else {
-    //         setServices([]);
-    //     }
-    // }, [formData.category, categories]);
+    const dayOptions = [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    ];
+
+    // ✅ Toggle day
+    const handleDayToggle = (day: string, checked: boolean) => {
+        setFormData(prev => {
+            let updated = [...prev.availability];
+            if (checked) {
+                updated.push({ day, startTime: '', endTime: '' });
+            } else {
+                updated = updated.filter(av => av.day !== day);
+            }
+            return { ...prev, availability: updated };
+        });
+    };
+
+    // ✅ Change start/end time
+    const handleTimeChange = (day: string, field: 'startTime' | 'endTime', value: string) => {
+        setFormData(prev => {
+            const updated = prev.availability.map(av =>
+                av.day === day ? { ...av, [field]: value } : av
+            );
+            return { ...prev, availability: updated };
+        });
+    };
+
+
+
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type } = e.target;
@@ -90,14 +108,15 @@ const ProviderRegistration: React.FC = () => {
             const checkboxValue = (e.target as HTMLInputElement).value;
             if (id === 'agreeTerms') {
                 setFormData(prev => ({ ...prev, agreeTerms: checked }));
-            } else {
-                setFormData(prev => ({
-                    ...prev,
-                    availableDays: checked
-                        ? [...prev.availableDays, checkboxValue]
-                        : prev.availableDays.filter(day => day !== checkboxValue),
-                }));
             }
+            //  else {
+            //     setFormData(prev => ({
+            //         ...prev,
+            //         availableDays: checked
+            //             ? [...prev.availableDays, checkboxValue]
+            //             : prev.availableDays.filter(day => day !== checkboxValue),
+            //     }));
+            // }
         } else {
             if (id === 'servicesOffered') {
                 const selectedService = services.find(service => service.value === value);
@@ -144,26 +163,22 @@ const ProviderRegistration: React.FC = () => {
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid.';
         }
-        // if (!formData.category) newErrors.category = 'Category is required.';
-        // if (!formData.servicesOffered) newErrors.servicesOffered = 'Service is required.';
-        // if (!formData.serviceArea.trim()) newErrors.serviceArea = 'Service Area (district) is required.';
         if (!formData.serviceLocation) {
             newErrors.serviceLocation = 'Service location is required.';
         }
-        // if (formData.experience === '') {
-        //     newErrors.experience = 'Experience is required.';
-        // } else if (formData.experience < 0) {
-        //     newErrors.experience = 'Experience cannot be negative.';
-        // }
-        if (formData.availableDays.length === 0) newErrors.availableDays = 'Select at least one available day.';
-        if (!formData.startTime) newErrors.startTime = 'Start Time is required.';
-        if (!formData.endTime) newErrors.endTime = 'End Time is required.';
-        if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
-            newErrors.endTime = 'End Time must be after Start Time.';
+
+        if (formData.availability.length === 0) {
+            newErrors.availability = 'Select at least one available day.';
+        } else {
+            for (const { day, startTime, endTime } of formData.availability) {
+                if (!startTime) newErrors[`${day}-startTime`] = `${day} start time required`;
+                if (!endTime) newErrors[`${day}-endTime`] = `${day} end time required`;
+                if (startTime && endTime && startTime >= endTime) {
+                    newErrors[`${day}-endTime`] = `${day} end time must be after start time`;
+                }
+            }
         }
-        // if (!formData.averageChargeRange.trim()) newErrors.averageChargeRange = 'Average Charge Range is required.';
         if (!formData.aadhaarIdProof) newErrors.aadhaarIdProof = 'Aadhaar/ID Proof is required.';
-        // if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile Photo is required.';
         if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the Terms & Conditions.';
 
         setErrors(newErrors);
@@ -181,9 +196,6 @@ const ProviderRegistration: React.FC = () => {
         data.append('fullName', formData.fullName);
         data.append('phoneNumber', formData.phoneNumber);
         data.append('email', formData.email);
-        // data.append('categoryId', formData.category);
-        // data.append('serviceId', formData.servicesOffered);
-        // data.append('serviceName', formData.serviceName);
         data.append('serviceArea', formData.serviceArea || 'unknown');
 
         if (formData.serviceLocation) {
@@ -191,13 +203,7 @@ const ProviderRegistration: React.FC = () => {
             data.append('serviceLocation', `${lat},${lng}`);
         }
 
-        // data.append('experience', String(formData.experience));
-        data.append('timeSlot', JSON.stringify({
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-        }));
-        // data.append('price', formData.averageChargeRange);
-        data.append('availableDays', JSON.stringify(formData.availableDays));
+        data.append('availability', JSON.stringify(formData.availability));
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
@@ -212,10 +218,6 @@ const ProviderRegistration: React.FC = () => {
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
-            // dispatch(updateProviderProfile({ provider }))
-
-
-            // navigate(`/providerProfile/${provider.userId}`);
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong. Please try again.');
@@ -224,20 +226,6 @@ const ProviderRegistration: React.FC = () => {
         }
     };
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         setIsLoading(true);
-    //         try {
-    //             const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
-    //             setCategories(fetchedCategories);
-    //         } catch (error: any) {
-    //             console.error("Error fetching data:", error);
-    //         } finally {
-    //             setIsLoading(false);
-    //         }
-    //     };
-    //     fetchData();
-    // }, []);
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -257,16 +245,6 @@ const ProviderRegistration: React.FC = () => {
 
         fetchAddress();
     }, [formData.serviceLocation]);
-
-    const dayOptions = [
-        { value: 'Monday', label: 'Monday' },
-        { value: 'Tuesday', label: 'Tuesday' },
-        { value: 'Wednesday', label: 'Wednesday' },
-        { value: 'Thursday', label: 'Thursday' },
-        { value: 'Friday', label: 'Friday' },
-        { value: 'Saturday', label: 'Saturday' },
-        { value: 'Sunday', label: 'Sunday' },
-    ];
 
     const renderInputField = (label: string, id: keyof FormData, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
         <div className="mb-6">
@@ -299,34 +277,6 @@ const ProviderRegistration: React.FC = () => {
         </div>
     );
 
-    // const renderCustomSelectField = (label: string, id: keyof FormData, options: { value: string; label: string }[], placeholder?: string) => (
-    //     <div className="mb-6">
-    //         <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
-    //             {label}
-    //         </label>
-    //         <div className="relative">
-    //             <select
-    //                 id={id as string}
-    //                 name={id as string}
-    //                 value={formData[id] as string}
-    //                 onChange={handleChange}
-    //                 className={`block appearance-none w-full bg-white border ${errors[id] ? 'border-red-500' : 'border-gray-200'} text-gray-700 py-3 px-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
-    //             >
-    //                 {placeholder && <option value="" disabled>{placeholder}</option>}
-    //                 {options.map((option) => (
-    //                     <option key={option.value} value={option.value}>
-    //                         {option.label}
-    //                     </option>
-    //                 ))}
-    //             </select>
-    //             <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col items-center justify-center px-3 text-gray-500">
-    //                 <ChevronUpIcon className="h-4 w-4 -mb-1" />
-    //                 <ChevronDownIcon className="h-4 w-4 -mt-1" />
-    //             </div>
-    //         </div>
-    //         {errors[id] && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors[id]}</p>}
-    //     </div>
-    // );
 
     const renderFileUploadField = (label: string, subLabel: string, id: keyof FormData, fileRef: React.RefObject<HTMLInputElement | null>, optional?: boolean) => (
         <div className="mb-6">
@@ -382,7 +332,7 @@ const ProviderRegistration: React.FC = () => {
             <div className="flex min-h-screen bg-gray-50 items-center justify-center">
                 <div className="flex flex-col items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-                    <p className="mt-4 text-lg text-gray-700 font-medium">Loading...</p>
+                    <p className="mt-4 text-lg text-gray-700 font-medium">Saving...</p>
                 </div>
             </div>
         );
@@ -408,8 +358,6 @@ const ProviderRegistration: React.FC = () => {
 
                         <div className="space-y-6">
                             <h2 className="text-xl font-semibold text-gray-700">Service Details</h2>
-                            {/* {renderCustomSelectField("Select Category", "category", categories.map(cat => ({ value: cat._id, label: cat.name })), "Select your main service category")}
-                            {renderCustomSelectField("Select Services Offered", "servicesOffered", services, "Select your service")} */}
 
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-semibold mb-2">
@@ -438,69 +386,59 @@ const ProviderRegistration: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* {renderInputField("Service Area (District)", "serviceArea", "text", "Enter the district where you offer services")} */}
+                        </div>
+
+                        <hr className="my-8 border-gray-200" />
+
+                        {/* Available Days */}
+                        <div className="mb-6">
+                            <label className="block text-gray-700 text-sm font-semibold mb-2">Available Days & Times</label>
+                            <div className="space-y-4">
+                                {dayOptions.map(day => {
+                                    const existing = formData.availability.find(av => av.day === day);
+                                    const checked = Boolean(existing);
+                                    return (
+                                        <div key={day} className="border p-4 rounded-lg">
+                                            <label className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    onChange={(e) => handleDayToggle(day, e.target.checked)}
+                                                />
+                                                <span>{day}</span>
+                                            </label>
+                                            {checked && (
+                                                <div className="flex gap-4 mt-3">
+                                                    <div className="w-40">
+                                                        <input
+                                                            type="time"
+                                                            value={existing?.startTime || ''}
+                                                            onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
+                                                            className={`w-full px-3 py-2 border ${errors[`${day}-startTime`] ? 'border-red-500' : 'border-gray-200'} rounded-lg`}
+                                                        />
+                                                        {errors[`${day}-startTime`] && <p className="text-red-500 text-xs">{errors[`${day}-startTime`]}</p>}
+                                                    </div>
+                                                    <div className="w-40">
+                                                        <input
+                                                            type="time"
+                                                            value={existing?.endTime || ''}
+                                                            onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
+                                                            className={`w-full px-3 py-2 border ${errors[`${day}-endTime`] ? 'border-red-500' : 'border-gray-200'} rounded-lg`}
+                                                        />
+                                                        {errors[`${day}-endTime`] && <p className="text-red-500 text-xs">{errors[`${day}-endTime`]}</p>}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {errors.availability && <p className="text-red-500 text-xs mt-2">{errors.availability}</p>}
                         </div>
 
                         <hr className="my-8 border-gray-200" />
 
                         <div className="space-y-6">
-                            {/* <h2 className="text-xl font-semibold text-gray-700">Professional Details</h2>
-                            {renderInputField("Experience (Years)", "experience", "number", "Enter your experience in years", undefined, 0)} */}
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">Available Days</label>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                    {dayOptions.map((option) => (
-                                        <label key={option.value} className="inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                name="availableDays"
-                                                value={option.value}
-                                                checked={formData.availableDays.includes(option.value)}
-                                                onChange={handleChange}
-                                                className="form-checkbox h-5 w-5 text-blue-500 rounded focus:ring-blue-500 border-gray-200"
-                                            />
-                                            <span className="ml-2 text-gray-700 text-sm font-medium">{option.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                {errors.availableDays && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors.availableDays}</p>}
-                            </div>
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">Time Slots</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label htmlFor="startTime" className="sr-only">Start Time</label>
-                                        <input
-                                            id="startTime"
-                                            name="startTime"
-                                            type="time"
-                                            value={formData.startTime}
-                                            onChange={handleChange}
-                                            className={`w-full px-4 py-3 border ${errors.startTime ? 'border-red-500' : 'border-gray-200'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white`}
-                                        />
-                                        {errors.startTime && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors.startTime}</p>}
-                                    </div>
-                                    <div>
-                                        <label htmlFor="endTime" className="sr-only">End Time</label>
-                                        <input
-                                            id="endTime"
-                                            name="endTime"
-                                            type="time"
-                                            value={formData.endTime}
-                                            onChange={handleChange}
-                                            className={`w-full px-4 py-3 border ${errors.endTime ? 'border-red-500' : 'border-gray-200'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white`}
-                                        />
-                                        {errors.endTime && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors.endTime}</p>}
-                                    </div>
-                                </div>
-                            </div>
-                            {/* {renderInputField("Charge", "averageChargeRange", "number", "Enter your average charge range (e.g., ₹500)")} */}
-                        </div>
-
-                        <hr className="my-8 border-gray-200" />
-
-                        <div className="space-y-6">
-                            {/* <h2 className="text-xl font-semibold text-gray-700">Documents</h2> */}
                             {renderFileUploadField("Aadhaar/ID Proof", "Upload your ID proof", "aadhaarIdProof", aadhaarIdProofRef)}
                             {renderFileUploadField("Profile Photo(Optional)", "Upload your profile photo", "profilePhoto", profilePhotoRef)}
                         </div>

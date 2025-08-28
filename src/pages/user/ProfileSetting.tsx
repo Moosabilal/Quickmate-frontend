@@ -63,7 +63,7 @@ const ProfileSetting: React.FC = () => {
             setAddressList(address)
         }
         fetchAddress()
-    },[])
+    }, [])
 
     const isCustomer = user?.role === "Customer";
 
@@ -105,12 +105,33 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(false);
     };
 
+    const getCoordinates = async (street: string, city: string, state: string, pincode: string) => {
+        const data = await addressService.getLocationByPincode(street, city, state, pincode);
+        console.log('the data from pincode', data)
+        if (data && data.length > 0) {
+            return {
+                lat: parseFloat(data[0].lat),
+                lng: parseFloat(data[0].lon),
+            };
+        }
+
+        return null;
+    }
+
+
 
     const handleAddAddress = async () => {
         const { label, street, city, state, zip } = currentAddress;
 
+        const coords = await getCoordinates(street, city, state, zip);
+
+        if (!coords) {
+            toast.info("Unable to find coordinates for this address.");
+            return;
+        }
+
         if (label && street && city && state && zip) {
-            const newAddr = { ...currentAddress };
+            const newAddr = { ...currentAddress, locationCoords: `${coords.lat},${coords.lng}`, };
 
             try {
                 let savedAddress;
@@ -311,14 +332,14 @@ const ProfileSetting: React.FC = () => {
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button
-                                    onClick={() => handleEditAddress(address.id)}
+                                    onClick={() => handleEditAddress(address.id!)}
                                     className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     aria-label={`Edit ${address.label} address`}
                                 >
                                     <MdEdit className="w-5 h-5" />
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteAddress(address.id)}
+                                    onClick={() => handleDeleteAddress(address.id!)}
                                     className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                                     aria-label={`Delete ${address.label} address`}
                                 >

@@ -17,7 +17,7 @@ export interface IBookingRequest {
   customerName: string;
   phone: string;
   instructions?: string;
-  addressId: string
+  addressId?: string
   // scheduledDate?: string;
   // scheduledTime?: string;
 }
@@ -27,6 +27,11 @@ export interface IBookingConfirmationPage {
   id: string;
   bookedOrderId: string;
   serviceName: string;
+  serviceImage?: string;
+  providerName?: string;
+  providerImage?: string;
+  priceUnit?: string;
+  duration?: string;
   customer?: string;
   phone: string;
   date: string;
@@ -57,4 +62,6 @@ export interface IBookingHistoryPage {
   location: string;
   priceUnit: string;
   duration?: string;
+  description?: string;
+  createdAt?: Date;
 }

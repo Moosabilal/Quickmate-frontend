@@ -25,11 +25,11 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
-    { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/Profile/wallet' },
-    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chat' },
-    { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
-    { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
-    { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },
+    // { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/Profile/wallet' },
+    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chatListPage' },
+    // { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
+    // { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
+    // { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },
   ];
 
   const serviceProviderItem = {
@@ -38,7 +38,13 @@ const Sidebar = () => {
     path: `/providerProfile/${user?.id}`,
   };
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+  if (path === '/profile') {
+    return location.pathname === '/profile'; // exact match only
+  }
+  return location.pathname.startsWith(path);
+};
+
 
   const handleLogout = () => {
     const confirmLogout = window.confirm('Are you sure you want to logout?');

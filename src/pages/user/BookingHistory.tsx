@@ -20,7 +20,9 @@ const BookingHistory: React.FC = () => {
       setBookings(response)
     }
     getBooking()
-  },[])
+  }, [])
+
+  console.log('the bookings', bookings)
 
   const tabs = [
     { id: 'all', label: 'All Bookings', count: bookings.length },
@@ -58,7 +60,7 @@ const BookingHistory: React.FC = () => {
   const filteredBookings = bookings.filter(booking => {
     const matchesTab = activeTab === 'all' || booking.status === activeTab;
     const matchesSearch = booking.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.providerName.toLowerCase().includes(searchTerm.toLowerCase());
+      booking.providerName.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
@@ -102,16 +104,14 @@ const BookingHistory: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${activeTab === tab.id
                     ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {tab.label}
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  activeTab === tab.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${activeTab === tab.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                  }`}>
                   {tab.count}
                 </span>
               </button>
@@ -125,16 +125,14 @@ const BookingHistory: React.FC = () => {
               <div key={booking.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                    {/* Service Image */}
                     <div className="flex-shrink-0">
                       <img
-                        src={ getCloudinaryUrl(booking.serviceImage) }
+                        src={getCloudinaryUrl(booking.serviceImage)}
                         alt={booking.serviceName}
                         className="w-20 h-20 rounded-2xl object-cover shadow-md"
                       />
                     </div>
 
-                    {/* Main Content */}
                     <div className="flex-grow">
                       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                         <div className="space-y-3">
@@ -143,12 +141,16 @@ const BookingHistory: React.FC = () => {
                             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
                               {getStatusIcon(booking.status)} {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                             </span>
+                            {booking.createdAt && <span className={`px-3 py-1 rounded-full text-sm font-medium border bg-gray-50 text-gray-800 border-gray-200 `}>
+                              {`Booked on ${new Date(booking.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}`}
+                            </span>}
+
                           </div>
-                          
+
                           <div className="flex items-center gap-4 text-gray-600">
                             <div className="flex items-center gap-2">
                               <img
-                                src={ getCloudinaryUrl(booking.providerImage) }
+                                src={getCloudinaryUrl(booking.providerImage)}
                                 alt={booking.providerName}
                                 className="w-6 h-6 rounded-full object-cover"
                               />
@@ -163,10 +165,10 @@ const BookingHistory: React.FC = () => {
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              <span>{new Date(booking.date).toLocaleDateString('en-US', { 
-                                weekday: 'short', 
-                                month: 'short', 
-                                day: 'numeric' 
+                              <span>{new Date(booking.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric'
                               })}</span>
                             </div>
                             <div className="flex items-center gap-1">
@@ -182,26 +184,28 @@ const BookingHistory: React.FC = () => {
 
                         <div className="flex flex-col lg:items-end gap-3">
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-900">${booking.price}</div>
+                            <div className="text-2xl font-bold text-gray-900">₹{booking.price}</div>
                             <div className="text-sm text-gray-500">Total Amount</div>
                           </div>
-                          
-                          {/* <div className="flex gap-2">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-colors">
+
+                          <div className="flex gap-2">
+                            <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-colors"
+                              onClick={() => navigate(`/profile/bookingDetails/${booking.id}`)}
+                            >
                               <Eye className="w-4 h-4" />
                               View Details
                             </button>
-                            <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                            {/* <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
                               <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                            </button>
-                          </div> */}
+                            </button> */}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {booking.status === 'Confirmed' && (
+                {/* {booking.status === 'Confirmed' && (
                   <div className="px-6 pb-4">
                     <div className="bg-blue-50 rounded-xl p-4">
                       <div className="flex items-center justify-between text-sm">
@@ -213,7 +217,7 @@ const BookingHistory: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             ))
           ) : (
@@ -223,7 +227,7 @@ const BookingHistory: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No bookings found</h3>
               <p className="text-gray-600 mb-6">You haven't made any bookings yet or no results match your search.</p>
-              <button 
+              <button
                 onClick={() => navigate('/services')}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors">
                 Browse Services

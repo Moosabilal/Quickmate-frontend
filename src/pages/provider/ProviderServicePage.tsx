@@ -244,7 +244,7 @@ const ProviderServicesPage: React.FC = () => {
                 onConfirm={handleDeleteConfirm}
                 itemType="service"
                 itemName={serviceToDelete?.title}
-                itemDetails={`${serviceToDelete?.category} • $${serviceToDelete?.price}`}
+                itemDetails={`${serviceToDelete?.category} • ₹${serviceToDelete?.price}`}
                 isLoading={isDeleting}
                 additionalInfo="Any existing bookings for this service will need to be handled separately."
             />

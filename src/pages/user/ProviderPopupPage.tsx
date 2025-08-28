@@ -19,6 +19,7 @@ interface ProviderPopupProps {
   selectedProvider: IBackendProvider | null;
   setProviderPopup: (open: boolean) => void;
   serviceId: string;
+  selectedTime: string | null;
 }
 
 const ProviderPopup = ({
@@ -27,16 +28,17 @@ const ProviderPopup = ({
   selectedProvider,
   setProviderPopup,
   serviceId,
+  selectedTime
 }: ProviderPopupProps) => {
   if (!providerPopup) return null;
 
   const initialFilters: FilterParams = {
-  area: '',
-  day: '',
-  time: '',
-  experience: undefined,
-  price: undefined,
-};
+    area: '',
+    day: '',
+    time: '',
+    experience: undefined,
+    price: undefined,
+  };
 
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
   const [filters, setFilters] = useState<FilterParams>({});
@@ -53,6 +55,15 @@ const ProviderPopup = ({
             !(typeof value === 'number' && value === 0)
         )
       ) as FilterParams
+
+      if (selectedTime) {
+        console.log('the selected time', selectedTime)
+        const convertedTime = convertTo24Hour(selectedTime);
+        console.log('the converted time', convertedTime )
+        filteredParams.time = convertedTime;
+      }
+
+      console.log('the filtered params', filteredParams)
       const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
       console.log('the fetched providers', providers)
       setAllProviders(providers);
@@ -61,6 +72,20 @@ const ProviderPopup = ({
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
     }
   };
+
+  function convertTo24Hour(time12h: string): string {
+    const [time, modifier] = time12h.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (modifier === "PM" && hours !== 12) {
+      hours += 12;
+    }
+    if (modifier === "AM" && hours === 12) {
+      hours = 0;
+    }
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  }
 
   useEffect(() => {
     if (serviceId) {
@@ -78,7 +103,6 @@ const ProviderPopup = ({
     setAppliedFilters(initialFilters);
     getProvider(initialFilters);
   };
-  console.log('the udpated providers', allProviders)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -95,9 +119,8 @@ const ProviderPopup = ({
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`p-2 rounded-lg transition-all duration-200 hover:bg-white/20 ${
-                  showFilters ? 'bg-white/20 shadow-md' : ''
-                }`}
+                className={`p-2 rounded-lg transition-all duration-200 hover:bg-white/20 ${showFilters ? 'bg-white/20 shadow-md' : ''
+                  }`}
                 title="Toggle Filters"
               >Filter
                 <Filter className={`w-5 h-5 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
@@ -105,12 +128,11 @@ const ProviderPopup = ({
 
             </div>
           </div>
-          
+
           <div className="overflow-y-auto h-full pb-20">
             <div className="p-4 space-y-3">
-              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
-              }`}>
+              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
+                }`}>
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200 shadow-sm">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <Filter className="w-4 h-4 text-blue-600" />
@@ -142,14 +164,7 @@ const ProviderPopup = ({
                         <option value="Sunday">Sunday</option>
                       </select>
                     </div>
-                    <div className="relative">
-                      <input
-                        type="time"
-                        value={filters.time}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, time: e.target.value }))}
-                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                    </div>
+
                     <div className="relative">
                       <input
                         type="number"
@@ -160,7 +175,7 @@ const ProviderPopup = ({
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
-                    <div className="relative col-span-2">
+                    <div className="relative">
                       <input
                         type="number"
                         placeholder="Max Price"
@@ -171,7 +186,7 @@ const ProviderPopup = ({
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3 mt-4">
                     <button
                       onClick={handleApplyFilters}
@@ -285,21 +300,18 @@ const ProviderPopup = ({
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">Available Hours</p>
-                      <p className="text-gray-600">{selectedProvider.timeSlot?.startTime} - {selectedProvider.timeSlot?.endTime}</p>
-                    </div>
-                  </div>
+                  
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
-                      <p className="font-medium text-gray-900">Available Days</p>
+                      <p className="font-medium text-gray-900">Available Hours & Days</p>
                       <p className="text-gray-600">
-                        {selectedProvider.availableDays?.length
-                          ? selectedProvider.availableDays.join(', ')
-                          : 'Not specified'}
+                        {selectedProvider.availability? selectedProvider.availability.map((slot, index) => (
+                          <span key={index}>
+                            {slot.day}: {slot.startTime} - {slot.endTime}
+                            {index < selectedProvider.availability.length - 1 && <br/>}
+                          </span>
+                        )) : 'Not specified'}
                       </p>
                     </div>
                   </div>

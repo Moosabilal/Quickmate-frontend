@@ -85,4 +85,15 @@ export const providerService = {
         return response.data
     },
 
+    getProviderForChatPage: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderForChatPage`)
+            return response.data
+        } catch (error) {
+            console.log('Error in getting getProviderForChatPage', error)
+            throw error
+
+        }
+    }
+
 }

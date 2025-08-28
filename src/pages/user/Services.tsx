@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Pagination from '../../components/user/Pagination';
 import { categoryService } from '../../services/categoryService';
-import { IserviceResponse } from '../../types/category';
+import { IserviceResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 
 const ServicesPage: React.FC = () => {
-  const servicesPerPage = 2;
+  const servicesPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [allServices, setAllServices] = useState<IserviceResponse[]>([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -39,30 +39,44 @@ const ServicesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 font-sans">
+      <main className="container mx-auto px-4 py-12 pt-20">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-tight leading-snug">
+            Our Service Categories
+          </h1>
+          <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto px-2">
+            Discover amazing services tailored just for you
+          </p>
+        </div>
 
-      <main className="container mx-auto px-4 py-16 pt-28">
-        <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">
-          Discover Our Service Categories
-        </h1>
 
-        {/* Styled Search Bar */}
-        <div className="mb-12 flex justify-center">
-          <div className="relative w-full max-w-2xl shadow-lg rounded-full overflow-hidden focus-within:ring-4 focus-within:ring-blue-300 transition-all duration-300">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="h-1 w-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+            <span className="text-slate-700 font-medium text-lg">Featured Services</span>
+            <span className="text-sm text-slate-500 bg-white/60 px-2 py-1 rounded-full">
+              {totalServices} found
+            </span>
+          </div>
+
+          <div className="relative w-full sm:w-64 md:w-72">
             <input
               type="text"
-              placeholder="Search for services..."
+              placeholder="Search services..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full py-4 pl-16 pr-6 text-lg rounded-full border-2 border-gray-200 focus:outline-none focus:border-blue-500 transition-all duration-300 placeholder-gray-500"
+              className="w-full py-2 pl-9 pr-3 text-sm rounded-lg border border-slate-200 
+                 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 
+                 focus:ring-blue-400 focus:border-transparent transition-all 
+                 duration-300 placeholder-slate-400 shadow-sm hover:shadow-md"
             />
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <svg
-                className="w-7 h-7"
+                className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
@@ -75,34 +89,31 @@ const ServicesPage: React.FC = () => {
           </div>
         </div>
 
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-blue-600 pl-4">
-          Featured Services
-        </h2>
 
         {allServices.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
             {allServices.map((service) => (
               <div
                 key={service.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden group border border-gray-200"
+                className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden border border-white/20 hover:border-blue-200"
               >
-                <div className="relative h-36 w-full overflow-hidden">
+                <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
                   <img
                     src={getCloudinaryUrl(service.iconUrl || '')}
                     alt={service.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                    <span className="text-white text-sm sm:text-base font-semibold">{service.name}</span>
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-                <div className="p-4 text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">
+
+                <div className="p-3 text-center">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                     {service.name}
                   </h3>
                   <button
-                  onClick={() => navigate(`/service-detailsPage/${service.id}`)}
-                   className="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-300 text-sm font-medium shadow">
+                    onClick={() => navigate(`/service-detailsPage/${service.id}`)}
+                    className="w-full py-1.5 px-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 text-xs font-medium shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95"
+                  >
                     View Details
                   </button>
                 </div>
@@ -110,9 +121,17 @@ const ServicesPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-600 text-xl py-10">
-            No services found matching your search.
-          </p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.291-1.007-5.824-2.562M15 6.306A7.962 7.962 0 0112 9c-2.34 0-4.291-1.007-5.824-2.562"></path>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">No Services Found</h3>
+            <p className="text-slate-500 max-w-md mx-auto">
+              We couldn't find any services matching your search. Try different keywords.
+            </p>
+          </div>
         )}
 
         <Pagination

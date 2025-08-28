@@ -1,10 +1,18 @@
+
+
+ export interface Availability {
+    day: string;       // e.g. "Monday"
+    startTime: string; // e.g. "09:00"
+    endTime: string;   // e.g. "17:00"
+}
+
 export interface IProvider {
   id: string;
   name: string;
   rating: number;
   reviews: number;
   price: number;
-  availableTime: string;
+  availability: Availability[];
   specialty?: string;
   experience?: string;
   location?: string;
@@ -24,10 +32,7 @@ export interface IFeaturedProviders {
 }
 
 export interface IProviderProfile {
-  timeSlot: {
-    startTime: string;
-    endTime: string;
-  };
+
   aadhaarIdProof: string;
   id: string;
   userId: string;
@@ -40,7 +45,7 @@ export interface IProviderProfile {
   experience: number
   profilePhoto: string;
   status: string;
-  availableDays: string[];
+  availability: Availability[];
 
 }
 
@@ -52,12 +57,9 @@ export interface IBackendProvider {
   profilePhoto: string;
   serviceName?: string;
   serviceArea: string;
+  serviceLocation: string;
   experience: number;
-  timeSlot: {
-    startTime: string;
-    endTime: string;
-  };
-  availableDays: string[];
+  availability: Availability[];
   status: string;
   earnings: number;
   price: number;

@@ -38,7 +38,13 @@ const Sidebar = () => {
     path: `/providerProfile/${user?.id}`,
   };
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+  if (path === '/profile') {
+    return location.pathname === '/profile'; // exact match only
+  }
+  return location.pathname.startsWith(path);
+};
+
 
   const handleLogout = () => {
     const confirmLogout = window.confirm('Are you sure you want to logout?');

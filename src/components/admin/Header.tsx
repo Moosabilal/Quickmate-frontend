@@ -36,7 +36,7 @@ const Header = () => {
             </button>
             {isProfileDropdownOpen && (
               <div className="absolute right-0 mt-14 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-10">
-                <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Profile</Link>
+                {/* <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Profile</Link> */}
                 <button onClick={handleLogout} className="w-full text-left block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</button>
               </div>
             )}

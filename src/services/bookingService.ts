@@ -67,5 +67,16 @@ export const bookingService = {
       console.log('Error in getting getAllPreviousChat', error)
       throw error
     }
+  },
+
+  cancelBooking: async (id: string) => {
+    try {
+      const response = await axiosInstance.patch(`${BOOKING_URL}/cancelBooking/${id}`)
+      return response.data
+    } catch (error) {
+      console.log('Error in cancelling booking', error)
+      throw error
+    }
   }
+
 }

@@ -199,7 +199,7 @@ const ChatRoom: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <button className="p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105">
             <Phone className="w-5 h-5" />
           </button>
@@ -209,7 +209,7 @@ const ChatRoom: React.FC = () => {
           <button className="p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105">
             <MoreVertical className="w-5 h-5" />
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -330,7 +330,7 @@ const ChatRoom: React.FC = () => {
           </div>
         )}
 
-        <form  className="flex items-end space-x-3">
+        {/* <form  className="flex items-end space-x-3">
           <div className="flex flex-col space-y-2">
             <button 
               type="button" 
@@ -390,7 +390,7 @@ const ChatRoom: React.FC = () => {
               </button>
             )}
           </div>
-        </form>
+        </form> */}
         <BookingChatVideo bookingId={bookingId} currentUserId={user?.name!} />
 
       </div>

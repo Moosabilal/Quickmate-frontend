@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {User,Phone,Mail,MapPin,Clock,FileText,Award,CheckCircle,XCircle,Ban,Eye,Edit3,X,Save,Upload} from 'lucide-react';
+import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
 import { IProviderProfile } from '../../interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -202,7 +202,7 @@ const ProviderProfile: React.FC = () => {
             let hasChanges = false;
 
             for (const [key, originalValue] of Object.entries(providerDetails)) {
-                if (key === 'serviceLocation' || key === 'serviceArea') continue; 
+                if (key === 'serviceLocation' || key === 'serviceArea') continue;
                 const editedValue = editedDetails[key as keyof IEditedProviderProfile];
 
                 const finalValue =
@@ -217,7 +217,7 @@ const ProviderProfile: React.FC = () => {
                 }
 
                 if (finalValue instanceof File) {
-                    continue; 
+                    continue;
                 }
 
                 if (typeof finalValue === 'object' && finalValue !== null) {
@@ -254,6 +254,9 @@ const ProviderProfile: React.FC = () => {
             }
 
             if (hasChanges) {
+                for(let [key, value] of formDataToSend.entries()) {
+                    console.log(`${key} : ${value}`)
+                }
                 const updatedProvider = await providerService.updateProvider(formDataToSend);
                 setProviderDetails(updatedProvider.provider);
                 toast.success(updatedProvider.message);
@@ -277,27 +280,30 @@ const ProviderProfile: React.FC = () => {
         }));
     };
 
-    const handleTimeSlotChange = (field: 'startTime' | 'endTime', value: string) => {
-        setEditedDetails(prev => ({
-            ...prev,
-            timeSlot: {
-                ...prev.timeSlot!,
-                [field]: value
-            }
-        }));
-    };
-
     const handleDayToggle = (day: string) => {
-        const currentDays = editedDetails.availableDays || [];
-        const updatedDays = currentDays.includes(day)
-            ? currentDays.filter(d => d !== day)
-            : [...currentDays, day];
+        const current = editedDetails.availability || [];
+        const exists = current.find(a => a.day === day);
 
-        setEditedDetails(prev => ({
-            ...prev,
-            availableDays: updatedDays
-        }));
+        let updated;
+        if (exists) {
+            // remove the day if already selected
+            updated = current.filter(a => a.day !== day);
+        } else {
+            // add with empty times
+            updated = [...current, { day, startTime: "", endTime: "" }];
+        }
+
+        setEditedDetails(prev => ({ ...prev, availability: updated }));
     };
+
+    const handleTimeChange = (day: string, field: "startTime" | "endTime", value: string) => {
+        const updated = (editedDetails.availability || []).map(a =>
+            a.day === day ? { ...a, [field]: value } : a
+        );
+
+        setEditedDetails(prev => ({ ...prev, availability: updated }));
+    };
+
 
     const getCurrentLocation = () => {
         if (formData.serviceLocation) {
@@ -473,59 +479,73 @@ const ProviderProfile: React.FC = () => {
                                         <Clock className="w-6 h-6 mr-3 text-blue-600" />
                                         Availability
                                     </h2>
+
                                     <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 space-y-4">
-                                        <div>
-                                            <label className="text-sm font-medium text-blue-600 mb-2 block">Available Days</label>
-                                            {isEditing ? (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {daysOfWeek.map(day => (
-                                                        <button
-                                                            key={day}
-                                                            type="button"
-                                                            onClick={() => handleDayToggle(day)}
-                                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${editedDetails.availableDays?.includes(day)
-                                                                ? 'bg-blue-600 text-white'
-                                                                : 'bg-white text-blue-600 border border-blue-300'
-                                                                }`}
-                                                        >
-                                                            {day}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-lg font-semibold text-blue-800">Days: {providerDetails?.availableDays?.join(', ')}</p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-medium text-blue-600 mb-2 block">Time Slot</label>
-                                            {isEditing ? (
-                                                <div className="flex items-center space-x-4">
-                                                    <div>
-                                                        <label className="text-xs text-blue-500">Start Time</label>
-                                                        <input
-                                                            type="time"
-                                                            value={editedDetails.timeSlot?.startTime || ''}
-                                                            onChange={(e) => handleTimeSlotChange('startTime', e.target.value)}
-                                                            className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        />
-                                                    </div>
-                                                    <span className="text-blue-600">to</span>
-                                                    <div>
-                                                        <label className="text-xs text-blue-500">End Time</label>
-                                                        <input
-                                                            type="time"
-                                                            value={editedDetails.timeSlot?.endTime || ''}
-                                                            onChange={(e) => handleTimeSlotChange('endTime', e.target.value)}
-                                                            className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <p className="text-md text-blue-700">Time: {providerDetails?.timeSlot?.startTime} to {providerDetails?.timeSlot?.endTime}</p>
-                                            )}
-                                        </div>
+                                        {isEditing ? (
+                                            <div className="space-y-4">
+                                                {daysOfWeek.map(day => {
+                                                    const dayAvailability = editedDetails.availability?.find(a => a.day === day);
+                                                    const isSelected = !!dayAvailability;
+
+                                                    return (
+                                                        <div key={day} className="flex items-center gap-4">
+                                                            {/* Day toggle */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDayToggle(day)}
+                                                                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors 
+                                                                    ${isSelected
+                                                                        ? 'bg-blue-600 text-white'
+                                                                        : 'bg-white text-blue-600 border border-blue-300'}
+                                                                    `}
+                                                            >
+                                                                {day}
+                                                            </button>
+
+                                                            {/* Time inputs if selected */}
+                                                            {isSelected && (
+                                                                <div className="flex items-center gap-3">
+                                                                    <div>
+                                                                        <label className="text-xs pr-2 text-blue-500">Start</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={dayAvailability.startTime}
+                                                                            onChange={(e) => handleTimeChange(day, "startTime", e.target.value)}
+                                                                            className="p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-blue-600">to</span>
+                                                                    <div>
+                                                                        <label className="text-xs pr-2 text-blue-500">End</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={dayAvailability.endTime}
+                                                                            onChange={(e) => handleTimeChange(day, "endTime", e.target.value)}
+                                                                            className="p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {providerDetails?.availability?.length ? (
+                                                    providerDetails.availability.map((slot: any) => (
+                                                        <p key={slot._id} className="text-md text-blue-700">
+                                                            <strong>{slot.day}</strong>: {slot.startTime} to {slot.endTime}
+                                                        </p>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-blue-500">No availability set</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
+
 
                                 <section>
                                     <h2 className="text-2xl font-bold text-slate-800 mb-6">Profile Photo</h2>
@@ -691,7 +711,7 @@ const ProviderProfile: React.FC = () => {
                                 // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 />
                                 <LocationSelector onSelect={(lat, lng) => {
-                                    setFormData(prev => ({...prev, serviceLocation: { lat, lng }}));
+                                    setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
                                     setIsMapOpen(false);
                                 }} />
                                 {currentLocation && (

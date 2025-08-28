@@ -191,6 +191,7 @@ const AdminProvidersPage: React.FC = () => {
                             onChange={async (e) => {
                               const newStatus = e.target.value as ProviderStatus;
                               try {
+                                console.log('the new status', newStatus)
                                 const res = await providerService.updateProviderStatus(provider.id, newStatus);
                                 setProviders((prev) =>
                                   prev.map((p) =>

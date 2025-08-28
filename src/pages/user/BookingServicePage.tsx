@@ -51,7 +51,7 @@ const Booking_servicePage: React.FC = () => {
           {categoryName}
         </h1>
         <p className="text-md sm:text-lg text-gray-600 mb-8">
-          Find top-rated cleaning professionals in your area for {categoryName}.
+          Find top-rated services in your area for {categoryName}.
         </p>
 
         <div className="mb-10 max-w-2xl mx-auto">

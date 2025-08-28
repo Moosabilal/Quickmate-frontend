@@ -84,7 +84,9 @@ const getStatusIcon = (isVerified: boolean) => {
 
   const handleStatus = async (userId: string) => {
     try {
-      const updatedUser = await authService.updateUser(userId);
+      const confirmation = window.confirm("are you sure you want to block this user")
+      if(confirmation){
+        const updatedUser = await authService.updateUser(userId);
 
       setUsers(prevUsers =>
         prevUsers.map(user =>
@@ -95,6 +97,8 @@ const getStatusIcon = (isVerified: boolean) => {
       if (currentUser?.id === userId) {
         dispatch(updateProfile({ user: updatedUser }));
       }
+      }
+      
     } catch (error) {
       console.error('Error updating user status:', error);
     }

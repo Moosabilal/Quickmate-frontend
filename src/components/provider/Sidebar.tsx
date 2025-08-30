@@ -2,13 +2,13 @@ import { Calendar, User, Settings, Star, DollarSign } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
   const { provider } = useAppSelector((state) => state.provider);
   const { user } = useAppSelector((state) => state.auth);
 
-  const [activeItem, setActiveItem] = useState<string>('Dashboard');
+  const location = useLocation();
 
   const navigationItems = [
     { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/providerProfile` },
@@ -37,21 +37,22 @@ const Sidebar = () => {
         </div>
 
         <nav className="space-y-2">
-          {navigationItems.map((item, index) => (
-            <Link
-              key={index}
-              to={item.path}
-              onClick={() => setActiveItem(item.label)}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                activeItem === item.label
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-              }`}
-            >
-              {item.icon}
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
+          {navigationItems.map((item, index) => {
+            const isActive = location.pathname === item.path; // 👈 compare path
+            return (
+              <Link
+                key={index}
+                to={item.path}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                  }`}
+              >
+                {item.icon}
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </div>

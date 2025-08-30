@@ -162,7 +162,6 @@ const ServiceDetailsPage: React.FC = () => {
 
           const validationRes = await bookingService.verifyPayment(paymentRequest);
           toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
-          console.log('the booking result id', bookingRes.bookingId)
           navigate(`/confirmationModel/${bookingRes.bookingId}`)
         } catch (err) {
           console.error("Payment handler error:", err);

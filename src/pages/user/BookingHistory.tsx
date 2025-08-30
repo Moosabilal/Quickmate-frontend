@@ -16,7 +16,6 @@ const BookingHistory: React.FC = () => {
   useEffect(() => {
     const getBooking = async () => {
       const response = await bookingService.getallBookings()
-      console.log('the response we are getting', response)
       setBookings(response)
     }
     getBooking()
@@ -190,7 +189,7 @@ const BookingHistory: React.FC = () => {
 
                           <div className="flex gap-2">
                             <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-colors"
-                              onClick={() => navigate(`/profile/bookingDetails/${booking.id}`)}
+                              onClick={() => navigate(`/profile/booking-history/bookingDetails/${booking.id}`)}
                             >
                               <Eye className="w-4 h-4" />
                               View Details

@@ -642,7 +642,6 @@ const Home: React.FC = () => {
                                 </div>
                                 
                                 <div className="flex items-center gap-2">
-                                    {/* Hide minimize button on mobile */}
                                     {!isMobile && (
                                         <button
                                             onClick={minimizeChatbot}

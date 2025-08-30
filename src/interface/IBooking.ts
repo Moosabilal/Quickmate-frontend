@@ -9,6 +9,7 @@ export enum BookingStatus {
     CONFIRMED = "Confirmed",
     CANCELLED = "Cancelled",
     COMPLETED = "Completed",
+    IN_PROGRESS = "In-Progress"
 }
 
 export interface IBookingRequest {
@@ -47,6 +48,8 @@ export interface IBookingConfirmationPage {
   status: BookingStatus;
   paymentStatus: PaymentStatus;
   specialInstruction: string;
+  providerTimings?: { day: string; startTime: string; endTime: string }[];
+  createdAt: Date;
 }
 
 export interface IBookingHistoryPage {

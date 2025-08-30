@@ -5,6 +5,7 @@ import { updateProfile } from '../../features/auth/authSlice';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
+import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 
 interface User {
   id: string;
@@ -15,11 +16,12 @@ interface User {
   bookings: number;
 }
 
-const USERS_PER_PAGE = 2;
+const USERS_PER_PAGE = 6;
 
 const AdminUsersPage = () => {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(state => state.auth.user);
+  console.log('the current user', currentUser)
 
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +30,10 @@ const AdminUsersPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0)
   const [error, setError] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToBlock, setUserToBlock] = useState<User | null>(null);
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -53,19 +59,19 @@ const AdminUsersPage = () => {
 
   console.log('the usersssss', users)
 
- const getStatusColor = (isVerified: boolean) => {
-  return isVerified
-    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
-    : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300';
-};
+  const getStatusColor = (isVerified: boolean) => {
+    return isVerified
+      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
+      : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300';
+  };
 
-const getStatusIcon = (isVerified: boolean) => {
-  return isVerified ? (
-    <CheckCircle className="w-4 h-4 text-green-500" />
-  ) : (
-    <XCircle className="w-4 h-4 text-red-500" />
-  );
-};
+  const getStatusIcon = (isVerified: boolean) => {
+    return isVerified ? (
+      <CheckCircle className="w-4 h-4 text-green-500" />
+    ) : (
+      <XCircle className="w-4 h-4 text-red-500" />
+    );
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -82,23 +88,29 @@ const getStatusIcon = (isVerified: boolean) => {
     return colors[index % colors.length];
   };
 
-  const handleStatus = async (userId: string) => {
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setUserToBlock(null);
+  };
+
+
+  const handleStatus = async () => {
     try {
-      const confirmation = window.confirm("are you sure you want to block this user")
-      if(confirmation){
-        const updatedUser = await authService.updateUser(userId);
+      const updatedUser = await authService.updateUser(userToBlock?.id || '');
 
       setUsers(prevUsers =>
         prevUsers.map(user =>
-          user.id === userId ? { ...user, isVerified: updatedUser.isVerified } : user
+          user.id === userToBlock?.id ? { ...user, isVerified: updatedUser.isVerified } : user
         )
       );
 
-      if (currentUser?.id === userId) {
+      if (currentUser?.id === userToBlock?.id) {
         dispatch(updateProfile({ user: updatedUser }));
       }
-      }
-      
+      setShowDeleteModal(false);
+      setUserToBlock(null);
+
+
     } catch (error) {
       console.error('Error updating user status:', error);
     }
@@ -172,7 +184,11 @@ const getStatusIcon = (isVerified: boolean) => {
                     <td className="py-4 px-6 text-right">
                       <button
                         className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 px-3 py-1 rounded-lg text-sm"
-                        onClick={() => handleStatus(user.id)}
+                        onClick={() => {
+                          setUserToBlock(user)
+                          setShowDeleteModal(true)
+                        }
+                        }
                       >
                         {user.isVerified ? 'Block User' : 'Unblock User'}
                       </button>
@@ -197,6 +213,19 @@ const getStatusIcon = (isVerified: boolean) => {
           </div>
         </main>
       </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={handleDeleteCancel}
+        onConfirm={handleStatus}
+        itemType='profile'
+        itemName={userToBlock?.name || ''}
+        itemDetails={userToBlock ? `${userToBlock.email}` : ''}
+        isLoading={isDeleting}
+        customMessage="Are you sure you want to block this User?."
+        additionalInfo="This action will prevent the user from logging into their account and accessing their bookings."
+        titleProp={userToBlock?.isVerified ? 'Block User' : 'Unblock User'}
+        confirmTextProp={userToBlock?.isVerified ? 'Block' : 'Unblock'}
+      />
     </div>
   );
 };

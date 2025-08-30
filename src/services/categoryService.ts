@@ -14,10 +14,11 @@ export const categoryService = {
                 console.log(`${key} : ${ value}`)
             }
             const response = await axiosInstance.post(CATEGORIES_PATH, formData);
+            console.log('response from create category', response)
             return response.data.category || response.data;
         } catch (error) {
             console.error("Error creating category/subcategory in service:", error);
-            throw error;
+            return Promise.reject(error);
         }
     },
 

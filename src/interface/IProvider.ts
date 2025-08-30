@@ -74,9 +74,11 @@ export interface IProviderForChatListPage {
   bookingId?: string;
   name: string;
   profilePicture: string;
-  services: string[];
+  services: string;
   location: string;
   isOnline: boolean;
   // completedJobs: number;
-  description: string;
+  lastMessage?: string;
+  lastMessageAt?: Date | null;
+
 }

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { X, Calendar, Clock } from "lucide-react";
-import { toast } from "react-toastify"; // make sure you imported toast
+import { toast } from "react-toastify";
 
-// Utility: convert "hh:mm AM/PM" -> minutes since midnight
 const convert12ToMinutes = (time12: string) => {
   if (!time12) return null;
   const [time, modifier] = time12.split(" ");
@@ -14,13 +13,24 @@ const convert12ToMinutes = (time12: string) => {
   return hours * 60 + minutes;
 };
 
-// Utility: convert "HH:mm" (24hr) -> minutes
 const convert24ToMinutes = (time24: string) => {
   const [hours, minutes] = time24.split(":").map(Number);
   return hours * 60 + minutes;
 };
 
-const DateTimePopup = ({
+interface DateTimePopupProps {
+  dateTimePopup: boolean;
+  setDateTimePopup: (value: boolean) => void;
+  selectedDate: string;
+  setSelectedDate: (value: string) => void;
+  selectedTime: string;
+  setSelectedTime: (value: string) => void;
+  timeSlots?: string[];
+  handleDateTimeConfirm: (date: string, time: string) => void;
+  providersTimings?: { day: string; startTime: string; endTime: string }[];
+}
+
+const DateTimePopup: React.FC<DateTimePopupProps> = ({
   dateTimePopup,
   setDateTimePopup,
   selectedDate,
@@ -33,11 +43,13 @@ const DateTimePopup = ({
 }) => {
   if (!dateTimePopup) return null;
 
+  console.log('the provider timings', providersTimings)
+
   const [info, setInfo] = useState<string | null>(null);
 
   const handleConfirm = () => {
     const selectedDay = new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long" });
-    const providerDay = providersTimings.find((p) => p.day === selectedDay);
+    const providerDay = providersTimings?.find((p) => p.day === selectedDay);
 
     if (!providerDay) {
       setInfo("No provider available on this day");
@@ -97,7 +109,7 @@ const DateTimePopup = ({
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200"
             >
               <option value="">Select a time</option>
-              {timeSlots.map((time) => (
+              {timeSlots && timeSlots.map((time) => (
                 <option key={time} value={time}>
                   {time}
                 </option>

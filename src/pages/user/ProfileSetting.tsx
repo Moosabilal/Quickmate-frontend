@@ -300,6 +300,12 @@ const ProfileSetting: React.FC = () => {
                             >
                                 Edit
                             </button>
+                            <button
+                                onClick={() => navigate(`/profile/currentPassword`, { state: { email: user?.email } })}
+                                className="mt-4 ml-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-sm font-semibold rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                            >
+                                Change Password
+                            </button>
                         </div>
                         <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                             <img

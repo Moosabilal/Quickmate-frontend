@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import { IBookingRequest } from "../interface/IBooking";
+import { BookingStatus, IBookingRequest } from "../interface/IBooking";
 import { paymentVerificationRequest } from "../interface/IPayment";
 const BOOKING_URL = `/bookings`;
 
@@ -69,12 +69,22 @@ export const bookingService = {
     }
   },
 
-  cancelBooking: async (id: string) => {
+  updateBookingStatus: async (id: string, status: BookingStatus) => {
     try {
-      const response = await axiosInstance.patch(`${BOOKING_URL}/cancelBooking/${id}`)
+      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingStatus/${id}`, {status})
       return response.data
     } catch (error) {
       console.log('Error in cancelling booking', error)
+      throw error
+    }
+  },
+
+  updateBookingDateTime: async (id: string, date: string, time: string) => {
+    try {
+      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingDateTime/${id}`, {date, time})
+      return response.data
+    } catch (error) {
+      console.log('Error in updating booking date/time', error)
       throw error
     }
   }

@@ -9,9 +9,9 @@ export const bookingService = {
     return response.data;
   },
 
-  confirmPayment: async (amount: number, currency?: string, receipt?: string) => {
+  confirmPayment: async (amount: number) => {
     try {
-      const response = await axiosInstance.post(`${BOOKING_URL}/payment`, { amount, currency, receipt })
+      const response = await axiosInstance.post(`${BOOKING_URL}/payment`, { amount })
       return response.data
     } catch (error) {
       console.log(`Error in confirm payment`, error)

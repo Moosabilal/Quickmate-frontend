@@ -125,15 +125,13 @@ const ServiceDetailsPage: React.FC = () => {
 
     e.preventDefault()
     const amount = selectedProvider?.price;
-    const currency = "INR";
-    const receipt = `receipt_${Date.now()}`
 
-    const orderResponse = await bookingService.confirmPayment(Number(amount), currency, receipt)
+    const orderResponse = await bookingService.confirmPayment(Number(amount))
 
     var options = {
       "key": paymentKey,
       amount: Number(amount) * 100,
-      currency,
+      currency: 'INR',
       "name": "QuickMate",
       "description": "Service Booking Payment",
       "image": "https://example.com/your_logo",

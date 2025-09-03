@@ -83,7 +83,6 @@ const RegistrationOTPVerification = () => {
         navigate('/login', { replace: true });
       } else {
         const {user, provider, message} = await providerService.verifyRegistrationOtp(registrationEmail, otp);
-        console.log('the response', user, provider, message)
         dispatch(updateProfile({user}))
         dispatch(updateProviderProfile({provider}))
         toast.success(message);

@@ -5,12 +5,10 @@ const SERVICE_URL = `/services`
 export const serviceService = {
     createdService: async (formData: FormData) => {
         try {
-            console.log('the form data in service service', formData)
             for(const [key, value] of formData.entries()){
                 console.log(`${key} : ${value}`)
             }
             const response = await axiosInstance.post(`${SERVICE_URL}/addService`, formData)
-            console.log('the response from adding a new service', response)
             return response.data
         } catch (error) {
             console.log('Error adding a new service',error)

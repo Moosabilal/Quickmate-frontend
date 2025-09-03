@@ -22,8 +22,9 @@ export const authService = {
     return response.data; 
   },
 
-  forgotPassword: async (email: string) => {
-    const response = await axiosInstance.post(`${API_URL}/forgot-password`, { email });
+  forgotPassword: async (email: string, currentPassword?: string) => {
+    const params = currentPassword ? { email, currentPassword } : { email };
+    const response = await axiosInstance.post(`${API_URL}/forgot-password`, params);
     return response.data; 
   },
 
@@ -62,6 +63,21 @@ export const authService = {
   updateUser: async (userId: string) => {
     const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`);
     return response.data;
+  },
+
+  // verifyPassword: async (email: string, currentPassword: string) => {
+  //   try {
+  //     const response = await axiosInstance.post(`${API_URL}/verify-password`, { email, currentPassword });
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Error verifying password:', error);
+  //     throw error;
+  //   }
+  // },
+
+  getAllDataForChatBot: async () => {
+    const response = await axiosInstance.get(`${API_URL}/getAllDataForChatBot`)
+    return response.data
   },
 
   logout: async () => {

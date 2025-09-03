@@ -169,7 +169,7 @@ const CategoryForm: React.FC = () => {
         setError(null);
 
         const data = new FormData();
-        data.append('name', formData.name);
+        data.append('name', formData.name.toLocaleLowerCase().trim());
         data.append('description', formData.description || '');
         data.append('status', String(formData.status));
 
@@ -194,10 +194,12 @@ const CategoryForm: React.FC = () => {
 
         try {
             if (isEditMode && currentEntityId) {
-                await categoryService.updateCategory(currentEntityId, data);
+                const response = await categoryService.updateCategory(currentEntityId, data);
+                console.log('Update response:', response);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
             } else {
                 const response = await categoryService.createCategory(data);
+                console.log('Create response:', response);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
 
                 const newEntityId = response?._id;
@@ -214,7 +216,7 @@ const CategoryForm: React.FC = () => {
             }
         } catch (err: any) {
             console.error('Error saving category/subcategory:', err);
-            setError(err.message || 'Failed to save category/subcategory. Please try again.');
+            setError(err?.response?.data?.message || 'Failed to save category/subcategory. Please try again.');
         } finally {
             setIsLoading(false);
             if (iconPreview && formData.icon instanceof File) {
@@ -249,21 +251,21 @@ const CategoryForm: React.FC = () => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <div className="flex-1 flex flex-col items-center justify-center">
-                    <p className="text-xl text-red-500">Error: {error}</p>
-                    <button
-                        onClick={() => navigate(backPath)}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                        Go Back
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    // if (error) {
+    //     return (
+    //         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    //             <div className="flex-1 flex flex-col items-center justify-center">
+    //                 <p className="text-xl text-red-500">Error: {error}</p>
+    //                 <button
+    //                     onClick={() => navigate(backPath)}
+    //                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+    //                 >
+    //                     Go Back
+    //                 </button>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
 
     return (
@@ -295,6 +297,11 @@ const CategoryForm: React.FC = () => {
                                 <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
                                     {isSubCategoryMode ? 'Subcategory' : 'Category'} Information
                                 </h2>
+                                {error && (
+                                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                                        {error}
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
@@ -339,7 +346,7 @@ const CategoryForm: React.FC = () => {
                                     >
                                         {iconPreview ? (
                                             <>
-                                                <img src={getCloudinaryUrl(iconPreview)} alt="Icon Preview" className="max-h-full max-w-full object-contain rounded-md" />
+                                                <img src={iconPreview.startsWith("blob:") ? iconPreview : getCloudinaryUrl(iconPreview)} alt="Icon Preview" className="max-h-full max-w-full object-contain rounded-md" />
                                                 <button
                                                     type="button"
                                                     onClick={handleRemoveIcon}

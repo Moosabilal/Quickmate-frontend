@@ -22,7 +22,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
 import { serviceService } from '../../services/serviceService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import ProviderDeleteConfirmationModal from '../../components/provider/deleteConfirmationModel'; 
+import DeleteConfirmationModal from '../../components/deleteConfirmationModel'; 
 
 interface IService {
     id: string;
@@ -238,7 +238,7 @@ const ProviderServicesPage: React.FC = () => {
             </div>
 
             {/* Provider Delete Confirmation Modal */}
-            <ProviderDeleteConfirmationModal
+            <DeleteConfirmationModal
                 isOpen={showDeleteModal}
                 onClose={handleDeleteCancel}
                 onConfirm={handleDeleteConfirm}

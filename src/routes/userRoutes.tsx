@@ -20,12 +20,13 @@ const BookingHistory = lazy(() => import('../pages/user/BookingHistory'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
 const Chat_Room = lazy(() => import('../components/ChatRoom'))
 const BookingDetails = lazy(() => import('../pages/user/BookingDetails'))
+const CurrentPassword = lazy(() => import('../pages/CurrentPassword'))
+const Wallet = lazy(() => import('../pages/user/Wallet'))
 import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
 import BookingConfirmation from '../pages/user/bookingConfirmation';
 import ChatProvidersPage from '../pages/user/ChatProviders';
-// import ChatRoom from '../components/ChatRoom';
 const userRoutes = [
   LayoutRoute(UserLayout, [
     { path: '/', element: <Home /> },
@@ -59,7 +60,10 @@ const userRoutes = [
         { path: '/profile/booking-history', element: <BookingHistory /> },
         { path: '/profile/chatListPage', element: <ChatProvidersPage /> },
         { path: '/profile/chatListPage/live-chat', element: <Chat_Room /> },
-        { path: '/profile/bookingDetails/:id', element: <BookingDetails /> },
+        { path: '/profile/booking-history/bookingDetails/:id', element: <BookingDetails /> },
+        { path: '/profile/currentPassword', element: <CurrentPassword /> },
+        { path: '/profile/reset-password/:token', element: <ResetPasswordForm /> },
+        { path: '/profile/wallet', element: <Wallet /> },
 
 
       ],

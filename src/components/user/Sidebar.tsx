@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useMatch } from 'react-router-dom';
 import {
   MdOutlineSettings,
   MdHistory,
@@ -25,7 +25,7 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
-    // { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/Profile/wallet' },
+    { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/profile/wallet' },
     { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chatListPage' },
     // { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
     // { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
@@ -38,11 +38,11 @@ const Sidebar = () => {
     path: `/providerProfile/${user?.id}`,
   };
 
-  const isActive = (path: string) => {
-  if (path === '/profile') {
-    return location.pathname === '/profile'; // exact match only
+const isActive = (path: string) => {
+  if (path === "/profile") {
+    return !!useMatch("/profile");
   }
-  return location.pathname.startsWith(path);
+  return !!useMatch(`${path}/*`);
 };
 
 

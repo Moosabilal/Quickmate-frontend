@@ -23,8 +23,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
 import { BookingStatus, IBookingConfirmationPage } from '../../interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import ProviderDeleteConfirmationModal from '../../components/provider/deleteConfirmationModel';
+import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
+import DateTimePopup from '../../components/user/DateTimePopup';
+import { providerService } from '../../services/providerService';
 
 const BookingDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -34,8 +36,9 @@ const BookingDetails: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<IBookingConfirmationPage | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [dateTimePopup, setDateTimePopup] = useState(false);
 
 
   useEffect(() => {
@@ -43,6 +46,8 @@ const BookingDetails: React.FC = () => {
       try {
         const response = await bookingService.getBookingById(id!);
         setBooking(response);
+        setSelectedDate(response.date);
+        setSelectedTime(response.time);
       } catch (error) {
         console.error('Error fetching booking details:', error);
       } finally {
@@ -65,12 +70,12 @@ const BookingDetails: React.FC = () => {
     setBookingToDelete(null);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleCancelBooking = async () => {
     if (!bookingToDelete) return;
 
     setIsDeleting(true);
     try {
-      const { message } = await bookingService.cancelBooking(bookingToDelete.id);
+      const { message } = await bookingService.updateBookingStatus(bookingToDelete.id, BookingStatus.CANCELLED);
       console.log('the delete response', message);
       toast.info(message);
       setBooking((prev) => prev ? { ...prev, status: BookingStatus.CANCELLED } : prev);
@@ -84,7 +89,30 @@ const BookingDetails: React.FC = () => {
     }
   };
 
-  console.log('The booking details we have', booking)
+  const handleDateTimeConfirm = async (date: string, time: string) => {
+    // setSelectedDate(date);
+    // setSelectedTime(time);
+    try {
+      await bookingService.updateBookingDateTime(booking!.id, date, time);
+      toast.success('Booking date and time updated successfully');
+      setBooking((prev) => prev ? { ...prev, date, time } : prev);
+    } catch (error) {
+      console.log('Error updating booking date/time', error);
+      toast.error('Failed to update booking date and time');
+    }
+    
+    setDateTimePopup(false);
+  };
+
+
+    const timeSlots = Array.from({ length: 37 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 5;
+    const minute = i % 2 === 0 ? '00' : '30';
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${minute} ${period}`;
+  });
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -284,7 +312,6 @@ const BookingDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Service Details */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Service Details</h3>
               <div className="grid md:grid-cols-2 gap-6">
@@ -295,7 +322,7 @@ const BookingDetails: React.FC = () => {
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Duration</label>
-                    <p className="font-semibold text-gray-900">({booking.priceUnit === "PerHour" ? booking.duration : booking.priceUnit})</p>
+                    <p className="font-semibold text-gray-900">{booking.priceUnit === "PerHour" ? `${booking.duration} hr` : booking.priceUnit}</p>
                   </div>
                   {/* <div>
                     <label className="text-sm text-gray-500">Base Price</label>
@@ -399,7 +426,7 @@ const BookingDetails: React.FC = () => {
               </div>
             </div>
 
-            {booking.status === BookingStatus.PENDING && <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            {(booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED) && <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 {/* <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left">
@@ -416,14 +443,23 @@ const BookingDetails: React.FC = () => {
                     <span className="font-medium">Rate & Review</span>
                   </button>
                 )} */}
-                {booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED && (
+                {booking.status === BookingStatus.PENDING && (
+                  <button>
+                    <div className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left text-gray-600"
+                      onClick={() => setDateTimePopup(true)}
+                    >
+                      <User className="w-5 h-5 text-gray-600" />
+                      <span className="font-medium">Edit Date/Time</span>
+                    </div>
+                  </button>
+
+                )}
                   <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors text-left text-red-600"
                     onClick={() => handleDeleteClick(booking)}
                   >
                     <XCircle className="w-5 h-5" />
                     <span className="font-medium">Cancel Booking</span>
                   </button>
-                )}
               </div>
             </div>}
 
@@ -443,17 +479,19 @@ const BookingDetails: React.FC = () => {
           </div>
         </div>
       </div>
-      <ProviderDeleteConfirmationModal
+      <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleCancelBooking}
         itemType='booking'
         itemName={bookingToDelete?.serviceName || ''}
         itemDetails={bookingToDelete ? `Booking ID: #${bookingToDelete.bookedOrderId.slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • $${bookingToDelete?.amount}` : ''}
         isLoading={isDeleting}
         customMessage="Are you sure you want to cancel this booking?."
-        additionalInfo="If you cancel now, you may miss out on this service."
+        additionalInfo={`If you cancel now, you may miss out on this service. \n ${bookingToDelete?.status === BookingStatus.CONFIRMED ? `You will only get 50% of Price refund, \n amount ${(bookingToDelete?.amount ?? 0) * 0.5} will be refunded to you account within 5-7 business days.` : `amount ${bookingToDelete?.amount} will be refunded to you account within 5-7 business days.`} `}
       />
+      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={booking.providerTimings} />
+
     </div>
   );
 };

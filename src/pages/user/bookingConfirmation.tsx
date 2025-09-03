@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const BookingConfirmation: React.FC = () => {
   const { bookingId } = useParams<{bookingId: string}>();
-  console.log('the booking id si ', bookingId)
   
   const [booking, setBooking] = useState<IBookingConfirmationPage>();
   const [loading, setLoading] = useState(true);

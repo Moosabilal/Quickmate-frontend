@@ -3,7 +3,7 @@ import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User } from
 
 type ProviderItemType = 'service' | 'booking' | 'certificate' | 'portfolio' | 'profile' | 'review' | 'availability';
 
-interface ProviderDeleteConfirmationModalProps {
+interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -13,9 +13,11 @@ interface ProviderDeleteConfirmationModalProps {
   isLoading?: boolean;
   customMessage?: string;
   additionalInfo?: string;
+  confirmTextProp?: string;
+  titleProp?: string;
 }
 
-const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalProps> = ({
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -24,7 +26,9 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
   itemDetails,
   isLoading = false,
   customMessage,
-  additionalInfo
+  additionalInfo,
+  confirmTextProp,
+  titleProp
 }) => {
   if (!isOpen) return null;
 
@@ -65,10 +69,8 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
       profile: {
         icon: <User className="w-6 h-6 text-red-600" />,
         iconBg: 'bg-red-100',
-        title: 'Delete Profile',
-        defaultMessage: 'Are you sure you want to permanently delete your provider profile? This action cannot be undone.',
-        warningText: 'All your services, bookings, and data will be permanently removed.',
-        confirmText: 'Delete Profile'
+        title: titleProp,
+        confirmText: confirmTextProp
       },
       review: {
         icon: <Star className="w-6 h-6 text-orange-600" />,
@@ -78,14 +80,6 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
         warningText: 'Customers will no longer see your response to this review.',
         confirmText: 'Delete Response'
       },
-      availability: {
-        icon: <Calendar className="w-6 h-6 text-indigo-600" />,
-        iconBg: 'bg-indigo-100',
-        title: 'Delete Availability',
-        defaultMessage: 'Are you sure you want to delete this availability slot?',
-        warningText: 'Customers will no longer be able to book appointments during this time.',
-        confirmText: 'Delete Slot'
-      }
     };
     return configs[type];
   };
@@ -169,7 +163,7 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
                   {config.warningText}
                 </p>
                 {additionalInfo && (
-                  <p className="text-sm text-yellow-700 mt-2">
+                  <p className="text-sm text-yellow-700 mt-2 whitespace-pre-line">
                     {additionalInfo}
                   </p>
                 )}
@@ -223,4 +217,4 @@ const ProviderDeleteConfirmationModal: React.FC<ProviderDeleteConfirmationModalP
   );
 };
 
-export default ProviderDeleteConfirmationModal;
+export default DeleteConfirmationModal;

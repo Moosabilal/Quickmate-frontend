@@ -2,6 +2,7 @@ import { IndianRupee, X } from 'lucide-react';
 import { walletService } from '../services/walletService';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { TransactionStatus } from '../interface/IPayment';
 // const inr = (n: number) =>
 //   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
 
@@ -24,14 +25,17 @@ type Props = {
   onClose: () => void;
   onSuccess: () => void;
   description: string;
-  transactionType: string
+  transactionType: string;
+  status: TransactionStatus;
 };
 
 
-export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, description, transactionType}) => {
+export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, description, status, transactionType}) => {
   const [amount, setAmount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   if (!open) return null;
+
+  console.log('the status in fron end', status)
 
   const handleRazorpayDeposit = async () => {
     setLoading(true);
@@ -55,6 +59,7 @@ export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, descr
             resp.razorpay_signature,
             data.amount,
             description,
+            status,
             transactionType,
         );
           toast.success(`${data.amount} ${transactionType === 'credit' ? 'deposited to' : 'withdrawn from'} your wallet`)
@@ -79,7 +84,7 @@ export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, descr
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Add Funds</h3>
+          <h3 className="text-lg font-semibold">{transactionType === 'credit' ? "Add Funds" : "Withdraw Funds"}</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 

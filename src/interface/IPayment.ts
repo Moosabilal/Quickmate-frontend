@@ -6,6 +6,16 @@ export enum PaymentMethod {
 
 }
 
+export enum TransactionStatus {
+    ALL = "All",
+    COMPLETED = "Completed",
+    REFUND = "Refund",
+    DEPOSIT = "Deposit",
+    WITHDRAWN = "Withdrawn",
+    PAYMENT = "Payment"
+
+}
+
 export interface paymentVerificationRequest {
     providerId: string,
     bookingId: string,

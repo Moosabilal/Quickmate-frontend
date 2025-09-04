@@ -23,13 +23,15 @@ export const walletService = {
         }
     },
 
-    verifyDeposit: async (razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string, amount: number) => {
+    verifyDeposit: async (razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string, amount: number, description: string, transactionType: string) => {
         try {
             const response = await axiosInstance.post(`${WALLET_URL}/deposit/verify`, {
                 razorpay_order_id, 
                 razorpay_payment_id, 
                 razorpay_signature, 
-                amount
+                description,
+                amount,
+                transactionType,
             })
 
             return response.data

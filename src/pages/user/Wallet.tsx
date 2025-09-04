@@ -16,115 +16,13 @@ import {
 } from 'lucide-react';
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
+import { AddFundsModal } from '../../components/AddWithdrawFund';
+import { TransactionStatus } from '../../interface/IPayment';
+
+
+
 const inr = (n: number) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
-
-
-const loadRazorpay = () =>
-  new Promise<boolean>((resolve) => {
-    if ((window as any).Razorpay) return resolve(true);
-    const s = document.createElement("script");
-    s.src = "https://checkout.razorpay.com/v1/checkout.js";
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
-    document.body.appendChild(s);
-  });
-  
-
-
-
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void; 
-};
-
-
-export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess}) => {
-  const [amount, setAmount] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
-  if (!open) return null;
-
-  const handleRazorpayDeposit = async () => {
-    setLoading(true);
-    try {
-      const ok = await loadRazorpay();
-      if (!ok) throw new Error("Razorpay SDK failed to load");
-
-      const { data } = await walletService.initiateDeposit(amount);
-
-      const options = {
-        key: data.keyId,
-        amount: data.amount, 
-        currency: data.currency,
-        name: "Quickmate",
-        description: "Add funds",
-        order_id: data.orderId,
-        handler: async (resp: any) => {
-          await walletService.verifyDeposit(
-            resp.razorpay_order_id,
-            resp.razorpay_payment_id,
-            resp.razorpay_signature,
-            data.amount,
-        );
-          toast.success(`${data.amount} deposited to your wallet`)
-          onSuccess();
-          onClose();
-        },
-        prefill: { name: "User", email: "user@example.com" },
-        theme: { color: "#059669" }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const submit = handleRazorpayDeposit;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Add Funds</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
-        </div>
-
-        <label className="block text-sm font-medium text-gray-700 mb-2">Amount (INR)</label>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 flex-1 border rounded-xl px-3 py-2">
-            <IndianRupee className="w-4 h-4 text-gray-500" />
-            <input
-              type="number"
-              min={1}
-              value={amount || ""}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              placeholder="Enter amount"
-              className="w-full outline-none"
-            />
-          </div>
-        </div>
-
-        <p className="text-sm text-gray-500 mt-2">You will add <span className="font-semibold">{inr(amount || 0)}</span> to your wallet.</p>
-
-        <button
-          disabled={!amount || amount <= 0 || loading}
-          onClick={submit}
-          className="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold disabled:opacity-50"
-        >
-          {loading ? "Processing..." : "Add Funds"}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-
-
-
-
+new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
 
 
 interface Transaction {
@@ -141,6 +39,7 @@ interface Transaction {
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const [amount, setAmount] = useState<number>(0);
 //   const [loading, setLoading] = useState(false);
+    
 
 //   const transactions: Transaction[] = [
 //     {
@@ -362,12 +261,14 @@ interface Transaction {
 
 
 const Wallet: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'all' | 'completed' | 'refunds'>('all');
+  const [activeTab, setActiveTab] = useState<TransactionStatus>(TransactionStatus.ALL)
   const [currentPage, setCurrentPage] = useState(1);
   const [openAdd, setOpenAdd] = useState(false);
   const [balance, setBalance] = useState(0);
+  const [addOrWithdraw, setAddOrWithdraw] = useState<string>('')
   const [transactions, setTransactions] = useState<any[]>([]);
-  const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
+
+  console.log('the transactions', transactions)
 
   const fetchWallet = async () => {
     const res = await walletService.getWallet();
@@ -378,8 +279,25 @@ const Wallet: React.FC = () => {
 
   useEffect(() => { fetchWallet(); }, []);
 
-  const formatAmount = (amount: number) => (amount >= 0 ? "+" : "") + inr(Math.abs(amount));
-  const getAmountColor = (amount: number) => amount >= 0 ? 'text-emerald-600' : 'text-red-500';
+    const getTransactionIcon = (type: string, amount: number) => {
+    const baseClasses = "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center";
+    if (amount >= 0 && type === 'credit') {
+      return (
+        <div className={`${baseClasses} bg-emerald-50 text-emerald-600 border border-emerald-200`}>
+          <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+        </div>
+      );
+    } else {
+      return (
+        <div className={`${baseClasses} bg-red-50 text-red-500 border border-red-200`}>
+          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+        </div>
+      );
+    }
+  };
+
+  const formatAmount = (amount: number, type: string) => (amount >= 0 && type === 'credit' ? "+" : "-") + inr(Math.abs(amount));
+  const getAmountColor = (amount: number, type: string) => amount >= 0 && type === 'credit' ? 'text-emerald-600' : 'text-red-500';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -405,34 +323,88 @@ const Wallet: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
-              onClick={() => setOpenAdd(true)}
+              onClick={() => {
+                setOpenAdd(true)
+                setAddOrWithdraw('Add')
+              }}
               className="flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-sm w-full sm:w-auto">
               <Plus className="w-5 h-5" />
               Add Funds
             </button>
-            <button className="flex items-center justify-center gap-3 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-colors w-full sm:w-auto">
+            <button className="flex items-center justify-center gap-3 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-colors w-full sm:w-auto"
+            onClick={() => {
+              setOpenAdd(true)
+              setAddOrWithdraw("Withdraw")
+            }}
+            >
               <Minus className="w-5 h-5" />
               Withdraw Funds
             </button>
           </div>
         </div>
 
-        {/* Transactions */}
+                {/* Transactions Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
-          {/* tabs + filters (same as yours) */}
+          {/* Tab Navigation */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg">
+              {
+              // [
+              //   { key: 'all', label: 'All Transactions' },
+              //   { key: 'completed', label: 'Completed Bookings' },
+              //   { key: 'refunds', label: 'Refunds' },
+              // ]
+              Object.values(TransactionStatus).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors text-center ${activeTab === tab.key
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-colors text-sm">
+                <Calendar className="w-4 h-4" />
+                <span className="hidden sm:inline">Date Range</span>
+                <span className="sm:hidden">Date</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <button className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-colors text-sm">
+                <Filter className="w-4 h-4" />
+                <span className="hidden sm:inline">Transaction Type</span>
+                <span className="sm:hidden">Type</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Transaction List */}
           <div className="space-y-3 sm:space-y-4">
-            {transactions.map((t) => (
-              <div key={t._id} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-100">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg truncate">
-                    {t.source || (t.transactionType === "credit" ? "Credit" : "Debit")}
-                  </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">
-                    {new Date(t.createdAt).toLocaleString()} {t.remarks ? `• ${t.remarks}` : ""}
-                  </p>
+            {transactions.map((transaction) => (
+              <div
+                key={transaction._id}
+                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-100"
+              >
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    {getTransactionIcon(transaction.transactionType, transaction.amount)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg truncate">
+                      {transaction.description}
+                    </h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">{transaction.createdAt}</p>
+                  </div>
                 </div>
-                <div className={`text-base sm:text-lg lg:text-xl font-bold flex-shrink-0 ml-2 ${getAmountColor(t.amount * (t.transactionType === "credit" ? 1 : -1))}`}>
-                  {formatAmount(t.amount * (t.transactionType === "credit" ? 1 : -1))}
+                <div className={`text-base sm:text-lg lg:text-xl font-bold flex-shrink-0 ml-2 ${getAmountColor(transaction.amount, transaction.transactionType)}`}>
+                  {formatAmount(transaction.amount, transaction.transactionType)}
                 </div>
               </div>
             ))}
@@ -447,6 +419,8 @@ const Wallet: React.FC = () => {
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         onSuccess={fetchWallet}
+        description={addOrWithdraw === "Add" ? "Deposit to Wallet" : "Withdrawn from Wallet"}
+        transactionType={addOrWithdraw === "Add" ? "credit" : "debit"}
       />
     </div>
   );

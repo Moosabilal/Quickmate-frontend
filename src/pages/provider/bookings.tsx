@@ -27,6 +27,7 @@ import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
 import { BookingStatus } from '../../interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 
 interface IProviderBookingManagement {
   id: string;
@@ -571,7 +572,7 @@ const ProviderBookingManagementPage: React.FC = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirm}
-        itemType='booking'
+        itemType={DeleteConfirmationTypes.BOOKING}
         itemName={selectedBooking.service || ''}
         itemDetails={`Booking ID: #${selectedBooking.id.slice(-8).toUpperCase()}\nCustomer: ${selectedBooking.customerName}` || ''}
         isLoading={isDeleting}

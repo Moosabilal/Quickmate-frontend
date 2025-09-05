@@ -1,13 +1,12 @@
 import React from 'react';
-import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User } from 'lucide-react';
-
-type ProviderItemType = 'service' | 'booking' | 'certificate' | 'portfolio' | 'profile' | 'review' | 'availability';
+import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, LogOutIcon } from 'lucide-react';
+import { DeleteConfirmationTypes } from '../interface/IDeleteModelType';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  itemType: ProviderItemType;
+  itemType: DeleteConfirmationTypes;
   itemName?: string;
   itemDetails?: string;
   isLoading?: boolean;
@@ -32,9 +31,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const getItemConfig = (type: ProviderItemType) => {
+  const getItemConfig = (type: DeleteConfirmationTypes) => {
     const configs = {
-      service: {
+      [DeleteConfirmationTypes.SERVICE]: {
         icon: <Shield className="w-6 h-6 text-blue-600" />,
         iconBg: 'bg-blue-100',
         title: 'Delete Service',
@@ -42,7 +41,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         warningText: 'This action will also cancel any pending bookings for this service.',
         confirmText: 'Delete Service'
       },
-      booking: {
+      [DeleteConfirmationTypes.BOOKING]: {
         icon: <Calendar className="w-6 h-6 text-purple-600" />,
         iconBg: 'bg-purple-100',
         title: 'Cancel Booking',
@@ -50,7 +49,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         warningText: '',
         confirmText: 'Cancel Booking'
       },
-      certificate: {
+      [DeleteConfirmationTypes.CERTIFICATE]: {
         icon: <FileText className="w-6 h-6 text-green-600" />,
         iconBg: 'bg-green-100',
         title: 'Delete Certificate',
@@ -58,7 +57,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         warningText: 'Customers will no longer see this certification on your profile.',
         confirmText: 'Delete Certificate'
       },
-      portfolio: {
+      [DeleteConfirmationTypes.PORTFOLIO]: {
         icon: <Star className="w-6 h-6 text-yellow-600" />,
         iconBg: 'bg-yellow-100',
         title: 'Delete Portfolio Item',
@@ -66,13 +65,15 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         warningText: 'This may impact how customers perceive your work quality.',
         confirmText: 'Delete Portfolio'
       },
-      profile: {
+      [DeleteConfirmationTypes.PROFILE]: {
         icon: <User className="w-6 h-6 text-red-600" />,
         iconBg: 'bg-red-100',
         title: titleProp,
-        confirmText: confirmTextProp
+        confirmText: confirmTextProp,
+        defaultMessage: customMessage || "Are you sure?",
+        warningText: "This will remove access to this site."
       },
-      review: {
+      [DeleteConfirmationTypes.REVIEW]: {
         icon: <Star className="w-6 h-6 text-orange-600" />,
         iconBg: 'bg-orange-100',
         title: 'Delete Review Response',
@@ -80,6 +81,14 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         warningText: 'Customers will no longer see your response to this review.',
         confirmText: 'Delete Response'
       },
+      [DeleteConfirmationTypes.LOGOUT]: {
+        icon: <LogOut className="w-6 h-6 text-gray-600" />,
+        iconBg: 'bg-gray-100',
+        title: 'Logout',
+        defaultMessage: 'Are you sure you want to log out? You will need to sign in again to access your account.',
+        warningText: 'Make sure you have saved your work before logging out.',
+        confirmText: 'Logout'
+      }
     };
     return configs[type];
   };
@@ -106,7 +115,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
@@ -135,13 +144,13 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           <p className="text-gray-700 leading-relaxed mb-4">
             {message}
           </p>
-          
+
           {itemName && (
             <div className="mb-4 p-4 bg-gray-50 rounded-xl border-l-4 border-red-400">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 mb-1">
-                    {itemType.charAt(0).toUpperCase() + itemType.slice(1)}: 
+                    {itemType.charAt(0).toUpperCase() + itemType.slice(1)}:
                     <span className="text-red-600 ml-2">{itemName}</span>
                   </p>
                   {itemDetails && (

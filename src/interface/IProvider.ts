@@ -1,4 +1,9 @@
-
+export enum ProviderStatus {
+  Active = 'Approved',
+  InActive = 'Rejected',
+  Suspended = 'Suspended',
+  Pending = 'Pending',
+}
 
  export interface Availability {
     day: string;       // e.g. "Monday"

@@ -4,13 +4,8 @@ import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
+import { ProviderStatus } from '../../interface/IProvider';
 
-export enum ProviderStatus {
-  Active = 'Active',
-  InActive = 'InActive',
-  Suspended = 'Suspended',
-  Pending = 'pending',
-}
 
 interface ProviderList {
   id: string;
@@ -71,9 +66,9 @@ const AdminProvidersPage: React.FC = () => {
 
   const getStatusClasses = (status: ProviderList['status']) => {
     switch (status) {
-      case 'Active':
+      case 'Approved':
         return 'bg-green-100 text-green-800';
-      case 'InActive':
+      case 'Rejected':
         return 'bg-yellow-100 text-yellow-800';
       case 'Suspended':
         return 'bg-red-100 text-red-800';

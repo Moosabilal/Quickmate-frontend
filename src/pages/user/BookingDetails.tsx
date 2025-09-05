@@ -27,6 +27,7 @@ import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import { providerService } from '../../services/providerService';
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 
 const BookingDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -483,7 +484,7 @@ const BookingDetails: React.FC = () => {
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
         onConfirm={handleCancelBooking}
-        itemType='booking'
+        itemType={DeleteConfirmationTypes.BOOKING}
         itemName={bookingToDelete?.serviceName || ''}
         itemDetails={bookingToDelete ? `Booking ID: #${bookingToDelete.bookedOrderId.slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • $${bookingToDelete?.amount}` : ''}
         isLoading={isDeleting}

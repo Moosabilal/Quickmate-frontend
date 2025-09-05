@@ -23,6 +23,7 @@ import { toast } from 'react-toastify';
 import { serviceService } from '../../services/serviceService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel'; 
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 
 interface IService {
     id: string;
@@ -242,7 +243,7 @@ const ProviderServicesPage: React.FC = () => {
                 isOpen={showDeleteModal}
                 onClose={handleDeleteCancel}
                 onConfirm={handleDeleteConfirm}
-                itemType="service"
+                itemType={DeleteConfirmationTypes.SERVICE}
                 itemName={serviceToDelete?.title}
                 itemDetails={`${serviceToDelete?.category} • ₹${serviceToDelete?.price}`}
                 isLoading={isDeleting}

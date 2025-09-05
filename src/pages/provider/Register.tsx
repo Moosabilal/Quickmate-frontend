@@ -214,6 +214,7 @@ const ProviderRegistration: React.FC = () => {
             }
             setIsLoading(true)
             const res = await providerService.register(data);
+            console.log('the res', res)
             toast.success(res.message)
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });

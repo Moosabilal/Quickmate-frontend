@@ -52,6 +52,7 @@ const Header = () => {
             await authService.logout()
             dispatch(logout());
             setIsDropdownOpen(false);
+            setShowDeleteModal(false)
             navigate('/login');
     };
 

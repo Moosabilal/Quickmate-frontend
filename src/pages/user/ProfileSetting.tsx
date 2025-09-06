@@ -48,6 +48,7 @@ const ProfileSetting: React.FC = () => {
         city: '',
         state: '',
         zip: '',
+        locationCoords: '',
     });
 
 
@@ -105,33 +106,11 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(false);
     };
 
-    const getCoordinates = async (street: string, city: string, state: string, pincode: string) => {
-        const data = await addressService.getLocationByPincode(street, city, state, pincode);
-        console.log('the data from pincode', data)
-        if (data && data.length > 0) {
-            return {
-                lat: parseFloat(data[0].lat),
-                lng: parseFloat(data[0].lon),
-            };
-        }
-
-        return null;
-    }
+    
 
 
 
-    const handleAddAddress = async () => {
-        const { label, street, city, state, zip } = currentAddress;
-
-        const coords = await getCoordinates(street, city, state, zip);
-
-        if (!coords) {
-            toast.info("Unable to find coordinates for this address.");
-            return;
-        }
-
-        if (label && street && city && state && zip) {
-            const newAddr = { ...currentAddress, locationCoords: `${coords.lat},${coords.lng}`, };
+    const handleAddAddress = async (newAddress: IAddress) => {
 
             try {
                 let savedAddress;
@@ -140,15 +119,15 @@ const ProfileSetting: React.FC = () => {
 
                 if (isEditingAddress && currentAddress.id) {
                     console.log('editing')
-                    savedAddress = await addressService.updateAddress(currentAddress.id, newAddr);
+                    savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
 
                     setAddressList(prev =>
                         prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
                     );
                     toast.success("Address Updated")
                 } else {
-                    console.log('the address', newAddr)
-                    savedAddress = await addressService.createAddress(newAddr);
+                    console.log('the address', newAddress)
+                    savedAddress = await addressService.createAddress(newAddress);
                     setAddressList(prev => [...prev, savedAddress]);
                     toast.success("Address Created")
                 }
@@ -162,13 +141,15 @@ const ProfileSetting: React.FC = () => {
                 console.error('Failed to save address:', error);
                 alert('Something went wrong while saving the address. Please try again.');
             }
-        }
+        
     };
 
 
 
     const handleAddressConfirm = (address: IAddress) => {
+        console.log('the add address', address)
         setSelectedAddress(address);
+        setCurrentAddress(address)
         setAddressPopup(false);
     };
 
@@ -177,6 +158,7 @@ const ProfileSetting: React.FC = () => {
         if (addressToEdit) {
             setCurrentAddress(addressToEdit);
             setIsEditingAddress(true);
+            setShowAddressModal(true)
             setEditAddressId(id);
             setAddressPopup(true);
         }
@@ -459,8 +441,8 @@ const ProfileSetting: React.FC = () => {
                 setAddressPopup={setAddressPopup}
                 selectedAddress={selectedAddress}
                 handleAddressConfirm={handleAddressConfirm}
-                setShowAddAddress={() => { }}
-                showAddAddress={true}
+                setShowAddAddress={setShowAddressModal}
+                showAddAddress={showAddressModal}
                 newAddress={currentAddress}
                 setNewAddress={setCurrentAddress}
                 handleAddAddress={handleAddAddress}

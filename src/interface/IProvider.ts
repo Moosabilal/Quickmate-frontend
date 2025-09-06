@@ -87,3 +87,18 @@ export interface IProviderForChatListPage {
   lastMessageAt?: Date | null;
 
 }
+
+//for admin side
+export interface ProviderList {
+  id: string;
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  serviceId: string;
+  serviceArea: string;
+  profilePhoto: string;
+  serviceOffered: string[];
+  status: ProviderStatus;
+  rating?: number;
+}

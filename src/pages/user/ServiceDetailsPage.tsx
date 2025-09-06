@@ -3,7 +3,7 @@ import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar } from 'lucide-react';
+import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar, Timer, Calendar1, CalendarArrowUp, CalendarClock, CalendarClockIcon } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -15,6 +15,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPayment';
 import { IAddress } from '../../interface/IAddress';
 import { providerService } from '../../services/providerService';
+import { addressService } from '../../services/addressService';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 declare var Razorpay: any;
@@ -35,12 +36,13 @@ const ServiceDetailsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
-  const [newAddress, setNewAddress] = useState({
+  const [newAddress, setNewAddress] = useState<IAddress>({
     label: '',
     street: '',
     city: '',
     state: '',
     zip: '',
+    locationCoords: '',
   });
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -86,17 +88,20 @@ const ServiceDetailsPage: React.FC = () => {
     fetchServiceDetails();
   }, [serviceId]);
 
-  const handleAddAddress = () => {
-    console.log('the new address', newAddress)
+  const handleAddAddress = async () => {
     if (newAddress.label && newAddress.street && newAddress.city && newAddress.state && newAddress.zip) {
       const newAddressObj = {
         id: String(Date.now()),
         ...newAddress,
       };
-      console.log('new address obj', newAddressObj)
+      try {
+        await addressService.createAddress(newAddressObj)
+      } catch (error) {
+        toast.error('Something went wrong! Please try again later')
+      }
       setSelectedAddress(newAddressObj);
       setShowAddAddress(false);
-      setNewAddress({ label: '', street: '', city: '', state: '', zip: '' });
+      setNewAddress({ label: '', street: '', city: '', state: '', zip: '', locationCoords: '' });
       setAddressPopup(false);
     }
   };
@@ -291,29 +296,9 @@ const ServiceDetailsPage: React.FC = () => {
             </h2>
 
             <form className="space-y-6">
-              {/* ----------------- 1. ADDRESS ----------------- */}
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <MapPin className="w-4 h-4 mr-2"/>
                   Select Address
                 </h3>
                 <button
@@ -327,41 +312,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* ----------------- 3. DATE & TIME ----------------- */}
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Select Date & Time
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setDateTimePopup(true)}
-                  className={`w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none flex items-center justify-center
-                    ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  disabled={!selectedAddress}
-                  title={!selectedAddress ? "Please select your location first" : ""}
-                >
-                  {selectedDate && selectedTime
-                    ? `${selectedDate} at ${selectedTime}`
-                    : "Choose Date & Time"}
-                </button>
-              </div>
-
-              {/* ----------------- 2. PROVIDER ----------------- */}
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
                   <Award className="w-4 h-4 mr-2" />
@@ -400,6 +350,26 @@ const ServiceDetailsPage: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                  <CalendarClockIcon className="w-4 h-4 mr-2" />
+                 Select Date & Time
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDateTimePopup(true)}
+                  className={`w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none flex items-center justify-center
+                    ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  disabled={!selectedAddress}
+                  title={!selectedAddress ? "Please select your location first" : ""}
+                >
+                  {selectedDate && selectedTime
+                    ? `${selectedDate} at ${selectedTime}`
+                    : "Choose Date & Time"}
+                </button>
               </div>
 
 

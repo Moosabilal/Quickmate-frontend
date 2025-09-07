@@ -88,14 +88,18 @@ const ServiceDetailsPage: React.FC = () => {
     fetchServiceDetails();
   }, [serviceId]);
 
-  const handleAddAddress = async () => {
-    if (newAddress.label && newAddress.street && newAddress.city && newAddress.state && newAddress.zip) {
+  const handleAddAddress = async (address: IAddress) => {
+    console.log('the new address', newAddress)
+    if (address.label && address.street && address.city && address.state && address.zip && address.locationCoords) {
       const newAddressObj = {
         id: String(Date.now()),
-        ...newAddress,
+        ...address,
       };
       try {
-        await addressService.createAddress(newAddressObj)
+        console.log('the new address', newAddressObj)
+        const res = await addressService.createAddress(newAddressObj)
+        console.log('the added response', res)
+        
       } catch (error) {
         toast.error('Something went wrong! Please try again later')
       }

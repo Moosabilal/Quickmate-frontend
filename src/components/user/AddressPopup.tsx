@@ -205,13 +205,16 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       console.log('the third coordination ', withinRange)
 
       if (withinRange) {
-        handleAddressConfirm(newAddr);
+        setNewAddress(newAddr)
+        console.log('the new address in address popup', newAddr)
         handleAddAddress(newAddr)
+        handleAddressConfirm(newAddr);
+
       } else {
         setError("No service provider found on this location.");
         toast.info("No service provider found on this location.");
       }
-    }else{
+    } else {
       console.log('the new adre', newAddr)
       setNewAddress(newAddr)
       handleAddressConfirm(newAddr)
@@ -221,7 +224,9 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const fetchAddress = async () => {
     try {
+      console.log('this will work again')
       const res = await addressService.getAddress()
+      console.log('the res', res)
       setMockAddresses(res)
     } catch (error) {
       toast.error('Failed to fetch Address! Please try again later')
@@ -231,7 +236,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   useEffect(() => {
     fetchAddress()
-  }, [])
+  }, [addressPopup])
 
   if (!addressPopup) return null;
 

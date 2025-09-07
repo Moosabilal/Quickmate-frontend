@@ -3,7 +3,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  DollarSign,
   MessageCircle,
   Phone,
   CheckCircle,
@@ -19,7 +18,8 @@ import {
   Trash2,
   PlayCircle,
   PauseCircle,
-  Book
+  Book,
+  IndianRupee
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -288,8 +288,8 @@ const ProviderBookingManagementPage: React.FC = () => {
                                   <span className="truncate">{booking.location}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span className="font-medium">${booking.payment}</span>
+                                  <IndianRupee className="w-3 h-3" />
+                                 {booking.payment}
                                   <span className={`px-2 py-1 rounded text-xs ${booking.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {booking.paymentStatus}

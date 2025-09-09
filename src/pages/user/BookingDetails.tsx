@@ -29,6 +29,7 @@ import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import { providerService } from '../../services/providerService';
 import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { reviewService } from '../../services/reviewService';
 
 const BookingDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +42,9 @@ const BookingDetails: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [dateTimePopup, setDateTimePopup] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating, setRating] = useState<number>(0);
+  const [review, setReview] = useState<string>('');
 
 
   useEffect(() => {
@@ -102,12 +106,21 @@ const BookingDetails: React.FC = () => {
       console.log('Error updating booking date/time', error);
       toast.error('Failed to update booking date and time');
     }
-    
+
     setDateTimePopup(false);
   };
 
+  const handleReviewSubmit = async (bookingId: string) => {
+    console.log('the rating', rating, review)
+    await reviewService.addReview(bookingId, { rating, review })
+    toast.success("Review submitted!");
+    setShowReviewForm(false);
+    setRating(0);
+    setReview('');
+  }
 
-    const timeSlots = Array.from({ length: 37 }, (_, i) => {
+
+  const timeSlots = Array.from({ length: 37 }, (_, i) => {
     const hour = Math.floor(i / 2) + 5;
     const minute = i % 2 === 0 ? '00' : '30';
     const period = hour >= 12 ? 'PM' : 'AM';
@@ -371,15 +384,61 @@ const BookingDetails: React.FC = () => {
                 <div className="space-y-4">
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                     <p className="text-green-800 mb-3">
-                      ✓ Service completed successfully! The cleaned area and care instructions have been shared with you.
+                      ✓ Service completed successfully!
                     </p>
-                    <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium">
-                      Leave a Review
-                    </button>
+                    {!showReviewForm ? (
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                      >
+                        Leave a Review
+                      </button>
+                    ) : (
+                      <div className="space-y-4 mt-4">
+                        {/* Rating */}
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-6 h-6 cursor-pointer ${rating >= star ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                                }`}
+                              onClick={() => setRating(star)}
+                            />
+                          ))}
+                        </div>
+
+                        {/* Review Input */}
+                        <textarea
+                          value={review}
+                          onChange={(e) => setReview(e.target.value)}
+                          placeholder="Write your review here..."
+                          className="w-full p-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-green-500"
+                          rows={4}
+                        />
+
+                        {/* Buttons */}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleReviewSubmit(booking.id)}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                            disabled={!rating || !review.trim()}
+                          >
+                            Submit Review
+                          </button>
+                          <button
+                            onClick={() => setShowReviewForm(false)}
+                            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
+
           </div>
 
           <div className="space-y-6">
@@ -402,7 +461,6 @@ const BookingDetails: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Payment Details</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Service Cost</span>
@@ -428,7 +486,7 @@ const BookingDetails: React.FC = () => {
               </div>
             </div>
 
-            {(booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED) && <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 {/* <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left">
@@ -456,14 +514,15 @@ const BookingDetails: React.FC = () => {
                   </button>
 
                 )}
+                {(booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED) &&
                   <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors text-left text-red-600"
                     onClick={() => handleDeleteClick(booking)}
                   >
                     <XCircle className="w-5 h-5" />
                     <span className="font-medium">Cancel Booking</span>
-                  </button>
+                  </button>}
               </div>
-            </div>}
+            </div>
 
             {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Need Help?</h3>

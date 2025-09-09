@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useLocation, useMatch } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useMatch, useNavigate } from 'react-router-dom';
 import {
   MdOutlineSettings,
   MdHistory,
@@ -16,10 +16,14 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import DeleteConfirmationModal from '../deleteConfirmationModel';
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { authService } from '../../services/authService';
 
 const Sidebar = () => {
-  const location = useLocation();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth);
 
   const navItems = [
@@ -38,19 +42,19 @@ const Sidebar = () => {
     path: `/providerProfile/${user?.id}`,
   };
 
-const isActive = (path: string) => {
-  if (path === "/profile") {
-    return !!useMatch("/profile");
-  }
-  return !!useMatch(`${path}/*`);
-};
-
-
-  const handleLogout = () => {
-    const confirmLogout = window.confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      dispatch(logout());
+  const isActive = (path: string) => {
+    if (path === "/profile") {
+      return !!useMatch("/profile");
     }
+    return !!useMatch(`${path}/*`);
+  };
+
+
+  const handleLogout = async () => {
+    await authService.logout()
+    dispatch(logout());
+    setShowDeleteModal(false)
+    navigate('/login')
   };
 
   if (!user) return null;
@@ -81,11 +85,10 @@ const isActive = (path: string) => {
             <Link
               key={item.name}
               to={item.path}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive(item.path)
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.path)
                   ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-              }`}
+                }`}
             >
               {item.icon}
               <span className="font-medium">{item.name}</span>
@@ -95,11 +98,10 @@ const isActive = (path: string) => {
           {user?.role === 'ServiceProvider' && (
             <Link
               to={serviceProviderItem.path}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive(serviceProviderItem.path)
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(serviceProviderItem.path)
                   ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-              }`}
+                }`}
             >
               {serviceProviderItem.icon}
               <span className="font-medium">{serviceProviderItem.name}</span>
@@ -109,7 +111,7 @@ const isActive = (path: string) => {
 
         <div className="pt-4 border-t mt-6">
           <button
-            onClick={handleLogout}
+            onClick={() => setShowDeleteModal(true)}
             className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 w-full transition-all duration-200 font-medium"
           >
             <MdLogout className="w-5 h-5" />
@@ -117,6 +119,12 @@ const isActive = (path: string) => {
           </button>
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleLogout}
+        itemType={DeleteConfirmationTypes.LOGOUT}
+      />
     </div>
   );
 };

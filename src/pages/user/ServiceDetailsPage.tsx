@@ -3,7 +3,7 @@ import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar } from 'lucide-react';
+import { Star, MapPin, Award, CalendarClockIcon, IndianRupee } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -15,6 +15,8 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPayment';
 import { IAddress } from '../../interface/IAddress';
 import { providerService } from '../../services/providerService';
+import { addressService } from '../../services/addressService';
+import { walletService } from '../../services/walletService';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 declare var Razorpay: any;
@@ -35,18 +37,27 @@ const ServiceDetailsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
-  const [newAddress, setNewAddress] = useState({
+  const [newAddress, setNewAddress] = useState<IAddress>({
     label: '',
     street: '',
     city: '',
     state: '',
     zip: '',
+    locationCoords: '',
   });
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
+  const [walletBalance, setWalletBalance] = useState<number>(0)
+
+  const paymentOptions = [
+    { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
+    { value: PaymentMethod.WALLET, label: "Wallet" },
+  ]
+
 
   const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
   const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
@@ -54,6 +65,9 @@ const ServiceDetailsPage: React.FC = () => {
   const getProvider = async (filterParams = {}) => {
     try {
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
+      const res = await walletService.getWallet()
+      console.log('the wallet', res)
+      setWalletBalance(res.data.wallet.balance)
       setAllProviders(providers);
     } catch (error: any) {
       console.error(error);
@@ -86,17 +100,24 @@ const ServiceDetailsPage: React.FC = () => {
     fetchServiceDetails();
   }, [serviceId]);
 
-  const handleAddAddress = () => {
+  const handleAddAddress = async (address: IAddress) => {
     console.log('the new address', newAddress)
-    if (newAddress.label && newAddress.street && newAddress.city && newAddress.state && newAddress.zip) {
+    if (address.label && address.street && address.city && address.state && address.zip && address.locationCoords) {
       const newAddressObj = {
         id: String(Date.now()),
-        ...newAddress,
+        ...address,
       };
-      console.log('new address obj', newAddressObj)
+      try {
+        console.log('the new address', newAddressObj)
+        const res = await addressService.createAddress(newAddressObj)
+        console.log('the added response', res)
+
+      } catch (error) {
+        toast.error('Something went wrong! Please try again later')
+      }
       setSelectedAddress(newAddressObj);
       setShowAddAddress(false);
-      setNewAddress({ label: '', street: '', city: '', state: '', zip: '' });
+      setNewAddress({ label: '', street: '', city: '', state: '', zip: '', locationCoords: '' });
       setAddressPopup(false);
     }
   };
@@ -122,8 +143,35 @@ const ServiceDetailsPage: React.FC = () => {
 
 
   const handlePayment = async (e: React.FormEvent) => {
-
     e.preventDefault()
+
+    if (paymentMethod === PaymentMethod.WALLET) {
+      if(walletBalance < Number(selectedProvider?.price)){
+        toast.info('Insufficient balance in wallet')
+        return;
+      }
+      const bookingResponse = await handleSubmit(e);
+      try {
+        if (!selectedProvider) {
+          toast.error("No provider selected for payment.");
+          return;
+        }
+        const walletPayment: paymentVerificationRequest = {
+          providerId: selectedProvider._id,
+          bookingId: bookingResponse.bookingId,
+          paymentMethod: paymentMethod,
+          paymentDate: new Date(),
+          amount: Number(selectedProvider?.price),
+          razorpay_order_id: `${Date.now()}`,
+        };
+        const validationRes = await bookingService.verifyPayment(walletPayment);
+          toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
+          navigate(`/confirmationModel/${bookingResponse.bookingId}`)
+      } catch (error) {
+        toast.error('booking failed please try again later', error)
+      }
+      return
+    }
     const amount = selectedProvider?.price;
 
     const orderResponse = await bookingService.confirmPayment(Number(amount))
@@ -150,7 +198,7 @@ const ServiceDetailsPage: React.FC = () => {
           const paymentRequest: paymentVerificationRequest = {
             providerId: selectedProvider._id,
             bookingId: bookingRes.bookingId,
-            paymentMethod: PaymentMethod.BANK,
+            paymentMethod: paymentMethod,
             paymentDate: new Date(),
             amount: Number(amount),
             razorpay_order_id: paymentResponse.razorpay_order_id,
@@ -291,29 +339,9 @@ const ServiceDetailsPage: React.FC = () => {
             </h2>
 
             <form className="space-y-6">
-              {/* ----------------- 1. ADDRESS ----------------- */}
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <MapPin className="w-4 h-4 mr-2" />
                   Select Address
                 </h3>
                 <button
@@ -327,41 +355,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* ----------------- 3. DATE & TIME ----------------- */}
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Select Date & Time
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setDateTimePopup(true)}
-                  className={`w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none flex items-center justify-center
-                    ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  disabled={!selectedAddress}
-                  title={!selectedAddress ? "Please select your location first" : ""}
-                >
-                  {selectedDate && selectedTime
-                    ? `${selectedDate} at ${selectedTime}`
-                    : "Choose Date & Time"}
-                </button>
-              </div>
-
-              {/* ----------------- 2. PROVIDER ----------------- */}
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
                   <Award className="w-4 h-4 mr-2" />
@@ -400,6 +393,26 @@ const ServiceDetailsPage: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                  <CalendarClockIcon className="w-4 h-4 mr-2" />
+                  Select Date & Time
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDateTimePopup(true)}
+                  className={`w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none flex items-center justify-center
+                    ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  disabled={!selectedAddress}
+                  title={!selectedAddress ? "Please select your location first" : ""}
+                >
+                  {selectedDate && selectedTime
+                    ? `${selectedDate} at ${selectedTime}`
+                    : "Choose Date & Time"}
+                </button>
               </div>
 
 
@@ -454,19 +467,43 @@ const ServiceDetailsPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                    <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                      <IndianRupee className="w-4 h-4 mr-2" />
+                      Select Payment Method
+                    </h3>
+                    <div className="space-y-2">
+                      {paymentOptions.map((method) => (
+                        <label key={method.value} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value={method.value}
+                            checked={paymentMethod === method.value}
+                            onChange={() => setPaymentMethod(method.value)}
+                            className="text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span>{method.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="pt-4">
                     <button
                       type="submit"
-                      disabled={!selectedAddress || !selectedProvider || !fullName || !phone}
+                      disabled={!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod}
                       onClick={handlePayment}
-                      className={`w-full bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg text-base hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-md ${!selectedAddress || !selectedProvider || !fullName || !phone ? "opacity-50 cursor-not-allowed" : ""
+                      className={`w-full bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg text-base hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-md ${!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                     >
                       Confirm Booking
                     </button>
                   </div>
                 </>}
+
+
+
             </form>
           </div>
 

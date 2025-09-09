@@ -73,7 +73,6 @@ const ProviderRegistration: React.FC = () => {
         'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
     ];
 
-    // ✅ Toggle day
     const handleDayToggle = (day: string, checked: boolean) => {
         setFormData(prev => {
             let updated = [...prev.availability];
@@ -86,7 +85,6 @@ const ProviderRegistration: React.FC = () => {
         });
     };
 
-    // ✅ Change start/end time
     const handleTimeChange = (day: string, field: 'startTime' | 'endTime', value: string) => {
         setFormData(prev => {
             const updated = prev.availability.map(av =>
@@ -214,6 +212,7 @@ const ProviderRegistration: React.FC = () => {
             }
             setIsLoading(true)
             const res = await providerService.register(data);
+            console.log('the res', res)
             toast.success(res.message)
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });

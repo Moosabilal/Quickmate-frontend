@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, MapPin, Star, Filter, Search, Eye, Download, MoreHorizontal } from 'lucide-react';
+import { Calendar, Clock, MapPin, Star, Filter, Search, Eye, Download, MoreHorizontal, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { IBookingHistoryPage } from '../../interface/IBooking';
+import { BookingStatus, IBookingHistoryPage } from '../../interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 
 const BookingHistory: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<BookingStatus>(BookingStatus.All);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [bookings, setBookings] = useState<IBookingHistoryPage[]>([])
@@ -24,40 +24,45 @@ const BookingHistory: React.FC = () => {
   console.log('the bookings', bookings)
 
   const tabs = [
-    { id: 'all', label: 'All Bookings', count: bookings.length },
-    { id: 'Completed', label: 'Completed', count: bookings.filter(b => b.status === 'completed').length },
-    { id: 'Confirmed', label: 'Upcoming', count: bookings.filter(b => b.status === 'Confirmed').length },
-    { id: 'Canceled', label: 'Canceled', count: bookings.filter(b => b.status === 'canceled').length }
+    { id: BookingStatus.All, label: 'All Bookings', count: bookings.length },
+    { id: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
+    { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
+    { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },
+    { id: BookingStatus.CANCELLED, label: 'Canceled', count: bookings.filter(b => b.status === BookingStatus.CANCELLED).length }
   ];
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: BookingStatus) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'Confirmed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'canceled':
+      case BookingStatus.COMPLETED:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case BookingStatus.CONFIRMED:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case BookingStatus.CANCELLED:
         return 'bg-red-100 text-red-800 border-red-200';
+      case BookingStatus.IN_PROGRESS:
+        return 'bg-green-100 text-green-800 border-green-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: BookingStatus) => {
     switch (status) {
-      case 'completed':
-        return '✓';
-      case 'Confirmed':
-        return '⏰';
-      case 'canceled':
-        return '✕';
+      case BookingStatus.COMPLETED:
+        return <CheckCircle className="w-4 h-4" />;
+      case BookingStatus.CONFIRMED:
+        return <Clock className="w-4 h-4" />;
+      case BookingStatus.CANCELLED:
+        return <XCircle className="w-4 h-4" />;
+      case BookingStatus.IN_PROGRESS:
+        return <PlayCircle className="w-4 h-4" />;
       default:
-        return '•';
+        return <Clock className="w-4 h-4" />;
     }
   };
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesTab = activeTab === 'all' || booking.status === activeTab;
+    const matchesTab = activeTab === BookingStatus.All || booking.status === activeTab;
     const matchesSearch = booking.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.providerName.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
@@ -104,8 +109,8 @@ const BookingHistory: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${activeTab === tab.id
-                    ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
               >
                 {tab.label}

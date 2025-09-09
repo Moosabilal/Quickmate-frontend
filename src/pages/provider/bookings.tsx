@@ -3,7 +3,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  DollarSign,
   MessageCircle,
   Phone,
   CheckCircle,
@@ -19,7 +18,8 @@ import {
   Trash2,
   PlayCircle,
   PauseCircle,
-  Book
+  Book,
+  IndianRupee
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -27,6 +27,8 @@ import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
 import { BookingStatus } from '../../interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { toast } from 'react-toastify';
 
 interface IProviderBookingManagement {
   id: string;
@@ -39,7 +41,7 @@ interface IProviderBookingManagement {
   location: string;
   payment: number;
   paymentStatus: string;
-  status: 'Pending' | 'Confirmed' | 'In-Progress' | 'Completed' | 'Cancelled';
+  status: BookingStatus;
   description: string;
   customerPhone: string;
   customerEmail: string;
@@ -50,7 +52,7 @@ interface IProviderBookingManagement {
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('Pending');
+  const [activeTab, setActiveTab] = useState<string>(BookingStatus.PENDING);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<IProviderBookingManagement | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -59,18 +61,16 @@ const ProviderBookingManagementPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { provider } = useAppSelector((state) => state.provider);
-  console.log('the provider info we are getting', provider)
+  const { user } = useAppSelector((state) => state.auth)
 
   const navigate = useNavigate()
 
-
-
   const tabs = [
-    { key: 'Pending', label: 'New Requests', count: bookings.filter(b => b.status === 'Pending').length },
-    { key: 'Confirmed', label: 'Upcoming Jobs', count: bookings.filter(b => b.status === 'Confirmed').length },
-    { key: 'In-Progress', label: 'In Progress', count: bookings.filter(b => b.status === 'In-Progress').length },
-    { key: 'Completed', label: 'Completed', count: bookings.filter(b => b.status === 'Completed').length },
-    { key: 'Cancelled', label: 'Cancelled', count: bookings.filter(b => b.status === 'Cancelled').length }
+    { key: BookingStatus.PENDING, label: 'New Requests', count: bookings.filter(b => b.status === BookingStatus.PENDING).length },
+    { key: BookingStatus.CONFIRMED, label: 'Upcoming Jobs', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },
+    { key: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
+    { key: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
+    { key: BookingStatus.CANCELLED, label: 'Cancelled', count: bookings.filter(b => b.status === BookingStatus.CANCELLED).length }
   ];
 
   useEffect(() => {
@@ -98,51 +98,76 @@ const ProviderBookingManagementPage: React.FC = () => {
     return matchesTab && matchesSearch;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: BookingStatus) => {
     switch (status) {
-      case 'Pending': return 'bg-blue-100 text-blue-800';
-      case 'Confirmed': return 'bg-yellow-100 text-yellow-800';
-      case 'In-Progress': return 'bg-green-100 text-green-800';
-      case 'Completed': return 'bg-gray-100 text-gray-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case BookingStatus.PENDING:
+        return 'bg-blue-100 text-blue-800';
+      case BookingStatus.COMPLETED:
+        return 'bg-gray-100 text-gray-800';
+      case BookingStatus.CONFIRMED:
+        return 'bg-yellow-100 text-yellow-800';
+      case BookingStatus.CANCELLED:
+        return 'bg-red-100 text-red-800';
+      case BookingStatus.IN_PROGRESS:
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+
+  const getStatusIcon = (status: BookingStatus) => {
     switch (status) {
-      case 'Pending': return <AlertTriangle className="w-4 h-4" />;
-      case 'Confirmed': return <Clock className="w-4 h-4" />;
-      case 'In-Progress': return <PlayCircle className="w-4 h-4" />;
-      case 'Completed': return <CheckCircle className="w-4 h-4" />;
-      case 'Cancelled': return <XCircle className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
+      case BookingStatus.PENDING:
+        return <AlertTriangle className="w-4 h-4" />;
+      case BookingStatus.COMPLETED:
+        return <CheckCircle className="w-4 h-4" />;
+      case BookingStatus.CONFIRMED:
+        return <Clock className="w-4 h-4" />;
+      case BookingStatus.CANCELLED:
+        return <XCircle className="w-4 h-4" />;
+      case BookingStatus.IN_PROGRESS:
+        return <PlayCircle className="w-4 h-4" />;
+      default:
+        return <Clock className="w-4 h-4" />;
     }
   };
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
     try {
-        console.log('Updating booking', bookingId, 'to status', newStatus);
-        await bookingService.updateBookingStatus(bookingId, newStatus as BookingStatus);
-        setBookings(prev => prev.map(booking =>
-          booking.id === bookingId ? { ...booking, status: newStatus as BookingStatus } : booking
-        ));
-        setShowDetails(false);
+      setLoading(true)
+      const response = await bookingService.updateBookingStatus(bookingId, newStatus as BookingStatus);
+      setBookings(prev => prev.map(booking =>
+        booking.id === bookingId ? { ...booking, status: newStatus as BookingStatus } : booking
+      ));
+      if(newStatus === BookingStatus.COMPLETED){
+        toast.info(response)
+      }else {
+      toast.success(response)
+      }
+      setShowDetails(false);
     } catch (error) {
       console.error('Error updating booking status:', error);
-      alert('Failed to update booking status. Please try again.');
+      toast.error('Failed to update booking status. Please try again.');
       return;
 
+    } finally {
+      setLoading(false)
     }
 
   };
 
+  const handleCompletion = async (bookingId: string) => {
+    await handleStatusUpdate(bookingId, BookingStatus.COMPLETED)
+    navigate('/verify-otp', { state: { email: user?.email, bookingId, newStatus: BookingStatus.COMPLETED } })
+  }
+
   const handleConfirm = async () => {
     if (!selectedBooking) return;
     setIsDeleting(true);
-      await handleStatusUpdate(selectedBooking.id, BookingStatus.CANCELLED);
-      setIsDeleting(false);
-      setShowDeleteModal(false)
+    await handleStatusUpdate(selectedBooking.id, BookingStatus.CANCELLED);
+    setIsDeleting(false);
+    setShowDeleteModal(false)
   }
 
 
@@ -179,7 +204,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl">
                       <div className="text-green-600 dark:text-green-400 font-semibold">
-                        ${bookings.filter(b => b.status === 'Completed').reduce((sum, b) => sum + b.payment, 0)}
+                        ${bookings.filter(b => b.status === BookingStatus.COMPLETED).reduce((sum, b) => sum + b.payment, 0)}
                       </div>
                       <div className="text-xs text-green-500">Total Earnings</div>
                     </div>
@@ -287,8 +312,8 @@ const ProviderBookingManagementPage: React.FC = () => {
                                   <span className="truncate">{booking.location}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span className="font-medium">${booking.payment}</span>
+                                  <IndianRupee className="w-3 h-3" />
+                                  {booking.payment}
                                   <span className={`px-2 py-1 rounded text-xs ${booking.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {booking.paymentStatus}
@@ -326,23 +351,24 @@ const ProviderBookingManagementPage: React.FC = () => {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
-                            <button
-                              onClick={() => window.open(`tel:${booking.customerPhone}`)}
-                              className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
-                              title="Call Customer"
-                            >
-                              <Phone className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                navigate('/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
-                              }}
-                              className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
-                              title="Message Customer"
-                            >
-                              <MessageCircle className="w-5 h-5"
-                              />
-                            </button>
+                            {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
+                              <><button
+                                onClick={() => window.open(`tel:${booking.customerPhone}`)}
+                                className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
+                                title="Call Customer"
+                              >
+                                <Phone className="w-5 h-5" />
+                              </button>
+                                <button
+                                  onClick={() => {
+                                    navigate('/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
+                                  }}
+                                  className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
+                                  title="Message Customer"
+                                >
+                                  <MessageCircle className="w-5 h-5"
+                                  />
+                                </button></>}
                           </div>
                         </div>
 
@@ -352,7 +378,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                           </div>
 
                           <div className="flex items-center space-x-3">
-                            {booking.status === 'Pending' && (
+                            {booking.status === BookingStatus.PENDING && (
                               <>
                                 <button
                                   onClick={() => handleStatusUpdate(booking.id, BookingStatus.CONFIRMED)}
@@ -368,7 +394,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 </button>
                               </>
                             )}
-                            {booking.status === 'Confirmed' && (
+                            {booking.status === BookingStatus.CONFIRMED && (
                               <>
                                 <button
                                   onClick={() => handleStatusUpdate(booking.id, BookingStatus.IN_PROGRESS)}
@@ -384,9 +410,9 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 </button>
                               </>
                             )}
-                            {booking.status === 'In-Progress' && (
+                            {booking.status === BookingStatus.IN_PROGRESS && (
                               <button
-                                onClick={() => handleStatusUpdate(booking.id, BookingStatus.COMPLETED)}
+                                onClick={() => handleCompletion(booking.id)}
                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all duration-300"
                               >
                                 Mark Complete
@@ -516,7 +542,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                         </button>
                       </>
                     )}
-                    {selectedBooking.status === 'Confirmed' && (
+                    {selectedBooking.status === BookingStatus.CONFIRMED && (
                       <>
                         <button
                           onClick={() => {
@@ -538,7 +564,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                         </button>
                       </>
                     )}
-                    {selectedBooking.status === 'In-Progress' && (
+                    {selectedBooking.status === BookingStatus.IN_PROGRESS && (
                       <button
                         onClick={() => {
                           handleStatusUpdate(selectedBooking.id, BookingStatus.COMPLETED);
@@ -554,7 +580,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                         This job has been completed
                       </div>
                     )}
-                    {selectedBooking.status === 'Cancelled' && (
+                    {selectedBooking.status === BookingStatus.CANCELLED && (
                       <div className="w-full text-center py-3 text-red-600 dark:text-red-400">
                         This booking was cancelled
                       </div>
@@ -571,7 +597,7 @@ const ProviderBookingManagementPage: React.FC = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirm}
-        itemType='booking'
+        itemType={DeleteConfirmationTypes.BOOKING}
         itemName={selectedBooking.service || ''}
         itemDetails={`Booking ID: #${selectedBooking.id.slice(-8).toUpperCase()}\nCustomer: ${selectedBooking.customerName}` || ''}
         isLoading={isDeleting}

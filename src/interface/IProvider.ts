@@ -1,4 +1,9 @@
-
+export enum ProviderStatus {
+  Active = 'Approved',
+  InActive = 'Rejected',
+  Suspended = 'Suspended',
+  Pending = 'Pending',
+}
 
  export interface Availability {
     day: string;       // e.g. "Monday"
@@ -81,4 +86,19 @@ export interface IProviderForChatListPage {
   lastMessage?: string;
   lastMessageAt?: Date | null;
 
+}
+
+//for admin side
+export interface ProviderList {
+  id: string;
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  serviceId: string;
+  serviceArea: string;
+  profilePhoto: string;
+  serviceOffered: string[];
+  status: ProviderStatus;
+  rating?: number;
 }

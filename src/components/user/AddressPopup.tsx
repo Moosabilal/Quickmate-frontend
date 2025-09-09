@@ -5,17 +5,18 @@ import { providerService } from "../../services/providerService";
 import { IAddress } from "../../interface/IAddress";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
+import { findProviderRange } from "../../util/findProviderRange";
 
 interface AddressPopupProps {
   addressPopup: boolean;
   setAddressPopup: React.Dispatch<React.SetStateAction<boolean>>;
   selectedAddress: IAddress | null;
-  handleAddressConfirm: (address: any) => void;
+  handleAddressConfirm: (address: IAddress) => void;
   setShowAddAddress: React.Dispatch<React.SetStateAction<boolean>>;
   showAddAddress: boolean;
   newAddress: IAddress;
   setNewAddress: React.Dispatch<React.SetStateAction<any>>;
-  handleAddAddress: () => void;
+  handleAddAddress: (address: IAddress) => void;
   providerLoc?: string[];
 }
 
@@ -35,22 +36,54 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const [mockAddresses, setMockAddresses] = useState<IAddress[]>([])
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [radius, setRadius] = useState(10)
 
-  const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const toRad = (value: number) => (value * Math.PI) / 180;
+  // const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  //   const toRad = (value: number) => (value * Math.PI) / 180;
 
-    const R = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
+  //   const R = 6371;
+  //   const dLat = toRad(lat2 - lat1);
+  //   const dLon = toRad(lon2 - lon1);
 
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  //   const a =
+  //     Math.sin(dLat / 2) ** 2 +
+  //     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  //   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c;
+  //   return R * c;
+  // };
+
+  const validateAddress = (address: IAddress) => {
+    const errors: { [key: string]: string } = {};
+
+    if (!address.label.trim()) errors.label = "Label is required";
+    if (!address.street.trim()) errors.street = "Street is required";
+    if (!address.city.trim()) errors.city = "City is required";
+    if (!address.state.trim()) errors.state = "State is required";
+    if (!address.zip.trim()) {
+      errors.zip = "ZIP Code is required";
+    } else if (!/^\d{4,6}$/.test(address.zip)) {
+      errors.zip = "Invalid ZIP Code";
+    }
+
+    return errors;
   };
+
+  const getCoordinates = async (street: string, city: string, state: string, pincode: string) => {
+    const data = await addressService.getLocationByPincode(street, city, state, pincode);
+    console.log('the data from pincode', data)
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+      };
+    }
+
+    return null;
+  }
+
 
 
   const handleCurrentLocation = async () => {
@@ -84,11 +117,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           };
 
           if (providerLoc) {
-            const withinRange = providerLoc.some((loc: string) => {
-              const [provLat, provLng] = loc.split(",").map(Number);
-              const distance = getDistanceInKm(lat, lng, provLat, provLng);
-              return distance <= 5; // 5 km radius
-            });
+            // const withinRange = providerLoc.some((loc: string) => {
+            //   const [provLat, provLng] = loc.split(",").map(Number);
+            //   const distance = getDistanceInKm(lat, lng, provLat, provLng);
+            //   return distance <= radius;
+            // });
+            const withinRange = findProviderRange(lat, lng, radius, providerLoc)
+            console.log('the range calculation', withinRange)
 
             if (!withinRange) {
               setError("No service provider found to your place, Please select different address.");
@@ -116,40 +151,92 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   };
 
   const handleAddressConfirmWithCheck = (address: IAddress) => {
+    console.log('the addres for tlocaitoncaion', address)
     if (!providerLoc || !address.locationCoords) {
       handleAddressConfirm(address);
-      setAddressPopup(false);       
+      setAddressPopup(false);
       return;
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
+      console.log('the user lat long', userLat, userLng)
 
-      const withinRange = providerLoc.some((loc: string) => {
-        const [provLat, provLng] = loc.split(",").map(Number);
-        const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-        console.log('the distance', distance)
-         console.log(`Distance to provider at ${provLat},${provLng} = ${distance.toFixed(2)} km`);
-        return distance <= 5; 
-      });
+      // const withinRange = providerLoc.some((loc: string) => {
+      //   const [provLat, provLng] = loc.split(",").map(Number);
+      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
+      //   return distance <= radius;
+      // });
+      const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
+      console.log('the seciond within range', withinRange)
 
       if (withinRange) {
-        handleAddressConfirm(address); 
-        setAddressPopup(false);      
+        handleAddressConfirm(address);
       } else {
-        setError("No service provider found in your area."); 
+        setError("No service provider found on this location.");
       }
     }
 
   };
 
+  const saveAddressAndFetch = async () => {
+    const errors = validateAddress(newAddress);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
+    const { street, city, state, zip } = newAddress;
+    const coords = await getCoordinates(street, city, state, zip);
+    if (!coords) {
+      toast.info("Unable to find coordinates for this address.");
+      return;
+    }
+    const newAddr = { ...newAddress, locationCoords: `${coords.lat},${coords.lng}`, };
+    console.log('the provider loca', providerLoc)
+    if (providerLoc) {
+      console.log('this will print on wokrking')
+      const [userLat, userLng] = newAddr.locationCoords!.split(",").map(Number);
 
+      // const withinRange = providerLoc.some((loc: string) => {
+      //   const [provLat, provLng] = loc.split(",").map(Number);
+      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
+      //   return distance <= radius;
+      // });
+      const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
+      console.log('the third coordination ', withinRange)
+
+      if (withinRange) {
+        setNewAddress(newAddr)
+        console.log('the new address in address popup', newAddr)
+        handleAddAddress(newAddr)
+        handleAddressConfirm(newAddr);
+
+      } else {
+        setError("No service provider found on this location.");
+        toast.info("No service provider found on this location.");
+      }
+    } else {
+      console.log('the new adre', newAddr)
+      setNewAddress(newAddr)
+      handleAddressConfirm(newAddr)
+      handleAddAddress(newAddr)
+    }
+  }
+
+  const fetchAddress = async () => {
+    try {
+      console.log('this will work again')
+      const res = await addressService.getAddress()
+      console.log('the res', res)
+      setMockAddresses(res)
+    } catch (error) {
+      toast.error('Failed to fetch Address! Please try again later')
+    }
+
+  }
 
   useEffect(() => {
-    const fetchAddress = async () => {
-      const res = await addressService.getAddress()
-      setMockAddresses(res)
-    }
     fetchAddress()
-  }, [])
+  }, [addressPopup])
 
   if (!addressPopup) return null;
 
@@ -171,22 +258,45 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             <div>
               {error && <p className="text-red-600 mb-2">{error}</p>}
             </div>
-            <div className="flex justify-between items-center">
-              <label className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                Select Address
-              </label>
+            <div className="flex flex-col gap-4">
+              {providerLoc && <div className="flex items-center gap-4">
+                <label className="block text-sm font-medium text-gray-700 whitespace-nowrap">
+                  Search Radius: {radius} km
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={25}
+                  value={radius}
+                  onChange={(e) => setRadius(Number(e.target.value))}
+                  className="flex-1 accent-indigo-600"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  max={25}
+                  value={radius}
+                  onChange={(e) => setRadius(Number(e.target.value))}
+                  className="w-16 px-2 py-1 border rounded-md text-center"
+                />
+              </div>}
+              <div className="flex justify-between items-center">
+                <label className="block text-base font-semibold text-gray-700 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Select Address
+                </label>
 
+                <button
+                  onClick={handleCurrentLocation}
+                  className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                >
+                  📍 Use Current Location
+                </button>
+              </div>
 
-
-              <button
-                onClick={handleCurrentLocation}
-                className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
-              >
-                📍 Use Current Location
-              </button>
 
             </div>
+
 
 
 
@@ -223,40 +333,62 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   placeholder="Address Label (e.g., Home, Work)"
                   value={newAddress.label}
                   onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.label ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.label && <p className="text-red-500 text-sm">{validationErrors.label}</p>}
+
                 <input
                   type="text"
                   placeholder="Street Address"
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.street ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.street && <p className="text-red-500 text-sm">{validationErrors.street}</p>}
+
                 <div className="grid grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder="City"
-                    value={newAddress.city}
-                    onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="State"
-                    value={newAddress.state}
-                    onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="ZIP Code"
-                    value={newAddress.zip}
-                    onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                  />
+                  <div className="flex flex-col">
+                    <input
+                      type="text"
+                      placeholder="City"
+                      value={newAddress.city}
+                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.city ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {validationErrors.city && (
+                      <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <input
+                      type="text"
+                      placeholder="State"
+                      value={newAddress.state}
+                      onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.state ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {validationErrors.state && (
+                      <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <input
+                      type="text"
+                      placeholder="ZIP Code"
+                      value={newAddress.zip}
+                      onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.zip ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {validationErrors.zip && (
+                      <p className="text-red-500 text-sm mt-1">{validationErrors.zip}</p>
+                    )}
+                  </div>
                 </div>
+
                 <button
-                  onClick={handleAddAddress}
+                  onClick={saveAddressAndFetch}
                   className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition duration-200"
                 >
                   Save Address

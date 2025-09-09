@@ -1,11 +1,12 @@
 import axiosInstance from "../API/axiosInstance"
+import { TransactionStatus, WalletFilter } from "../interface/IPayment"
 
 const WALLET_URL = `/wallet`
 
 export const walletService = {
-    getWallet: async () => {
+    getWallet: async (filters?: string) => {
         try {
-            const response = await axiosInstance.get(`${WALLET_URL}`)
+            const response = await axiosInstance.get(`${WALLET_URL}?${filters}`)
             return response.data
         } catch (error) {
             console.log('Error in getting wallet', error)
@@ -23,7 +24,7 @@ export const walletService = {
         }
     },
 
-    verifyDeposit: async (razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string, amount: number, description: string, transactionType: string) => {
+    verifyDeposit: async (razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string, amount: number, description: string, status: TransactionStatus, transactionType: string) => {
         try {
             const response = await axiosInstance.post(`${WALLET_URL}/deposit/verify`, {
                 razorpay_order_id, 
@@ -31,6 +32,7 @@ export const walletService = {
                 razorpay_signature, 
                 description,
                 amount,
+                status,
                 transactionType,
             })
 

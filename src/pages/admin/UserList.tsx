@@ -6,6 +6,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
+import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 
 interface User {
   id: string;
@@ -217,7 +218,7 @@ const AdminUsersPage = () => {
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
         onConfirm={handleStatus}
-        itemType='profile'
+        itemType={DeleteConfirmationTypes.PROFILE}
         itemName={userToBlock?.name || ''}
         itemDetails={userToBlock ? `${userToBlock.email}` : ''}
         isLoading={isDeleting}

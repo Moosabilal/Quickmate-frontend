@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile } from '../../interface/IProvider';
+import { IProviderProfile, ProviderStatus } from '../../interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -9,6 +9,7 @@ import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Link } from 'react-router-dom';
 
 let DefaultIcon = L.divIcon({
     html: `<svg width="25" height="41" viewBox="0 0 25 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -22,7 +23,7 @@ let DefaultIcon = L.divIcon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const statusMap = {
-    Active: {
+    Approved: {
         label: "Verified",
         icon: <CheckCircle className="w-5 h-5 text-white" />,
         badgeColor: "bg-green-500",
@@ -254,7 +255,7 @@ const ProviderProfile: React.FC = () => {
             }
 
             if (hasChanges) {
-                for(let [key, value] of formDataToSend.entries()) {
+                for (let [key, value] of formDataToSend.entries()) {
                     console.log(`${key} : ${value}`)
                 }
                 const updatedProvider = await providerService.updateProvider(formDataToSend);
@@ -425,20 +426,7 @@ const ProviderProfile: React.FC = () => {
                                         Service Area
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
-                                            <label className="text-sm font-medium text-green-600 mb-2 block">Years of Experience</label>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={editedDetails.experience || ''}
-                                                    onChange={(e) => handleInputChange('experience', parseInt(e.target.value))}
-                                                    className="w-full p-2 text-3xl font-bold text-green-700 bg-transparent border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                />
-                                            ) : (
-                                                <p className="text-3xl font-bold text-green-700">{providerDetails?.experience} years</p>
-                                            )}
-                                        </div> */}
+
                                         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
                                             <label className="text-sm font-medium text-purple-600 mb-2 block flex items-center">
                                                 <MapPin className="w-4 h-4 mr-1" />
@@ -489,7 +477,6 @@ const ProviderProfile: React.FC = () => {
 
                                                     return (
                                                         <div key={day} className="flex items-center gap-4">
-                                                            {/* Day toggle */}
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleDayToggle(day)}
@@ -502,7 +489,6 @@ const ProviderProfile: React.FC = () => {
                                                                 {day}
                                                             </button>
 
-                                                            {/* Time inputs if selected */}
                                                             {isSelected && (
                                                                 <div className="flex items-center gap-3">
                                                                     <div>
@@ -600,6 +586,17 @@ const ProviderProfile: React.FC = () => {
                                                 <p className="text-sm text-slate-500">You can change your profile photo in profile settings</p>
                                             )}
                                         </div>
+                                        <div>
+                                            {providerDetails?.status === ProviderStatus.InActive && (
+                                                <Link
+                                                    to="/provider-registration"
+                                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                                >
+                                                    Re-Apply
+                                                </Link>
+                                            )}
+                                        </div>
+
                                     </div>
                                 </section>
 

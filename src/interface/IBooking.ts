@@ -5,11 +5,19 @@ export enum PaymentStatus {
 }
 
 export enum BookingStatus {
+    All = "All",
     PENDING = "Pending",
     CONFIRMED = "Confirmed",
     CANCELLED = "Cancelled",
     COMPLETED = "Completed",
     IN_PROGRESS = "In-Progress"
+}
+
+export interface LocationState {
+  email?: string;
+  role?: string;
+  bookingId?: string;
+  newStatus?: BookingStatus;
 }
 
 export interface IBookingRequest {
@@ -60,7 +68,7 @@ export interface IBookingHistoryPage {
   providerImage: string;
   date: string;
   time: string;
-  status: string;
+  status: BookingStatus;
   price: number;
   location: string;
   priceUnit: string;

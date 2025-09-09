@@ -20,7 +20,8 @@ import {
     Upload,
     CheckCircle,
     AlertCircle,
-    Backpack
+    Backpack,
+    IndianRupee
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
@@ -371,9 +372,7 @@ const ServiceManagementPage: React.FC = () => {
                                 Experience <span className='text-gray-400'>(Yearly/optional)</span>
                             </label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span className="text-gray-500 text-sm">$</span>
-                                </div>
+                                
                                 <input
                                     type="number"
                                     id="experience"
@@ -383,7 +382,7 @@ const ServiceManagementPage: React.FC = () => {
                                     onChange={(e) => setFormData({ ...formData, experience: parseFloat(e.target.value) || 0 })}
                                     className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.basePrice ? 'border-red-300' : 'border-gray-300'
                                         }`}
-                                    placeholder="0"
+                                    placeholder="2"
                                 />
                             </div>
                         </div>
@@ -453,7 +452,7 @@ const ServiceManagementPage: React.FC = () => {
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span className="text-gray-500 text-sm">$</span>
+                                    <IndianRupee className='h-3 w-3 text-gray-500' />
                                 </div>
                                 <input
                                     type="number"
@@ -477,7 +476,7 @@ const ServiceManagementPage: React.FC = () => {
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span className="text-gray-500 text-sm">$</span>
+                                    <IndianRupee className='h-3 w-3 text-gray-500' />
                                 </div>
                                 <input
                                     type="number"

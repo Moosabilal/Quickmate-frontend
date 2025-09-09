@@ -8,14 +8,17 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login, updateProfile } from '../features/auth/authSlice';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
+import { BookingStatus, LocationState } from '../interface/IBooking';
+import { bookingService } from '../services/bookingService';
 
-const OTP_RESEND_TIMEOUT_SECONDS = 60;
+let OTP_RESEND_TIMEOUT_SECONDS = 60;
 
 const RegistrationOTPVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { email: registrationEmail, role } = location.state as { email: string, role: string };
+  const { email: registrationEmail, role, bookingId, newStatus } = (location.state as LocationState) || {};
+  console.log('the email and others', registrationEmail, bookingId, newStatus)
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,10 @@ const RegistrationOTPVerification = () => {
   const [canResend, setCanResend] = useState(false);
 
   const dispatch = useAppDispatch()
+
+  if (bookingId && newStatus) {
+    OTP_RESEND_TIMEOUT_SECONDS = 10 * 60
+  }
 
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -56,6 +63,13 @@ const RegistrationOTPVerification = () => {
     };
   }, [registrationEmail, navigate]);
 
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -81,13 +95,18 @@ const RegistrationOTPVerification = () => {
         await authService.verifyRegistrationOtp(registrationEmail, otp);
         toast.success('Account verified successfully! You can now log in.');
         navigate('/login', { replace: true });
-      } else {
-        const {user, provider, message} = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+      } else if (role === "ServiceProvider") {
+        const { user, provider, message } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
         console.log('the user provider message', user, provider, message)
-        dispatch(updateProfile({user}))
-        dispatch(updateProviderProfile({provider}))
+        dispatch(updateProfile({ user }))
+        dispatch(updateProviderProfile({ provider }))
         toast.success(message);
         navigate(`/providerProfile/${user.id}`, { replace: true });
+      } else if (bookingId && newStatus) {
+        const email = registrationEmail
+        await bookingService.verifyOtp(email, otp)
+        toast.success('Your Service completed successfully')
+        navigate(`/providerBookingManagement`)
       }
 
     } catch (err: any) {
@@ -145,9 +164,6 @@ const RegistrationOTPVerification = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-gray-950 dark:to-gray-850 p-4">
       <div className="relative bg-white dark:bg-gray-800 p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md">
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
-        </div>
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-2">
@@ -233,17 +249,17 @@ const RegistrationOTPVerification = () => {
             </button>
           ) : (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Resend available in {timer} seconds
+              Resend available in {formatTime(timer)} seconds
             </p>
           )}
         </div>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-300 mt-6">
+        {registrationEmail && role && <p className="text-center text-sm text-gray-600 dark:text-gray-300 mt-6">
           Didn't receive the OTP? Check your spam folder or{' '}
           <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
             register again
           </Link>
-        </p>
+        </p>}
       </div>
     </div>
   );

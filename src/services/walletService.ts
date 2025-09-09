@@ -4,7 +4,7 @@ import { TransactionStatus, WalletFilter } from "../interface/IPayment"
 const WALLET_URL = `/wallet`
 
 export const walletService = {
-    getWallet: async (filters: string) => {
+    getWallet: async (filters?: string) => {
         try {
             const response = await axiosInstance.get(`${WALLET_URL}?${filters}`)
             return response.data

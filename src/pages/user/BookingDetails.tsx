@@ -17,7 +17,8 @@ import {
   FileText,
   MapIcon,
   Shield,
-  Award
+  Award,
+  IndianRupee
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
@@ -486,7 +487,7 @@ const BookingDetails: React.FC = () => {
         onConfirm={handleCancelBooking}
         itemType={DeleteConfirmationTypes.BOOKING}
         itemName={bookingToDelete?.serviceName || ''}
-        itemDetails={bookingToDelete ? `Booking ID: #${bookingToDelete.bookedOrderId.slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • $${bookingToDelete?.amount}` : ''}
+        itemDetails={bookingToDelete ? `Booking ID: #${bookingToDelete.bookedOrderId.slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • ₹${bookingToDelete?.amount}` : ''}
         isLoading={isDeleting}
         customMessage="Are you sure you want to cancel this booking?."
         additionalInfo={`If you cancel now, you may miss out on this service. \n ${bookingToDelete?.status === BookingStatus.CONFIRMED ? `You will only get 50% of Price refund, \n amount ${(bookingToDelete?.amount ?? 0) * 0.5} will be refunded to you account within 5-7 business days.` : `amount ${bookingToDelete?.amount} will be refunded to you account within 5-7 business days.`} `}

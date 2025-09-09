@@ -2,6 +2,7 @@ import React, { lazy } from 'react';
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const Provider_profile = lazy(() => import('../pages/provider/ProfileSetingPage'))
 const Chat_Room = lazy(() => import('../components/ChatRoom'))
+const RegistrationOTPVerification = lazy(() => import('../components/OtpVerification'))
 
 import { LayoutRoute } from './LayoutRoute';
 import ProviderSidebarLayout from '../layouts/ProviderSidebarLayout';

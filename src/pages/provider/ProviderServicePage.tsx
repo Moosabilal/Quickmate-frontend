@@ -15,14 +15,15 @@ import {
     Eye,
     X,
     Download,
-    ExternalLink
+    ExternalLink,
+    IndianRupee
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
 import { serviceService } from '../../services/serviceService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import DeleteConfirmationModal from '../../components/deleteConfirmationModel'; 
+import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 
 interface IService {
@@ -53,7 +54,7 @@ const ProviderServicesPage: React.FC = () => {
             setServices(response.services)
         }
         fetchServices()
-    },[provider])
+    }, [provider])
 
     const handleDeleteClick = (service: IService) => {
         setServiceToDelete(service);
@@ -62,7 +63,7 @@ const ProviderServicesPage: React.FC = () => {
 
     const handleDeleteConfirm = async () => {
         if (!serviceToDelete) return;
-        
+
         setIsDeleting(true);
         try {
             const { message } = await serviceService.deleteService(serviceToDelete.id);
@@ -121,7 +122,7 @@ const ProviderServicesPage: React.FC = () => {
                                                     {service.category}
                                                 </span>
                                             </div>
-                                            
+
                                         </div>
 
                                         <div className="p-6">
@@ -145,8 +146,9 @@ const ProviderServicesPage: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-2xl font-bold text-gray-900">
-                                                        ${service.price}
+                                                    <div className="flex items-center justify-end text-2xl font-bold text-gray-900">
+                                                        <IndianRupee className="h-5 w-5 mr-1" />
+                                                        {service.price}
                                                     </div>
                                                     <div className="text-sm text-gray-500">per service</div>
                                                 </div>
@@ -160,7 +162,7 @@ const ProviderServicesPage: React.FC = () => {
                                                     <Edit3 className="w-4 h-4" />
                                                     Edit
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
                                                     onClick={() => handleDeleteClick(service)}
                                                 >

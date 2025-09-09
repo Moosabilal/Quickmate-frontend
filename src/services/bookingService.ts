@@ -21,7 +21,7 @@ export const bookingService = {
 
   verifyPayment: async (verificationData: paymentVerificationRequest) => {
     try {
-      const response = await axiosInstance.post(`${BOOKING_URL}/verifyPayment`, verificationData )
+      const response = await axiosInstance.post(`${BOOKING_URL}/verifyPayment`, verificationData)
       return response.data
     } catch (error) {
       console.log('Error when verifying payment', error)
@@ -71,7 +71,7 @@ export const bookingService = {
 
   updateBookingStatus: async (id: string, status: BookingStatus) => {
     try {
-      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingStatus/${id}`, {status})
+      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingStatus/${id}`, { status })
       return response.data
     } catch (error) {
       console.log('Error in cancelling booking', error)
@@ -81,12 +81,23 @@ export const bookingService = {
 
   updateBookingDateTime: async (id: string, date: string, time: string) => {
     try {
-      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingDateTime/${id}`, {date, time})
+      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingDateTime/${id}`, { date, time })
       return response.data
     } catch (error) {
       console.log('Error in updating booking date/time', error)
       throw error
     }
-  }
+  },
+
+  verifyOtp: async (email: string, otp: string) => {
+    const response = await axiosInstance.post(`${BOOKING_URL}/verify-bookingCompletion-otp`, { email, otp });
+    return response.data;
+  },
+
+  resendRegistrationOtp: async (email: string) => {
+    const response = await axiosInstance.post(`${BOOKING_URL}/resend-bookingCompletion-otp`, { email });
+    return response.data;
+  },
+
 
 }

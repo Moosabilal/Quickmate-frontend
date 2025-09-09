@@ -3,7 +3,7 @@ import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Clock, DollarSign, Phone, Mail, Award, X, Calendar, Timer, Calendar1, CalendarArrowUp, CalendarClock, CalendarClockIcon } from 'lucide-react';
+import { Star, MapPin, Award, CalendarClockIcon, IndianRupee } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -16,6 +16,7 @@ import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPaym
 import { IAddress } from '../../interface/IAddress';
 import { providerService } from '../../services/providerService';
 import { addressService } from '../../services/addressService';
+import { walletService } from '../../services/walletService';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 declare var Razorpay: any;
@@ -49,6 +50,14 @@ const ServiceDetailsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
+  const [walletBalance, setWalletBalance] = useState<number>(0)
+
+  const paymentOptions = [
+    { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
+    { value: PaymentMethod.WALLET, label: "Wallet" },
+  ]
+
 
   const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
   const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
@@ -56,6 +65,9 @@ const ServiceDetailsPage: React.FC = () => {
   const getProvider = async (filterParams = {}) => {
     try {
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
+      const res = await walletService.getWallet()
+      console.log('the wallet', res)
+      setWalletBalance(res.data.wallet.balance)
       setAllProviders(providers);
     } catch (error: any) {
       console.error(error);
@@ -99,7 +111,7 @@ const ServiceDetailsPage: React.FC = () => {
         console.log('the new address', newAddressObj)
         const res = await addressService.createAddress(newAddressObj)
         console.log('the added response', res)
-        
+
       } catch (error) {
         toast.error('Something went wrong! Please try again later')
       }
@@ -131,8 +143,35 @@ const ServiceDetailsPage: React.FC = () => {
 
 
   const handlePayment = async (e: React.FormEvent) => {
-
     e.preventDefault()
+
+    if (paymentMethod === PaymentMethod.WALLET) {
+      if(walletBalance < Number(selectedProvider?.price)){
+        toast.info('Insufficient balance in wallet')
+        return;
+      }
+      const bookingResponse = await handleSubmit(e);
+      try {
+        if (!selectedProvider) {
+          toast.error("No provider selected for payment.");
+          return;
+        }
+        const walletPayment: paymentVerificationRequest = {
+          providerId: selectedProvider._id,
+          bookingId: bookingResponse.bookingId,
+          paymentMethod: paymentMethod,
+          paymentDate: new Date(),
+          amount: Number(selectedProvider?.price),
+          razorpay_order_id: `${Date.now()}`,
+        };
+        const validationRes = await bookingService.verifyPayment(walletPayment);
+          toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
+          navigate(`/confirmationModel/${bookingResponse.bookingId}`)
+      } catch (error) {
+        toast.error('booking failed please try again later', error)
+      }
+      return
+    }
     const amount = selectedProvider?.price;
 
     const orderResponse = await bookingService.confirmPayment(Number(amount))
@@ -159,7 +198,7 @@ const ServiceDetailsPage: React.FC = () => {
           const paymentRequest: paymentVerificationRequest = {
             providerId: selectedProvider._id,
             bookingId: bookingRes.bookingId,
-            paymentMethod: PaymentMethod.BANK,
+            paymentMethod: paymentMethod,
             paymentDate: new Date(),
             amount: Number(amount),
             razorpay_order_id: paymentResponse.razorpay_order_id,
@@ -302,7 +341,7 @@ const ServiceDetailsPage: React.FC = () => {
             <form className="space-y-6">
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <MapPin className="w-4 h-4 mr-2"/>
+                  <MapPin className="w-4 h-4 mr-2" />
                   Select Address
                 </h3>
                 <button
@@ -359,7 +398,7 @@ const ServiceDetailsPage: React.FC = () => {
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
                   <CalendarClockIcon className="w-4 h-4 mr-2" />
-                 Select Date & Time
+                  Select Date & Time
                 </h3>
                 <button
                   type="button"
@@ -428,19 +467,43 @@ const ServiceDetailsPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                    <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                      <IndianRupee className="w-4 h-4 mr-2" />
+                      Select Payment Method
+                    </h3>
+                    <div className="space-y-2">
+                      {paymentOptions.map((method) => (
+                        <label key={method.value} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value={method.value}
+                            checked={paymentMethod === method.value}
+                            onChange={() => setPaymentMethod(method.value)}
+                            className="text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span>{method.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="pt-4">
                     <button
                       type="submit"
-                      disabled={!selectedAddress || !selectedProvider || !fullName || !phone}
+                      disabled={!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod}
                       onClick={handlePayment}
-                      className={`w-full bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg text-base hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-md ${!selectedAddress || !selectedProvider || !fullName || !phone ? "opacity-50 cursor-not-allowed" : ""
+                      className={`w-full bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg text-base hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-md ${!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                     >
                       Confirm Booking
                     </button>
                   </div>
                 </>}
+
+
+
             </form>
           </div>
 

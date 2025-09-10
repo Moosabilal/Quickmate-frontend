@@ -18,7 +18,6 @@ const RegistrationOTPVerification = () => {
   const location = useLocation();
 
   const { email: registrationEmail, role, bookingId, newStatus } = (location.state as LocationState) || {};
-  console.log('the email and others', registrationEmail, bookingId, newStatus)
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,7 +96,6 @@ const RegistrationOTPVerification = () => {
         navigate('/login', { replace: true });
       } else if (role === "ServiceProvider") {
         const { user, provider, message } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
-        console.log('the user provider message', user, provider, message)
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
         toast.success(message);

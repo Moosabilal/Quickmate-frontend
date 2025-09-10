@@ -54,10 +54,8 @@ const Wallet: React.FC = () => {
 
     
 
-    console.log("the filter for sorting", filters, "query:", query);
 
     const res = await walletService.getWallet(query);
-    console.log('the response new response', res)
     setTotalPages(res.data.totalPages)
     setBalance(res.data.wallet.balance);
     setTransactions(res.data.transactions);

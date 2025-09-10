@@ -72,7 +72,6 @@ const ProviderServicesPage: React.FC = () => {
             setShowDeleteModal(false);
             setServiceToDelete(null);
         } catch (error: any) {
-            console.log('error in deleting');
             toast.error(error.response?.data?.message || 'Failed to delete service');
         } finally {
             setIsDeleting(false);

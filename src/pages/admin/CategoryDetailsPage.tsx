@@ -24,10 +24,8 @@ const CategoryDetailsPage: React.FC = () => {
             setError(null);
             try {
                 const response = await categoryService.getCategoryById(categoryId);
-                console.log('the fetched categories', response)
                 setCategoryDetails(response);
             } catch (err) {
-                console.error("Failed to fetch category details:", err);
                 setError("Failed to load category details. Please try again.");
             } finally {
                 setIsLoading(false);
@@ -79,7 +77,6 @@ const CategoryDetailsPage: React.FC = () => {
                     return { ...prevDetails, subCategories: updatedSubCategories };
                 });
             }
-            console.log("Subcategory status updated locally (simulate success).");
         } catch (err) {
             console.error("Failed to toggle subcategory status:", err);
             setError(err.message || "Failed to toggle subcategory status.");

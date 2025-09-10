@@ -52,8 +52,6 @@ const BookingDetails: React.FC = () => {
     const fetchBookingDetails = async () => {
       try {
         const response = await bookingService.getBookingById(id!);
-                console.log('the responsesesss', response)
-
         setBooking(response);
         setRating(response.rating)
         setReview(response.review)
@@ -87,13 +85,11 @@ const BookingDetails: React.FC = () => {
     setIsDeleting(true);
     try {
       const { message } = await bookingService.updateBookingStatus(bookingToDelete.id, BookingStatus.CANCELLED);
-      console.log('the delete response', message);
       toast.info(message);
       setBooking((prev) => prev ? { ...prev, status: BookingStatus.CANCELLED } : prev);
       setShowDeleteModal(false);
       setBookingToDelete(null);
     } catch (error: any) {
-      console.log('error in deleting');
       toast.error(error.response?.data?.message || 'Failed to delete service');
     } finally {
       setIsDeleting(false);
@@ -108,7 +104,6 @@ const BookingDetails: React.FC = () => {
       toast.success('Booking date and time updated successfully');
       setBooking((prev) => prev ? { ...prev, date, time } : prev);
     } catch (error) {
-      console.log('Error updating booking date/time', error);
       toast.error('Failed to update booking date and time');
     }
 

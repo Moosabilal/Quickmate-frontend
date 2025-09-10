@@ -255,9 +255,6 @@ const ProviderProfile: React.FC = () => {
             }
 
             if (hasChanges) {
-                for (let [key, value] of formDataToSend.entries()) {
-                    console.log(`${key} : ${value}`)
-                }
                 const updatedProvider = await providerService.updateProvider(formDataToSend);
                 setProviderDetails(updatedProvider.provider);
                 toast.success(updatedProvider.message);

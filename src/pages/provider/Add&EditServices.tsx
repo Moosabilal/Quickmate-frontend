@@ -86,7 +86,6 @@ const ServiceManagementPage: React.FC = () => {
         if (serviceId) {
             const getService = async () => {
                 const response = await serviceService.getServiceById(serviceId)
-                console.log('the service response', response)
                 handleEditService(response)
             }
             getService()
@@ -220,11 +219,9 @@ const ServiceManagementPage: React.FC = () => {
                 }
 
                 } catch (error) {
-                    console.log('the error occurs here', error)
                     toast.error(error.response.data.message)
                 }
             } else {
-                console.log('this is not working',data)
                 const { message, success } = await serviceService.createdService(data);
                 if (success) {
                     toast.success(message)

@@ -18,11 +18,9 @@ const BookingConfirmation: React.FC = () => {
       try {
         setLoading(true);
         const response = await bookingService.getBookingById(bookingId!);
-        console.log('the returned response', response);
         setBooking(response);
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error fetching booking:', err);
       } finally {
         setLoading(false);
       }

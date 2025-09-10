@@ -10,6 +10,7 @@ import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { CompanyInfo } from '../../CompanyInfo';
+import { toast } from 'react-toastify';
 
 interface ChatMessage {
     hideInChat?: boolean;
@@ -303,7 +304,7 @@ const Home: React.FC = () => {
     const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            console.log('Search query:', searchQuery);
+            toast.success(`Search query:, ${searchQuery}`);
         }
     }, [searchQuery]);
 

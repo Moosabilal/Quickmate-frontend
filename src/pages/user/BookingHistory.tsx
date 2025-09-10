@@ -21,8 +21,6 @@ const BookingHistory: React.FC = () => {
     getBooking()
   }, [])
 
-  console.log('the bookings', bookings)
-
   const tabs = [
     { id: BookingStatus.All, label: 'All Bookings', count: bookings.length },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },

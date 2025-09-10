@@ -43,8 +43,6 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
 }) => {
   if (!dateTimePopup) return null;
 
-  console.log('the provider timings', providersTimings)
-
   const [info, setInfo] = useState<string | null>(null);
 
   const handleConfirm = () => {

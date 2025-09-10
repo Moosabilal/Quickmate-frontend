@@ -81,7 +81,7 @@ const ProviderBookingManagementPage: React.FC = () => {
         const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string)
         setBookings(response)
       } catch (error) {
-        console.log(error.message || 'Oops something went wrong')
+        toast.error(error.message || 'Oops something went wrong')
       } finally {
         setLoading(false)
       }

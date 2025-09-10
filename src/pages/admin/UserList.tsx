@@ -22,7 +22,6 @@ const USERS_PER_PAGE = 6;
 const AdminUsersPage = () => {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(state => state.auth.user);
-  console.log('the current user', currentUser)
 
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,8 +56,6 @@ const AdminUsersPage = () => {
 
     fetchUsers();
   }, [currentPage, searchTerm, statusFilter]);
-
-  console.log('the usersssss', users)
 
   const getStatusColor = (isVerified: boolean) => {
     return isVerified

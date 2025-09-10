@@ -66,11 +66,9 @@ const ServiceDetailsPage: React.FC = () => {
     try {
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
       const res = await walletService.getWallet()
-      console.log('the wallet', res)
       setWalletBalance(res.data.wallet.balance)
       setAllProviders(providers);
     } catch (error: any) {
-      console.error(error);
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
     }
   };
@@ -101,17 +99,13 @@ const ServiceDetailsPage: React.FC = () => {
   }, [serviceId]);
 
   const handleAddAddress = async (address: IAddress) => {
-    console.log('the new address', newAddress)
     if (address.label && address.street && address.city && address.state && address.zip && address.locationCoords) {
       const newAddressObj = {
         id: String(Date.now()),
         ...address,
       };
       try {
-        console.log('the new address', newAddressObj)
-        const res = await addressService.createAddress(newAddressObj)
-        console.log('the added response', res)
-
+        await addressService.createAddress(newAddressObj)
       } catch (error) {
         toast.error('Something went wrong! Please try again later')
       }

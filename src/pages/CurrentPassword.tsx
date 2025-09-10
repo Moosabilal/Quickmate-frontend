@@ -23,7 +23,6 @@ const CurrentPasswordPage = () => {
     const location  = useLocation();
 
     const { email } = location.state as { email: string };
-    console.log('the email in current password page', email )
 
     const navigate = useNavigate();
 

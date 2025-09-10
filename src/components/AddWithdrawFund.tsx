@@ -35,8 +35,6 @@ export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, descr
   const [loading, setLoading] = useState(false);
   if (!open) return null;
 
-  console.log('the status in fron end', status)
-
   const handleRazorpayDeposit = async () => {
     setLoading(true);
     try {

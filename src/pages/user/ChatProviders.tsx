@@ -16,6 +16,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { IProviderForChatListPage } from '../../interface/IProvider';
 import { providerService } from '../../services/providerService';
+import { toast } from 'react-toastify';
 
 
 
@@ -37,7 +38,7 @@ const ChatProvidersPage: React.FC = () => {
         const response = await providerService.getProviderForChatPage()
         setProviders(response)
       } catch (error) {
-        console.log(error)
+        toast.error(error)
       } finally {
         setLoading(false);
       }

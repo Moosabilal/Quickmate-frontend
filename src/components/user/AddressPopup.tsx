@@ -74,7 +74,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const getCoordinates = async (street: string, city: string, state: string, pincode: string) => {
     const data = await addressService.getLocationByPincode(street, city, state, pincode);
-    console.log('the data from pincode', data)
     if (data && data.length > 0) {
       return {
         lat: parseFloat(data[0].lat),
@@ -119,13 +118,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           };
 
           if (providerLoc) {
-            // const withinRange = providerLoc.some((loc: string) => {
-            //   const [provLat, provLng] = loc.split(",").map(Number);
-            //   const distance = getDistanceInKm(lat, lng, provLat, provLng);
-            //   return distance <= radius;
-            // });
             const withinRange = findProviderRange(lat, lng, radius, providerLoc)
-            console.log('the range calculation', withinRange)
 
             if (!withinRange) {
               setError("No service provider found to your place, Please select different address.");
@@ -155,22 +148,14 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   };
 
   const handleAddressConfirmWithCheck = (address: IAddress) => {
-    console.log('the addres for tlocaitoncaion', address)
     if (!providerLoc || !address.locationCoords) {
       handleAddressConfirm(address);
       setAddressPopup(false);
       return;
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
-      console.log('the user lat long', userLat, userLng)
 
-      // const withinRange = providerLoc.some((loc: string) => {
-      //   const [provLat, provLng] = loc.split(",").map(Number);
-      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-      //   return distance <= radius;
-      // });
       const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
-      console.log('the seciond within range', withinRange)
 
       if (withinRange) {
         handleAddressConfirm(address);
@@ -195,22 +180,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       return;
     }
     const newAddr = { ...newAddress, locationCoords: `${coords.lat},${coords.lng}`, };
-    console.log('the provider loca', providerLoc)
     if (providerLoc) {
-      console.log('this will print on wokrking')
       const [userLat, userLng] = newAddr.locationCoords!.split(",").map(Number);
 
-      // const withinRange = providerLoc.some((loc: string) => {
-      //   const [provLat, provLng] = loc.split(",").map(Number);
-      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-      //   return distance <= radius;
-      // });
       const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
-      console.log('the third coordination ', withinRange)
 
       if (withinRange) {
         setNewAddress(newAddr)
-        console.log('the new address in address popup', newAddr)
         handleAddAddress(newAddr)
         handleAddressConfirm(newAddr);
 
@@ -219,7 +195,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         toast.info("No service provider found on this location.");
       }
     } else {
-      console.log('the new adre', newAddr)
       setNewAddress(newAddr)
       handleAddressConfirm(newAddr)
       handleAddAddress(newAddr)
@@ -228,9 +203,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const fetchAddress = async () => {
     try {
-      console.log('this will work again')
       const res = await addressService.getAddress()
-      console.log('the res', res)
       setMockAddresses(res)
     } catch (error) {
       toast.error('Failed to fetch Address! Please try again later')

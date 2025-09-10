@@ -38,10 +38,8 @@ const CategoryCommissionManagement = () => {
             setError(null);
             try {
                 const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
-                console.log('the fetched categories', fetchedCategories)
                 setCategories(fetchedCategories);
             } catch (err: any) {
-                console.error("Error fetching data:", err);
                 setError(err.message || "Failed to load data.");
             } finally {
                 setIsLoading(false); 
@@ -61,7 +59,6 @@ const CategoryCommissionManagement = () => {
             formData.append('status', String(!currentStatus));
 
             const categoryToUpdate = categories.find(c => c._id === categoryId);
-            console.log('the category to udpate', categoryToUpdate)
             if (categoryToUpdate) {
                 formData.append('name', categoryToUpdate.name);
                 formData.append('description', categoryToUpdate.description || '');
@@ -78,11 +75,6 @@ const CategoryCommissionManagement = () => {
                 setError("Category not found for status update.");
                 setIsLoading(false);
                 return;
-            }
-
-            console.log('the udpate status', categoryId)
-            for(const [key, value] of formData.entries()){
-                console.log(`${key} : ${value}`)
             }
             await categoryService.updateCategory(categoryId, formData);
 

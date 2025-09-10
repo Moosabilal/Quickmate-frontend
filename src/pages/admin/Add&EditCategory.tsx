@@ -195,11 +195,9 @@ const CategoryForm: React.FC = () => {
         try {
             if (isEditMode && currentEntityId) {
                 const response = await categoryService.updateCategory(currentEntityId, data);
-                console.log('Update response:', response);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
             } else {
                 const response = await categoryService.createCategory(data);
-                console.log('Create response:', response);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
 
                 const newEntityId = response?._id;

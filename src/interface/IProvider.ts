@@ -54,6 +54,13 @@ export interface IProviderProfile {
 
 }
 
+export interface IReviewOfUser {
+  userName: string;
+  userImg: string;
+  rating: number;
+  review: string;
+}
+
 export interface IBackendProvider {
   _id: string;
   fullName: string;
@@ -69,9 +76,10 @@ export interface IBackendProvider {
   earnings: number;
   price: number;
   totalBookings: number;
-  rating?: number;
-  reviews?: number;
+  rating?: number;         
+  reviews?: IReviewOfUser[]; 
 }
+
 
 
 export interface IProviderForChatListPage {

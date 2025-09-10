@@ -186,7 +186,10 @@ const ProviderRegistration: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!validateForm()) {
-            console.log('Form has validation errors:', errors);
+            const firstError = Object.values(errors)[0];
+            if (firstError) {
+                toast.error(firstError);
+            }
             return;
         }
 
@@ -207,18 +210,13 @@ const ProviderRegistration: React.FC = () => {
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
 
         try {
-            for (const [key, value] of data.entries()) {
-                console.log(`${key} : ${value}`)
-            }
             setIsLoading(true)
             const res = await providerService.register(data);
-            console.log('the res', res)
             toast.success(res.message)
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
         } catch (error) {
-            console.error('Error submitting form:', error);
             toast.error('Something went wrong. Please try again.');
         } finally {
             setIsLoading(false)

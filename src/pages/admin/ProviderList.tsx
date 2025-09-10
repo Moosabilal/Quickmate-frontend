@@ -67,8 +67,6 @@ const AdminProvidersPage: React.FC = () => {
     }
   };
 
-  console.log('the provideers ', providers)
-
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
 

@@ -38,6 +38,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const [radius, setRadius] = useState(10)
+  const [loading, setLoading] = useState(false)
 
   // const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   //   const toRad = (value: number) => (value * Math.PI) / 180;
@@ -91,6 +92,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       toast.error("Geolocation is not supported by your browser");
       return;
     }
+    setLoading(true)
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -141,11 +143,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         } catch (err) {
           console.error("Failed to fetch address:", err);
           alert("Unable to fetch address for current location");
+        } finally {
+          setLoading(false)
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        alert("Unable to fetch your current location");
+        toast.error("Unable to fetch your current location");
       }
     );
   };
@@ -290,7 +294,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   onClick={handleCurrentLocation}
                   className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  📍 Use Current Location
+                  {loading ? 'fetching your address...' :'📍 Use Current Location'}
                 </button>
               </div>
 

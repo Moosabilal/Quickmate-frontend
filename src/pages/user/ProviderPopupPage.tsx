@@ -1,4 +1,4 @@
-import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter } from 'lucide-react';
+import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter, IndianRupee } from 'lucide-react';
 import { IBackendProvider } from '../../interface/IProvider';
 import { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
@@ -284,7 +284,7 @@ const ProviderPopup = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 text-blue-600 mb-1">
-                      <DollarSign className="w-4 h-4" />
+                      <IndianRupee className="w-4 h-4" />
                       <span className="font-medium">Price</span>
                     </div>
                     <p className="text-xl font-bold text-gray-900">{selectedProvider.price}</p>

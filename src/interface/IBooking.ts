@@ -58,6 +58,9 @@ export interface IBookingConfirmationPage {
   specialInstruction: string;
   providerTimings?: { day: string; startTime: string; endTime: string }[];
   createdAt: Date;
+  reviewed: boolean;
+  rating: number;
+  review: string;
 }
 
 export interface IBookingHistoryPage {

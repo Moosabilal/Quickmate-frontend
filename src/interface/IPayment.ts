@@ -33,3 +33,13 @@ export interface paymentVerificationRequest {
     razorpay_payment_id?: string, 
     razorpay_signature?: string,
 }
+
+export interface Props {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  description: string;
+  transactionType: string;
+  status: TransactionStatus;
+};
+

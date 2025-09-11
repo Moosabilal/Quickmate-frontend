@@ -14,7 +14,6 @@ import ChatbotIcon from './ChatbotIcon';
 
 import React from 'react';
 import { Bot, User } from 'lucide-react';
-// import type { ChatMessageProps } from '../types/chatbot';
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ chat }) => {
     if (chat.hideInChat) return null;

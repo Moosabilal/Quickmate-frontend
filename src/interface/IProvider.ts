@@ -1,3 +1,5 @@
+import { BookingStatus } from "./IBooking";
+
 export enum ProviderStatus {
   Active = 'Approved',
   InActive = 'Rejected',
@@ -6,9 +8,9 @@ export enum ProviderStatus {
 }
 
  export interface Availability {
-    day: string;       // e.g. "Monday"
-    startTime: string; // e.g. "09:00"
-    endTime: string;   // e.g. "17:00"
+    day: string;    
+    startTime: string;
+    endTime: string; 
 }
 
 export interface IProvider {
@@ -109,4 +111,66 @@ export interface ProviderList {
   serviceOffered: string[];
   status: ProviderStatus;
   rating?: number;
+}
+
+export interface StatCardProps {
+    title: string;
+    value: number;
+    change: number;
+    icon: React.ReactNode;
+    prefix?: string;
+    suffix?: string;
+}
+
+export interface RatingPoint {
+    month: string;
+    rating: number;
+}
+
+export interface Booking {
+    id: number;
+    service: string;
+    client: string;
+    status: 'upcoming' | 'scheduled' | 'completed' | 'cancelled';
+    image: string;
+    category: string;
+}
+
+export interface StatData {
+    toFixed: any;
+    current: number;
+    previous: number;
+    change: number;
+}
+
+export interface Stats {
+    ratingHistory: never[];
+    earnings: StatData;
+    completedJobs: StatData;
+    upcomingBookings: StatData;
+    averageRating: StatData;
+}
+
+
+export interface IDashboardResponse {
+  id: string;
+  service: string;
+  client: string;
+  status: BookingStatus;
+  image: string;
+  category: string;
+
+}
+
+export interface RatingHistoryPoint {
+  month: string;
+  rating: number;
+}
+
+export interface IDashboardStatus {
+  earnings: number;
+  completedJobs: number;
+  upcomingBookings: number;
+  averageRating?: number;
+  ratingHistory?: RatingHistoryPoint[]
 }

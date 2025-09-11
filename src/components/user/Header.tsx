@@ -23,16 +23,18 @@ const Header = () => {
     const isProfilePage = location.pathname.startsWith('/profile/*');
 
     React.useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isDropdownOpen && !event.target.closest('.relative')) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isDropdownOpen && !(event.target as HTMLElement).closest('.relative')) {
                 setIsDropdownOpen(false);
             }
         };
+
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isDropdownOpen]);
+
 
     React.useEffect(() => {
         const fetchUser = async () => {
@@ -49,11 +51,11 @@ const Header = () => {
     }, []);
 
     const handleLogout = async () => {
-            await authService.logout()
-            dispatch(logout());
-            setIsDropdownOpen(false);
-            setShowDeleteModal(false)
-            navigate('/login');
+        await authService.logout()
+        dispatch(logout());
+        setIsDropdownOpen(false);
+        setShowDeleteModal(false)
+        navigate('/login');
     };
 
     const navLinks = [
@@ -137,6 +139,13 @@ const Header = () => {
                                             >
                                                 Profile Settings
                                             </Link>
+                                            {user?.role === "ServiceProvider" && <Link
+                                                to="/providerDashboard"
+                                                className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                Service Dashboard
+                                            </Link>}
                                             <button
                                                 onClick={() => setShowDeleteModal(true)}
                                                 className="w-full text-left flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
@@ -161,7 +170,6 @@ const Header = () => {
                                 </div>
                             ) : null}
 
-                            {/* Mobile Menu Button */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
@@ -171,7 +179,6 @@ const Header = () => {
                         </div>
                     </div>
 
-                    {/* Mobile Navigation */}
                     {isMobileMenuOpen && (
                         <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg">
                             <nav className="py-4 space-y-2">

@@ -65,16 +65,6 @@ export const authService = {
     return response.data;
   },
 
-  // verifyPassword: async (email: string, currentPassword: string) => {
-  //   try {
-  //     const response = await axiosInstance.post(`${API_URL}/verify-password`, { email, currentPassword });
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('Error verifying password:', error);
-  //     throw error;
-  //   }
-  // },
-
   getAllDataForChatBot: async () => {
     const response = await axiosInstance.get(`${API_URL}/getAllDataForChatBot`)
     return response.data

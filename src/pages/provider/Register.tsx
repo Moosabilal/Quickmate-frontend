@@ -60,7 +60,7 @@ const ProviderRegistration: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [services, setServices] = useState<{ value: string; label: string }[]>([]);
     const [address, setAddress] = useState('')
-    const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+    const [errors, setErrors] = useState<Record<string, string | undefined>>({});
     const navigate = useNavigate();
 
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
@@ -148,7 +148,7 @@ const ProviderRegistration: React.FC = () => {
     };
 
     const validateForm = () => {
-        const newErrors: Partial<Record<keyof FormData, string>> = {};
+        const newErrors: Record<string, string | undefined> = {};
 
         if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required.';
         if (!formData.phoneNumber.trim()) {

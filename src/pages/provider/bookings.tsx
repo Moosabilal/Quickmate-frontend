@@ -80,7 +80,7 @@ const ProviderBookingManagementPage: React.FC = () => {
         setLoading(true)
         const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string)
         setBookings(response)
-      } catch (error) {
+      } catch (error: any) {
         toast.error(error.message || 'Oops something went wrong')
       } finally {
         setLoading(false)
@@ -203,10 +203,10 @@ const ProviderBookingManagementPage: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl">
-                      <div className="text-green-600 dark:text-green-400 font-semibold">
+                      {/* <div className="text-green-600 dark:text-green-400 font-semibold">
                         ${bookings.filter(b => b.status === BookingStatus.COMPLETED).reduce((sum, b) => sum + b.payment, 0)}
                       </div>
-                      <div className="text-xs text-green-500">Total Earnings</div>
+                      <div className="text-xs text-green-500">Total Earnings</div> */}
                     </div>
                   </div>
                 </div>

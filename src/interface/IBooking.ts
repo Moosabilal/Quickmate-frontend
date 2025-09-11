@@ -27,8 +27,6 @@ export interface IBookingRequest {
   phone: string;
   instructions?: string;
   addressId?: string
-  // scheduledDate?: string;
-  // scheduledTime?: string;
 }
 
 

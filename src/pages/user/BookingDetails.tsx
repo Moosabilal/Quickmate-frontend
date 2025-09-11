@@ -97,8 +97,6 @@ const BookingDetails: React.FC = () => {
   };
 
   const handleDateTimeConfirm = async (date: string, time: string) => {
-    // setSelectedDate(date);
-    // setSelectedTime(time);
     try {
       await bookingService.updateBookingDateTime(booking!.id, date, time);
       toast.success('Booking date and time updated successfully');

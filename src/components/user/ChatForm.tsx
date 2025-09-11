@@ -8,7 +8,6 @@ export interface ChatFormProps {
 
 import React, { useState, useCallback, KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
-// import type { ChatFormProps } from '../types/chatbot';
 
 const ChatForm: React.FC<ChatFormProps> = ({ 
     chatHistory, 

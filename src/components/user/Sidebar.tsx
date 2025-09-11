@@ -39,7 +39,7 @@ const Sidebar = () => {
   const serviceProviderItem = {
     name: 'Manage Your Services',
     icon: <MdOutlineMiscellaneousServices className="w-5 h-5" />,
-    path: `/providerProfile/${user?.id}`,
+    path: `/providerDashboard`,
   };
 
   const isActive = (path: string) => {
@@ -69,9 +69,9 @@ const Sidebar = () => {
               alt={user.name || 'User'}
               className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover"
             />
-            {/* <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
               <CheckCircle className="w-4 h-4 text-white" />
-            </div> */}
+            </div>
           </div>
           <h3 className="font-semibold text-slate-800 mt-4">
             {user.name?.split(' ')[0] || 'User'}

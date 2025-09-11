@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { X, IndianRupee } from "lucide-react";
-import { loadRazorpay } from "../utils/razorpay"; // if using gateway
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void; // refresh wallet
-  useGateway?: boolean;  // toggle (dev vs prod)
+  onSuccess: () => void;
+  useGateway?: boolean;
 };
 
 const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway = false }) => {
@@ -34,20 +33,20 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
   const handleRazorpayDeposit = async () => {
     setLoading(true);
     try {
-      const ok = await loadRazorpay();
-      if (!ok) throw new Error("Razorpay SDK failed to load");
+      if (!(window as any).Razorpay){
+         throw new Error("Razorpay SDK failed to load");
+      }
 
       const { data } = await axios.post("/api/wallet/deposit/initiate", { amount }, { headers });
 
       const options = {
         key: data.keyId,
-        amount: data.amount, // in paise
+        amount: data.amount,
         currency: data.currency,
         name: "YourApp Wallet",
         description: "Add funds",
         order_id: data.orderId,
         handler: async (resp: any) => {
-          // verify on backend & credit wallet
           await axios.post("/api/wallet/deposit/verify", {
             razorpay_order_id: resp.razorpay_order_id,
             razorpay_payment_id: resp.razorpay_payment_id,

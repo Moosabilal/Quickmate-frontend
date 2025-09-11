@@ -162,7 +162,7 @@ const ServiceDetailsPage: React.FC = () => {
           toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
           navigate(`/confirmationModel/${bookingResponse.bookingId}`)
       } catch (error) {
-        toast.error('booking failed please try again later', error)
+        toast.error(`booking failed please try again later, ${error}`)
       }
       return
     }
@@ -221,7 +221,7 @@ const ServiceDetailsPage: React.FC = () => {
       }
     };
     var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response) {
+    rzp1.on('payment.failed', function (response: { error: { reason: any; metadata: { order_id: any; }; }; }) {
       toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
     });
     rzp1.open();
@@ -251,10 +251,7 @@ const ServiceDetailsPage: React.FC = () => {
     };
 
     try {
-      const res = await bookingService.createBooking(bookingPayload);
-      return res
-      // // toast.success("Booking confirmed!");
-      // navigate('/');
+      return await bookingService.createBooking(bookingPayload);
     } catch (err) {
       console.error("Booking failed:", err);
       toast.error("Failed to confirm booking. Please try again.");

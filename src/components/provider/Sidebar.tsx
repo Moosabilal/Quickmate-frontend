@@ -1,4 +1,4 @@
-import { Calendar, User, Settings, Star, DollarSign } from 'lucide-react';
+import { Calendar, User, Settings, Star, DollarSign, IndianRupee } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -11,11 +11,11 @@ const Sidebar = () => {
   const location = useLocation();
 
   const navigationItems = [
-    { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/providerProfile` },
+    { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/providerDashboard` },
     { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/providerBookingManagement` },
     { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/providerService` },
-    { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/providerProfile` },
-    { icon: <DollarSign className="w-5 h-5" />, label: 'Earnings', path: `/providerProfile` },
+    // { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/providerProfile` },
+    // { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/providerProfile` },
     { icon: <User className="w-5 h-5" />, label: 'Service Profile', path: `/providerProfile/${user?.id}` },
   ];
 
@@ -38,7 +38,7 @@ const Sidebar = () => {
 
         <nav className="space-y-2">
           {navigationItems.map((item, index) => {
-            const isActive = location.pathname === item.path; // 👈 compare path
+            const isActive = location.pathname === item.path;
             return (
               <Link
                 key={index}

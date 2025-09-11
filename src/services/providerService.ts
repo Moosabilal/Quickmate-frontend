@@ -94,6 +94,16 @@ export const providerService = {
             throw error
 
         }
+    },
+
+    getProviderDash: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderDashboard`)
+            return response.data
+        } catch (error) {
+            console.log('Error in getting getProviderForChatPage', error)
+            throw error
+        }
     }
 
 

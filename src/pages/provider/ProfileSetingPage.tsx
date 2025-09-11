@@ -153,7 +153,7 @@ const ProviderProfile: React.FC = () => {
                 setProviderDetails(updatedProvider);
                 toast.success('Profile updated successfully!');
             } catch (error) {
-                toast.error('Error updating provider:', error);
+                toast.error(`Error updating provider:, ${error}`);
                 toast.error('Error updating profile. Please try again.');
             } finally {
                 setIsSaving(false);
@@ -230,7 +230,6 @@ const ProviderProfile: React.FC = () => {
 
             const newLocation = formData.serviceLocation;
             const originalLocation = providerDetails.serviceLocation;
-            // const newLocationString = newLocation ? formatLocationString(newLocation) : null;
 
             if (newLocation && `${newLocation.lat},${newLocation.lng}` !== originalLocation) {
                 const latLngString = `${newLocation.lat},${newLocation.lng}`;
@@ -284,10 +283,8 @@ const ProviderProfile: React.FC = () => {
 
         let updated;
         if (exists) {
-            // remove the day if already selected
             updated = current.filter(a => a.day !== day);
         } else {
-            // add with empty times
             updated = [...current, { day, startTime: "", endTime: "" }];
         }
 

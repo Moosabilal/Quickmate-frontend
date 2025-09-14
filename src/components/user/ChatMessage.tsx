@@ -1,15 +1,4 @@
-export interface ChatMessage {
-    hideInChat?: boolean;
-    role: 'user' | 'model';
-    text: string;
-    isError?: boolean;
-    timestamp?: Date;
-    id?: string;
-}
-
-export interface ChatMessageProps {
-    chat: ChatMessage;
-}
+import { ChatMessageProps } from '../../interface/IChatBot';
 import ChatbotIcon from './ChatbotIcon';
 
 import React from 'react';

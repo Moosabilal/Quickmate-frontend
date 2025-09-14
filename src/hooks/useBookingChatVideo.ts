@@ -1,17 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
-
-export interface ChatMessage {
-    _id?: string;
-    bookingId: string;
-    senderId: string;
-    text: string;
-    timestamp: string | Date;
-    isCurrentUser?: boolean;
-}
-
-type MaybeStream = MediaStream | null;
+import { ChatMessage, MaybeStream } from "../interface/IChatAndVideo";
 
 export function useBookingChatVideo(bookingId: string, currentUserId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -81,7 +71,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
                     bookingId: String(msg.bookingId),
                     senderId: String(msg.senderId),
                     text: String(msg.text),
-                    timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+                    timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
                     isCurrentUser: String(msg.senderId) === String(currentUserId),
                 })) as ChatMessage[];
                 setMessages(formatted);

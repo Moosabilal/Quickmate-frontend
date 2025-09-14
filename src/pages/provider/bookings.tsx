@@ -140,10 +140,10 @@ const ProviderBookingManagementPage: React.FC = () => {
       setBookings(prev => prev.map(booking =>
         booking.id === bookingId ? { ...booking, status: newStatus as BookingStatus } : booking
       ));
-      if(newStatus === BookingStatus.COMPLETED){
+      if (newStatus === BookingStatus.COMPLETED) {
         toast.info(response)
-      }else {
-      toast.success(response)
+      } else {
+        toast.success(response)
       }
       setShowDetails(false);
     } catch (error) {
@@ -352,23 +352,25 @@ const ProviderBookingManagementPage: React.FC = () => {
                               <Eye className="w-5 h-5" />
                             </button>
                             {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
-                              <><button
-                                onClick={() => window.open(`tel:${booking.customerPhone}`)}
-                                className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
-                                title="Call Customer"
-                              >
-                                <Phone className="w-5 h-5" />
-                              </button>
+                              // <><button
+                              //   onClick={() => window.open(`tel:${booking.customerPhone}`)}
+                              //   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
+                              //   title="Call Customer"
+                              // >
+                              //   <Phone className="w-5 h-5" />
+                              // </button>
                                 <button
                                   onClick={() => {
-                                    navigate('/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
+                                    navigate('/provider/providerBookingManagement/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
                                   }}
                                   className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
                                   title="Message Customer"
                                 >
                                   <MessageCircle className="w-5 h-5"
                                   />
-                                </button></>}
+                                </button>
+                                // </>
+                                }
                           </div>
                         </div>
 
@@ -478,9 +480,11 @@ const ProviderBookingManagementPage: React.FC = () => {
                     <div className="space-y-3">
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment</label>
-                        <p className="text-gray-900 dark:text-white font-medium">
-                          ${selectedBooking.payment} ({selectedBooking.paymentStatus})
+                        <p className="flex items-center text-gray-900 dark:text-white font-medium">
+                          <IndianRupee className="h-3 w-3 mr-1" />
+                          {selectedBooking.payment} ({selectedBooking.paymentStatus})
                         </p>
+
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>

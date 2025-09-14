@@ -1,9 +1,9 @@
-import { ChatMessage } from './ChatMessage';
+import { ChatbotMessage } from '../../interface/IChatBot';
 
 export interface ChatFormProps {
-    chatHistory: ChatMessage[];
-    setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
-    generateBotResponse: (history: ChatMessage[]) => Promise<void>;
+    chatHistory: ChatbotMessage[];
+    setChatHistory: React.Dispatch<React.SetStateAction<ChatbotMessage[]>>;
+    generateBotResponse: (history: ChatbotMessage[]) => Promise<void>;
 }
 
 import React, { useState, useCallback, KeyboardEvent } from 'react';

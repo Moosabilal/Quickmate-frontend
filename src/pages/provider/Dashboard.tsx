@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
                                 <h2 className="text-xl font-bold text-gray-900">Bookings Timeline</h2>
                                 <button className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
                                     <Eye className="w-4 h-4" />
-                                    <span onClick={() => navigate('/providerBookingManagement')} >View All</span>
+                                    <span onClick={() => navigate('/provider/providerBookingManagement')} >View All</span>
                                 </button>
                             </div>
 

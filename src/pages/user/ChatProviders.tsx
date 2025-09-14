@@ -38,7 +38,7 @@ const ChatProvidersPage: React.FC = () => {
         const response = await providerService.getProviderForChatPage()
         setProviders(response)
       } catch (error) {
-        toast.error(error)
+        toast.error(`error`)
       } finally {
         setLoading(false);
       }
@@ -71,32 +71,6 @@ const ChatProvidersPage: React.FC = () => {
       state: { bookingId, name: providerName }
     });
   };
-
-  if (!isAuthenticated) {
-    return (
-      <>
-        <main className="pt-20 min-h-screen bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-              <MessageCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Sign In to Start Chatting
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Please sign in to connect with service providers and start chatting.
-              </p>
-              <button
-                onClick={() => navigate('/login')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-              >
-                Sign In
-              </button>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   return (
     <>

@@ -45,7 +45,7 @@ const AdminProvidersPage: React.FC = () => {
         setError('')
 
       } catch (error) {
-        setError(error.response?.data.message)
+        setError(`error.response?.data.message`)
         console.error('Error fetching data:', error);
       }
     };

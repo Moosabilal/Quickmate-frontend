@@ -95,7 +95,7 @@ const ProviderServicesPage: React.FC = () => {
                                 <p className="text-gray-600">Manage your service offerings and certificates</p>
                             </div>
                             {services.length > 0 && <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/25"
-                                onClick={() => navigate(`/providerService/new`)}
+                                onClick={() => navigate(`/provider/providerService/new`)}
                             >
                                 <Plus className="w-5 h-5" />
                                 Add a service
@@ -156,7 +156,7 @@ const ProviderServicesPage: React.FC = () => {
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                                                    onClick={() => navigate(`/providerService/edit/${service.id}`)}
+                                                    onClick={() => navigate(`/provider/providerService/edit/${service.id}`)}
                                                 >
                                                     <Edit3 className="w-4 h-4" />
                                                     Edit
@@ -176,7 +176,7 @@ const ProviderServicesPage: React.FC = () => {
                                 <div className="text-center py-20">
                                     <p className="text-gray-500 text-lg mb-4">You haven't added any services yet.</p>
                                     <button
-                                        onClick={() => provider.status === "Pending" ? toast.info("You should be activated by admin to add service ") : navigate(`/providerService/new`)}
+                                        onClick={() => provider.status === "Pending" ? toast.info("You should be activated by admin to add service ") : navigate(`/provider/providerService/new`)}
                                         className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         <Plus className="w-4 h-4 mr-2" />

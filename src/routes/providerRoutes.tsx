@@ -18,13 +18,13 @@ const providerRoutes = [
         {
             element: <ProtectedRoute roles={['ServiceProvider']} />,
             children: [
-                { path: '/providerDashboard', element: <ProviderDashboard /> },
-                { path: '/providerProfile/:userId', element: <Provider_profile /> },
-                { path: '/providerService', element: <ProviderServicesPage /> },
-                { path: '/providerService/new', element: <ServiceManagementPage /> },
-                { path: '/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
-                { path: '/providerBookingManagement', element: <ProviderBookingManagementPage /> },
-                { path: '/providerLiveChat', element: <Chat_Room /> },
+                { path: '/provider/providerDashboard', element: <ProviderDashboard /> },
+                { path: '/provider/providerProfile/:userId', element: <Provider_profile /> },
+                { path: '/provider/providerService', element: <ProviderServicesPage /> },
+                { path: '/provider/providerService/new', element: <ServiceManagementPage /> },
+                { path: '/provider/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
+                { path: '/provider/providerBookingManagement', element: <ProviderBookingManagementPage /> },
+                { path: '/provider/providerBookingManagement/providerLiveChat', element: <Chat_Room /> },
 
             ],
         },

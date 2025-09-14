@@ -140,7 +140,7 @@ const Header = () => {
                                                 Profile Settings
                                             </Link>
                                             {user?.role === "ServiceProvider" && <Link
-                                                to="/providerDashboard"
+                                                to="/provider/providerDashboard"
                                                 className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >

@@ -11,32 +11,9 @@ import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { CompanyInfo } from '../../CompanyInfo';
 import { toast } from 'react-toastify';
+import { ChatbotMessage } from '../../interface/IChatBot';
+import { Testimonial, StarRatingProps, QuickAction } from '../../interface/IChatBot';
 
-interface ChatMessage {
-    hideInChat?: boolean;
-    role: 'user' | 'model';
-    text: string;
-    isError?: boolean;
-    timestamp?: Date;
-    id?: string;
-}
-
-interface Testimonial {
-    id: number;
-    author: string;
-    rating: number;
-    text: string;
-}
-
-interface StarRatingProps {
-    rating: number;
-}
-
-interface QuickAction {
-    id: string;
-    label: string;
-    action: string;
-}
 
 const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
     const fullStars: number = Math.floor(rating);
@@ -112,7 +89,7 @@ const Home: React.FC = () => {
     const [featuredProviders, setFeaturedProviders] = useState<IFeaturedProviders[]>([]);
     const [popularServices, setPopularServices] = useState<ICategoryResponse[]>([]);
     const [trendingServices, setTrendingServices] = useState<ICategoryResponse[]>([]);
-    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{
+    const [chatHistory, setChatHistory] = useState<ChatbotMessage[]>([{
         hideInChat: true, 
         role: "model", 
         text: CompanyInfo,
@@ -218,9 +195,9 @@ const Home: React.FC = () => {
         }
     }, [showChatbot]);
 
-    const generateBotResponse = useCallback(async (history: ChatMessage[]): Promise<void> => {
+    const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
         const updateHistory = (text: string, isError: boolean = false): void => {
-            const newMessage: ChatMessage = {
+            const newMessage: ChatbotMessage = {
                 role: "model",
                 text,
                 isError,
@@ -282,7 +259,7 @@ const Home: React.FC = () => {
     }, []);
 
     const handleQuickAction = useCallback((action: QuickAction): void => {
-        const userMessage: ChatMessage = {
+        const userMessage: ChatbotMessage = {
             role: "user",
             text: action.action,
             timestamp: new Date(),

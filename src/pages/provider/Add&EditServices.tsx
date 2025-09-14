@@ -213,19 +213,19 @@ const ServiceManagementPage: React.FC = () => {
                     const {message, success} = await serviceService.updateService(serviceId || '',data)
                     if (success) {
                     toast.success(message)
-                    navigate('/providerService')
+                    navigate('/provider/providerService')
                 } else {
                     toast.info(message)
                 }
 
                 } catch (error) {
-                    toast.error(error.response.data.message)
+                    toast.error(`error.response.data.message`)
                 }
             } else {
                 const { message, success } = await serviceService.createdService(data);
                 if (success) {
                     toast.success(message)
-                    navigate('/providerService')
+                    navigate('/provider/providerService')
                 } else {
                     toast.info(message)
                 }
@@ -248,7 +248,7 @@ const ServiceManagementPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50  px-6 w-full max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-8 pt-12">
                 <button
-                    onClick={() => navigate(`/providerService`)}
+                    onClick={() => navigate(`/provider/providerService`)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -524,7 +524,7 @@ const ServiceManagementPage: React.FC = () => {
                         type="button"
                         onClick={() => {
                             setEditingService(null)
-                            navigate(`/providerService`)
+                            navigate(`/provider/providerService`)
                         }}
                         className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                     >

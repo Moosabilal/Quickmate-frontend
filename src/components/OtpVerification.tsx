@@ -99,12 +99,12 @@ const RegistrationOTPVerification = () => {
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
         toast.success(message);
-        navigate(`/providerProfile/${user.id}`, { replace: true });
+        navigate(`/provider/providerProfile/${user.id}`, { replace: true });
       } else if (bookingId && newStatus) {
         const email = registrationEmail
         await bookingService.verifyOtp(email, otp)
         toast.success('Your Service completed successfully')
-        navigate(`/providerBookingManagement`)
+        navigate(`/provider/providerBookingManagement`)
       }
 
     } catch (err: any) {

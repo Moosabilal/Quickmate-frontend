@@ -39,7 +39,7 @@ const Sidebar = () => {
   const serviceProviderItem = {
     name: 'Manage Your Services',
     icon: <MdOutlineMiscellaneousServices className="w-5 h-5" />,
-    path: `/providerDashboard`,
+    path: `/provider/providerDashboard`,
   };
 
   const isActive = (path: string) => {

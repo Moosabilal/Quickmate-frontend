@@ -23,6 +23,7 @@ const BookingHistory: React.FC = () => {
 
   const tabs = [
     { id: BookingStatus.All, label: 'All Bookings', count: bookings.length },
+    { id: BookingStatus.PENDING, label: 'Pending', count: bookings.filter(b => b.status === BookingStatus.PENDING).length },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
     { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
     { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },

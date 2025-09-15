@@ -77,3 +77,24 @@ export interface IBookingHistoryPage {
   description?: string;
   createdAt?: Date;
 }
+
+export interface IProviderBookingManagement {
+  id: string;
+  customerId?: string;
+  customerName: string;
+  customerImage: string;
+  service: string;
+  date: string;
+  time: string;
+  duration: string;
+  location: string;
+  payment: number;
+  paymentStatus: string;
+  status: BookingStatus;
+  description: string;
+  customerPhone: string;
+  customerEmail: string;
+  specialRequests: string;
+  createdAt: string;
+  // rating: number | null;
+}

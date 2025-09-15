@@ -29,26 +29,7 @@ import { BookingStatus } from '../../interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
 import { toast } from 'react-toastify';
-
-interface IProviderBookingManagement {
-  id: string;
-  customerName: string;
-  customerImage: string;
-  service: string;
-  date: string;
-  time: string;
-  duration: string;
-  location: string;
-  payment: number;
-  paymentStatus: string;
-  status: BookingStatus;
-  description: string;
-  customerPhone: string;
-  customerEmail: string;
-  specialRequests: string;
-  createdAt: string;
-  // rating: number | null;
-}
+import { IProviderBookingManagement } from '../../interface/IBooking';
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);
@@ -361,7 +342,9 @@ const ProviderBookingManagementPage: React.FC = () => {
                               // </button>
                                 <button
                                   onClick={() => {
-                                    navigate('/provider/providerBookingManagement/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
+                                      console.log('the joininng id', `${booking.customerId}-${provider.id}`)
+
+                                    navigate('/provider/providerBookingManagement/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName, joiningId: `${booking.customerId}-${provider.id}` } })
                                   }}
                                   className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
                                   title="Message Customer"

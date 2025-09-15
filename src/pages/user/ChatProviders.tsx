@@ -61,14 +61,14 @@ const ChatProvidersPage: React.FC = () => {
     return matchesSearch && matchesService;
   });
 
-  const handleStartChat = (bookingId: string, providerName: string) => {
+  const handleStartChat = (bookingId: string, providerName: string, providerId: string) => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
+    console.log('the joinign id in user side', `${user?.id}-${providerId}`)
     navigate(`/profile/chatListPage/live-chat`, {
-      state: { bookingId, name: providerName }
+      state: { bookingId, name: providerName, joiningId: `${user?.id}-${providerId}` }
     });
   };
 
@@ -154,7 +154,6 @@ const ChatProvidersPage: React.FC = () => {
                     >
                       <div className="p-6">
                         <div className="flex items-center justify-between">
-                          {/* Left side - Provider Info */}
                           <div className="flex items-center space-x-4 flex-1">
                             <div className="relative flex-shrink-0">
                               <img
@@ -214,7 +213,7 @@ const ChatProvidersPage: React.FC = () => {
 
                           <div className="flex-shrink-0 ml-6">
                             <button
-                              onClick={() => handleStartChat(provider.bookingId!, provider.name)}
+                              onClick={() => handleStartChat(provider.bookingId!, provider.name, provider.id)}
                               className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                             >
                               <MessageCircle className="w-4 h-4" />

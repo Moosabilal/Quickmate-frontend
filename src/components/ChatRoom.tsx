@@ -12,7 +12,7 @@ const ChatRoom: React.FC = () => {
 
   const { user } = useAppSelector((state) => state.auth);
 
-  const { bookingId, name } = location.state as { bookingId: string; name: string };
+  const {name, joiningId } = location.state as { name: string; joiningId: string };
   
 
 
@@ -86,7 +86,7 @@ const ChatRoom: React.FC = () => {
 
       <div className="bg-white/90 backdrop-blur-xl border-t border-gray-200/50 px-4 py-4 mx-4 rounded-b-xl shadow-lg">
         
-        <BookingChatVideo bookingId={bookingId} currentUserId={user?.name!} />
+        <BookingChatVideo currentUserId={user?.name!} joiningId={joiningId} />
 
       </div>
     </div>

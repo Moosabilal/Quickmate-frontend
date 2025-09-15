@@ -3,7 +3,7 @@ import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
 import { ChatMessage, MaybeStream } from "../interface/IChatAndVideo";
 
-export function useBookingChatVideo(bookingId: string, currentUserId: string) {
+export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     
@@ -36,7 +36,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
         pc.onicecandidate = (e) => {
             if (e.candidate) {
                 socket.emit("webrtc:ice-candidate", {
-                    bookingId,
+                    joiningId,
                     fromUserId: currentUserId,
                     candidate: e.candidate
                 });
@@ -60,15 +60,16 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
 
         pcRef.current = pc;
         return pc;
-    }, [bookingId, currentUserId]);
+    }, [currentUserId, joiningId]);
 
     useEffect(() => {
         const getAllChats = async () => {
             try {
                 setLoadingHistory(true); 
-                const data = await bookingService.getAllPreviousChat(bookingId)
+                console.log('the joiningin id in frontend', joiningId)
+                const data = await bookingService.getAllPreviousChat(joiningId)
                 const formatted = data.map((msg: any) => ({
-                    bookingId: String(msg.bookingId),
+                    joiningId: String(msg.joiningId),
                     senderId: String(msg.senderId),
                     text: String(msg.text),
                     timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
@@ -82,16 +83,17 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             }
         }
         getAllChats()
-    }, [bookingId, currentUserId])
+    }, [currentUserId, joiningId])
 
     useEffect(() => {
-        if (!bookingId) return;
+        if (!joiningId) return;
 
-        socket.emit("joinBookingRoom", bookingId);
+        socket.emit("joinBookingRoom", joiningId);
 
         const chatHandler = (msg: any) => {
+            console.log('the return message', msg)
             const parsed: ChatMessage = {
-                bookingId: String(msg.bookingId || bookingId),
+                joiningId: String(msg.joiningId || joiningId),
                 senderId: String(msg.senderId || "unknown"),
                 text: String(msg.text || ""),
                 timestamp: msg.timestamp ?? new Date().toISOString(),
@@ -102,8 +104,8 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
         };
         socket.on("receiveBookingMessage", chatHandler);
 
-        const offerHandler = async (payload: { bookingId: string; offer: RTCSessionDescriptionInit; fromUserId: string; fromUserName?: string; }) => {
-            if (payload.bookingId !== bookingId || payload.fromUserId === currentUserId) return;
+        const offerHandler = async (payload: { joiningId: string, offer: RTCSessionDescriptionInit; fromUserId: string; fromUserName?: string; }) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             
             console.log("Received incoming call from:", payload.fromUserId);
             
@@ -116,8 +118,8 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             
         };
 
-        const answerHandler = async (payload: { bookingId: string; answer: RTCSessionDescriptionInit; fromUserId: string; }) => {
-            if (payload.bookingId !== bookingId || payload.fromUserId === currentUserId) return;
+        const answerHandler = async (payload: { joiningId: string, answer: RTCSessionDescriptionInit; fromUserId: string; }) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             
             console.log("Received answer from:", payload.fromUserId);
             const pc = ensurePeerConnection();
@@ -132,8 +134,8 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             }
         };
 
-        const iceHandler = async (payload: { bookingId: string; candidate: RTCIceCandidateInit; fromUserId: string; }) => {
-            if (payload.bookingId !== bookingId || payload.fromUserId === currentUserId) return;
+        const iceHandler = async (payload: { joiningId: string, candidate: RTCIceCandidateInit; fromUserId: string; }) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             
             const pc = ensurePeerConnection();
             try {
@@ -173,19 +175,19 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             socket.off("webrtc:hangup", hangupHandler);
             socket.off("webrtc:call-rejected", callRejectedHandler);
         };
-    }, [bookingId, currentUserId, ensurePeerConnection]);
+    }, [joiningId, currentUserId, ensurePeerConnection]);
 
     const sendMessage = useCallback((text: string) => {
         const trimmed = text.trim();
         if (!trimmed) return;
 
         socket.emit("sendBookingMessage", {
-            bookingId,
+            joiningId,
             senderId: currentUserId,
             text: trimmed,
             timestamp: new Date().toISOString()
         });
-    }, [bookingId, currentUserId]);
+    }, [joiningId, currentUserId]);
 
     const startCall = useCallback(async () => {
         try {
@@ -210,7 +212,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             await pc.setLocalDescription(offer);
 
             socket.emit("webrtc:offer", { 
-                bookingId, 
+                joiningId,
                 offer, 
                 fromUserId: currentUserId,
                 fromUserName: currentUserId 
@@ -222,7 +224,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             setCallStatus('ended');
             alert("Could not start call: " + error);
         }
-    }, [bookingId, currentUserId, ensurePeerConnection]);
+    }, [, joiningId, currentUserId, ensurePeerConnection]);
 
     const acceptCall = useCallback(async () => {
         if (!incomingCall) return;
@@ -247,7 +249,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             await pc.setLocalDescription(answer);
 
             socket.emit("webrtc:answer", { 
-                bookingId, 
+                joiningId,
                 answer, 
                 fromUserId: currentUserId 
             });
@@ -259,13 +261,13 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
             console.error("Error accepting call:", error);
             rejectCall();
         }
-    }, [incomingCall, bookingId, currentUserId, ensurePeerConnection]);
+    }, [incomingCall, joiningId, currentUserId, ensurePeerConnection]);
 
     const rejectCall = useCallback(() => {
         if (!incomingCall) return;
 
         socket.emit("webrtc:call-rejected", {
-            bookingId,
+            joiningId,
             fromUserId: currentUserId,
             toUserId: incomingCall.fromUserId
         });
@@ -273,14 +275,14 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
         setIncomingCall(null);
         setCallStatus('idle');
         console.log("Call rejected");
-    }, [incomingCall, bookingId, currentUserId]);
+    }, [incomingCall, joiningId, currentUserId]);
 
     const endCall = useCallback(() => {
         console.log("Ending call...");
         
         if (callStatus !== 'idle') {
             socket.emit("webrtc:hangup", { 
-                bookingId, 
+                joiningId,
                 fromUserId: currentUserId 
             });
         }
@@ -306,7 +308,7 @@ export function useBookingChatVideo(bookingId: string, currentUserId: string) {
         
         setIncomingCall(null);
         setCallStatus('idle');
-    }, [bookingId, currentUserId, callStatus]);
+    }, [joiningId, currentUserId, callStatus]);
 
     return {
         messages,

@@ -59,9 +59,9 @@ export const bookingService = {
     }
   },
 
-  getAllPreviousChat: async (bookingId: string) => {
+  getAllPreviousChat: async (joiningId: string) => {
     try {
-      const response = await axiosInstance.get(`${BOOKING_URL}/getAllPreviousChats/${bookingId}`)
+      const response = await axiosInstance.get(`${BOOKING_URL}/getAllPreviousChats/${joiningId}`)
       return response.data
     } catch (error) {
       console.log('Error in getting getAllPreviousChat', error)

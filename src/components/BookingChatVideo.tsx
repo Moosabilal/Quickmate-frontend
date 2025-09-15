@@ -3,9 +3,9 @@ import { useBookingChatVideo } from "../hooks/useBookingChatVideo";
 import { Image, Mic, Paperclip, Send, Smile, User, X } from "lucide-react";
 
 export default function BookingChatVideo({
-  bookingId,
-  currentUserId
-}: { bookingId: string; currentUserId: string }) {
+  currentUserId,
+  joiningId
+}: { currentUserId: string, joiningId: string }) {
   const [input, setInput] = useState("");
   const [isCallActive, setIsCallActive] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -24,7 +24,7 @@ export default function BookingChatVideo({
     callStatus,
     localStreamRef,
     remoteStreamRef
-  } = useBookingChatVideo(bookingId, currentUserId);
+  } = useBookingChatVideo(currentUserId, joiningId);
 
   console.log('the messages', messages)
 

@@ -1,46 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Home,
-    Calendar,
-    Settings,
-    Star,
-    DollarSign,
-    User,
-    Bell,
-    Plus,
-    Edit3,
-    Trash2,
-    Award,
-    Eye,
-    X,
-    Download,
-    ExternalLink,
-    ArrowLeft,
-    Save,
-    Upload,
-    CheckCircle,
-    AlertCircle,
-    Backpack,
-    IndianRupee
-} from 'lucide-react';
+import { ArrowLeft, Save, IndianRupee } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { IAddAndEditServiceForm } from '../../interface/IService';
 import { serviceService } from '../../services/serviceService';
 import { toast } from 'react-toastify';
+import { ICategoryData } from '../../interface/ICategory';
 
-interface ICategory {
-    id: string;
-    name: string;
-    parentId?: string;
-}
 
 
 const ServiceManagementPage: React.FC = () => {
     const { serviceId } = useParams<{ serviceId?: string }>()
-    const [categories, setCategories] = useState<ICategory[]>([])
-    const [subCategories, setSubCategories] = useState<ICategory[]>([])
+    const [categories, setCategories] = useState<ICategoryData[]>([])
+    const [subCategories, setSubCategories] = useState<ICategoryData[]>([])
     const [editingService, setEditingService] = useState<IAddAndEditServiceForm | null>(null);
 
     const [formData, setFormData] = useState<Partial<IAddAndEditServiceForm>>({
@@ -50,7 +22,6 @@ const ServiceManagementPage: React.FC = () => {
         experience: 0,
         subCategoryId: '',
         duration: '0:0',
-        basePrice: 0,
         priceUnit: 'PerService',
         status: true,
         price: 0,
@@ -103,7 +74,6 @@ const ServiceManagementPage: React.FC = () => {
                 categoryId: editingService.categoryId,
                 subCategoryId: editingService.subCategoryId,
                 duration: editingService.duration,
-                basePrice: editingService.basePrice,
                 priceUnit: editingService.priceUnit,
                 status: editingService.status,
                 price: editingService.price,
@@ -117,7 +87,6 @@ const ServiceManagementPage: React.FC = () => {
                 categoryId: '',
                 subCategoryId: '',
                 duration: '0:0',
-                basePrice: 0,
                 priceUnit: 'PerService',
                 status: true,
                 price: 0,
@@ -148,10 +117,6 @@ const ServiceManagementPage: React.FC = () => {
 
         if (!formData.categoryId) {
             newErrors.categoryId = 'Category is required';
-        }
-
-        if (!formData.basePrice || formData.basePrice <= 0) {
-            newErrors.basePrice = 'Base price must be greater than 0';
         }
 
         if (!formData.price || formData.price <= 0) {
@@ -399,7 +364,7 @@ const ServiceManagementPage: React.FC = () => {
                             </select>
                         </div>
 
-                        {formData.priceUnit === 'PerHour' && (
+                        {formData.priceUnit === 'PerService' && (
                             <div className="mt-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Duration
@@ -443,33 +408,10 @@ const ServiceManagementPage: React.FC = () => {
                             </div>
                         )}
 
-                        <div>
-                            <label htmlFor="basePrice" className="block text-sm font-medium text-gray-700 mb-2">
-                                Base Price *
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <IndianRupee className='h-3 w-3 text-gray-500' />
-                                </div>
-                                <input
-                                    type="number"
-                                    id="basePrice"
-                                    min="0"
-                                    step="0.01"
-                                    value={formData.basePrice || ''}
-                                    onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) || 0 })}
-                                    className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.basePrice ? 'border-red-300' : 'border-gray-300'
-                                        }`}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            {errors.basePrice && <p className="text-red-500 text-sm mt-1">{errors.basePrice}</p>}
-                        </div>
-
 
                         <div>
                             <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                                Display Price *
+                                Price *
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

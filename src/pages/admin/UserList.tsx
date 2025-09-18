@@ -49,7 +49,7 @@ const AdminUsersPage = () => {
         setTotalUsers(response.total)
         setError("")
       } catch (error) {
-        setError(error)
+        setError(`${error}`)
         console.error('Failed to fetch users:', error);
       }
     };

@@ -62,7 +62,66 @@ const ServiceDetailsPage: React.FC = () => {
 
   console.log('the all provider we are getting', allProviders)
 
+    const paymentOptions = [
+    { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
+    { value: PaymentMethod.WALLET, label: "Wallet" },
+  ]
 
+
+  const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
+  const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
+  console.log('the provider times', providerTimes)
+
+
+
+
+  function generateAvailability(rawAvailability: any[], daysAhead = 7) {
+  const result: { date: string; slots: string[] }[] = [];
+  const today = new Date();
+
+  for (let i = 0; i < daysAhead; i++) {
+    const date = new Date();
+    date.setDate(today.getDate() + i);
+
+    const weekday = date.toLocaleDateString("en-US", { weekday: "long" });
+
+    // Get all availability rules for this weekday
+    const matches = rawAvailability.filter(av => av.day === weekday);
+
+    if (matches.length > 0) {
+      const slotsSet = new Set<string>();
+
+      matches.forEach(match => {
+        const [startH, startM] = match.startTime.split(":").map(Number);
+        const [endH, endM] = match.endTime.split(":").map(Number);
+
+        let current = new Date(date);
+        current.setHours(startH, startM, 0, 0);
+
+        const end = new Date(date);
+        end.setHours(endH, endM, 0, 0);
+
+        while (current < end) {
+          slotsSet.add(
+            current.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+          );
+          current.setMinutes(current.getMinutes() + 60); // interval = 1 hour
+        }
+      });
+
+      result.push({
+        date: date.toISOString().split("T")[0],
+        slots: Array.from(slotsSet).sort(
+          (a, b) =>
+            new Date(`1970-01-01T${a}`).getTime() -
+            new Date(`1970-01-01T${b}`).getTime()
+        ),
+      });
+    }
+  }
+
+  return result;
+}
 
 
 
@@ -70,12 +129,9 @@ const ServiceDetailsPage: React.FC = () => {
 
   const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
-    const providerAvailability = [
-      { date: '2025-09-17', slots: ['09:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'] },
-      { date: '2025-09-18', slots: ['10:00 AM', '01:00 PM', '03:00 PM'] },
-      { date: '2025-09-19', slots: ['09:00 AM', '12:00 PM', '05:00 PM'] },
-      { date: '2025-09-20', slots: ['08:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'] },
-    ];
+    const providerAvailability = generateAvailability(providerTimes, 7);
+    console.log('the provider availabitly', providerAvailability)
+
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -183,15 +239,7 @@ const ServiceDetailsPage: React.FC = () => {
 
 
 
-  const paymentOptions = [
-    { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
-    { value: PaymentMethod.WALLET, label: "Wallet" },
-  ]
 
-
-  const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
-  const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
-  console.log('the provider times', providerTimes)
 
   const getProvider = async (filterParams = {}) => {
     try {

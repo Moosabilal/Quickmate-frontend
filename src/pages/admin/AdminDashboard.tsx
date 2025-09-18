@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch'; 
 import { logout } from '../../features/auth/authSlice'; 
 import ThemeToggle from '../../components/ThemeToggle';
+import { adminService } from '../../services/adminService';
 
 const dashboardStats = [
   { label: 'Total Users', value: '12,345', change: '+12%', color: 'text-green-500' },
@@ -27,6 +28,15 @@ const alerts = [
 ];
 
 const AdminDashboard = () => {
+
+  const getAdminDashboard = async () => {
+    const response = await adminService.fetchAdminDashboard()
+    console.log('the response', response)
+  }
+
+  useEffect(() => {
+    getAdminDashboard()
+  },[])
   
 
   return (
@@ -92,7 +102,7 @@ const AdminDashboard = () => {
             </div>
           </section>
 
-          {/* Alerts */}
+          {/* Alerts
           <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold mb-4">Alerts</h3>
             <div className="space-y-3">
@@ -114,7 +124,7 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
-          </section>
+          </section> */}
         </main>
       </div>
     </div>

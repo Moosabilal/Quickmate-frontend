@@ -38,7 +38,7 @@ export const authService = {
     return response
   },
 
-  contactUsSubmission: async (formData) => {
+  contactUsSubmission: async (formData: {name: string, email: string, message: string}) => {
     const response = await axiosInstance.post(`${API_URL}/contactUsSubmission`,formData)
     return response.data
   },
@@ -53,7 +53,7 @@ export const authService = {
     return response.data;
   },
 
-  getUserWithAllDetails: async ({ page, limit, search, status }) => {
+  getUserWithAllDetails: async ({ page, limit, search, status }: {page: number; limit: number; search: string; status: string;}) => {
   const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`, {
     params: { page, limit, search, status },
   });

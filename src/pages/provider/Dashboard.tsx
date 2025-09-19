@@ -286,11 +286,11 @@ const Dashboard: React.FC = () => {
                                 <p className="text-sm text-gray-500">Last 30 Days</p>
                             </div>
 
-                            <div className="mt-6 h-56 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+                            <div className="mt-6 h-56 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-sm">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart
                                         data={normalizeRatingHistory(dashboard.dashboardStat?.ratingHistory || [])}
-                                        margin={{ top: 10, right: 20, left: -10, bottom: 10 }}
+                                        margin={{ top: 10, right: 20, left: -40, bottom: 10 }}
                                     >
                                         <defs>
                                             <linearGradient id="colorRating" x1="0" y1="0" x2="0" y2="1">
@@ -360,32 +360,7 @@ const Dashboard: React.FC = () => {
 
                         </div>
                     </div>
-                </div>
-
-                {/* Quick Actions */}
-                {/* <div className="mt-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold mb-2">Ready to grow your business?</h3>
-                <p className="text-blue-100 mb-4">Add new services or update your profile to attract more clients.</p>
-                <div className="flex space-x-3">
-                  <button className="bg-white text-blue-600 px-4 py-2 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
-                    Add Service
-                  </button>
-                  <button className="border border-white text-white px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-colors">
-                    View Profile
-                  </button>
-                </div>
-              </div>
-              <div className="hidden md:block">
-                <div className="w-24 h-24 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
-                  <TrendingUp className="w-12 h-12 text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
+                </div>                
             </div>
         </div>
     );

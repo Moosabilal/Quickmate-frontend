@@ -1,4 +1,3 @@
-// src/pages/admin/AdminDashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../../services/adminService';
@@ -28,6 +27,7 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const response = await adminService.fetchAdminDashboard();
+      console.log(response)
       setDashboardData(response as DashboardData);
       setError(null);
     } catch (err) {
@@ -45,13 +45,11 @@ const AdminDashboard: React.FC = () => {
   const formatCurrency = (amount?: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount || 0);
 
-  // ✅ calculate % growth compared to previous
   const calculateGrowth = (current: number, previous: number) => {
     if (previous === 0) return current > 0 ? 100 : 0;
     return (((current - previous) / previous) * 100).toFixed(1);
   };
 
-  // ✅ Daily bookings: ensure all weekdays present
   const prepareDailyBookingsChart = (dailyBookings?: DailyBooking[]) => {
     const map = new Map<string, number>();
     dailyBookings?.forEach(item => {
@@ -66,7 +64,6 @@ const AdminDashboard: React.FC = () => {
     }));
   };
 
-  // ✅ Monthly revenue: ensure all 12 months present
   const prepareMonthlyRevenueChart = (monthlyRevenue?: MonthlyRevenue[]) => {
     const map = new Map<string, number>();
     monthlyRevenue?.forEach(item => {
@@ -125,8 +122,8 @@ const AdminDashboard: React.FC = () => {
 
   const monthlyChart = prepareMonthlyRevenueChart(monthlyRevenue);
   const dailyChart = prepareDailyBookingsChart(dailyBookings);
-
-  const currentMonthRevenue = monthlyChart[monthlyChart.length - 1]?.revenue || 0;
+console.log('themongthly', monthlyChart)
+  const currentMonthRevenue = monthlyChart.reduce((sum, month) => sum += month.revenue, 0) || 0;
   const prevMonthRevenue = monthlyChart[monthlyChart.length - 2]?.revenue || 0;
   const revenueGrowth = calculateGrowth(currentMonthRevenue, prevMonthRevenue);
 
@@ -155,7 +152,6 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
 
-          {/* Stats */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {dashboardStats.map((stat, i) => (
               <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -165,9 +161,7 @@ const AdminDashboard: React.FC = () => {
             ))}
           </section>
 
-          {/* Charts */}
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Monthly Revenue */}
             <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg p-8">
               <h3 className="text-xl font-bold mb-4">Monthly Revenue</h3>
               <p className="text-3xl font-bold">{formatCurrency(currentMonthRevenue)}</p>
@@ -187,7 +181,6 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Daily Bookings */}
             <div className="bg-gradient-to-br from-white to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg p-8">
               <h3 className="text-xl font-bold mb-4">Daily Bookings</h3>
               <p className="text-3xl font-bold">{currentDayBookings}</p>
@@ -208,7 +201,6 @@ const AdminDashboard: React.FC = () => {
             </div>
           </section>
 
-          {/* Top Providers */}
           <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-lg font-semibold mb-4">Top Active Providers</h3>
             {topActiveProviders && topActiveProviders.length > 0 ? (
@@ -236,7 +228,6 @@ const AdminDashboard: React.FC = () => {
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">No provider data available</div>
             )}
           </section>
-          {/* Quick Actions */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link 
               to="/admin/users" 

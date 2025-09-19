@@ -9,7 +9,7 @@ interface CategoryTableDisplay extends ICategoryResponse {
     commissionRule?: ICommissionRuleResponse | null;
 }
 
-const categories_per_page = 2;
+const categories_per_page = 4;
 
 const CategoryCommissionManagement = () => {
     const navigate = useNavigate();

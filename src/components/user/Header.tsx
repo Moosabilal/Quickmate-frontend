@@ -79,7 +79,7 @@ const Header = () => {
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                                    QuickMaker
+                                    QuickMate
                                 </span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                     Professional Services

@@ -7,6 +7,12 @@ export enum ProviderStatus {
   Pending = 'Pending',
 }
 
+export enum SubscriptionStatus {
+    ACTIVE = "ACTIVE",
+    EXPIRED = "EXPIRED",
+    NONE = "NONE"
+}
+
  export interface Availability {
     day: string;    
     startTime: string;
@@ -53,6 +59,12 @@ export interface IProviderProfile {
   profilePhoto: string;
   status: string;
   availability: Availability[];
+  subscription?: {
+    planId?: string;
+    startDate: Date;
+    endDate: Date;
+    status: SubscriptionStatus
+  }
 
 }
 

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Save, IndianRupee } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { providerService } from '../../services/providerService';
-import { IAddAndEditServiceForm } from '../../interface/IService';
+import { IAddAndEditServiceForm } from '../../util/interface/IService';
 import { serviceService } from '../../services/serviceService';
 import { toast } from 'react-toastify';
-import { ICategoryData } from '../../interface/ICategory';
+import { ICategoryData } from '../../util/interface/ICategory';
 
 
 

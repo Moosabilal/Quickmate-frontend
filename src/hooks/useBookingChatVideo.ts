@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
-import { ChatMessage, MaybeStream } from "../interface/IChatAndVideo";
+import { ChatMessage, MaybeStream } from "../util/interface/IChatAndVideo";
 
 export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);

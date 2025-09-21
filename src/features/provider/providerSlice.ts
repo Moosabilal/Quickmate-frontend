@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IProviderProfile } from '../../interface/IProvider';
+import { IProviderProfile } from '../../util/interface/IProvider';
 
 interface ProviderState  {
     provider: Partial<IProviderProfile>

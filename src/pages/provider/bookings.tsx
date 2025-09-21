@@ -25,11 +25,11 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
-import { BookingStatus } from '../../interface/IBooking';
+import { BookingStatus } from '../../util/interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { toast } from 'react-toastify';
-import { IProviderBookingManagement } from '../../interface/IBooking';
+import { IProviderBookingManagement } from '../../util/interface/IBooking';
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);

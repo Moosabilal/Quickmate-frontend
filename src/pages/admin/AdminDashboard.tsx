@@ -12,11 +12,11 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
-import { DailyBooking, MonthlyRevenue, DashboardData } from '../../interface/IAdminDashboard';
+import { DailyBooking, MonthlyRevenue, DashboardData } from '../../util/interface/IAdminDashboard';
 
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const WEEKDAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const AdminDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -71,6 +71,7 @@ const AdminDashboard: React.FC = () => {
       const label = isNaN(d.getTime()) ? item.month : d.toLocaleDateString("en-US", { month: "short" });
       map.set(label, item.total ?? 0);
     });
+    console.log('the map', map)
 
     return MONTHS.map(month => ({
       month,
@@ -122,13 +123,16 @@ const AdminDashboard: React.FC = () => {
 
   const monthlyChart = prepareMonthlyRevenueChart(monthlyRevenue);
   const dailyChart = prepareDailyBookingsChart(dailyBookings);
-console.log('themongthly', monthlyChart)
-  const currentMonthRevenue = monthlyChart.reduce((sum, month) => sum += month.revenue, 0) || 0;
-  const prevMonthRevenue = monthlyChart[monthlyChart.length - 2]?.revenue || 0;
+  const now = new Date();
+  const currentMonthIndex = now.getMonth();
+  const currentMonthRevenue = monthlyChart[currentMonthIndex]?.revenue || 0;
+  const prevMonthRevenue = monthlyChart[currentMonthIndex - 1]?.revenue || 0;
+
   const revenueGrowth = calculateGrowth(currentMonthRevenue, prevMonthRevenue);
 
-  const currentDayBookings = dailyChart[dailyChart.length - 1]?.bookings || 0;
-  const prevDayBookings = dailyChart[dailyChart.length - 2]?.bookings || 0;
+  const currentBookingIndex = now.getDay()
+  const currentDayBookings = dailyChart[currentBookingIndex]?.bookings || 0;
+  const prevDayBookings = dailyChart[currentBookingIndex - 1]?.bookings || 0;
   const bookingGrowth = calculateGrowth(currentDayBookings, prevDayBookings);
 
   const dashboardStats = [
@@ -218,9 +222,9 @@ console.log('themongthly', monthlyChart)
                         </p>
                       </div>
                     </div>
-                    <Link to={`/admin/providers/${provider._id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    {/* <Link to={`/admin/providers/${provider._id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
                       View Profile
-                    </Link>
+                    </Link> */}
                   </div>
                 ))}
               </div>
@@ -229,24 +233,24 @@ console.log('themongthly', monthlyChart)
             )}
           </section>
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link 
-              to="/admin/users" 
+            <Link
+              to="/admin/users"
               className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Manage Users</h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">View and manage user accounts</p>
             </Link>
-            
-            <Link 
-              to="/admin/providers" 
+
+            <Link
+              to="/admin/providers"
               className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
             >
               <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">Manage Providers</h4>
               <p className="text-sm text-green-700 dark:text-green-300">Review and verify service providers</p>
             </Link>
-            
-            <Link 
-              to="/admin/bookings" 
+
+            <Link
+              to="/admin/bookings"
               className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
             >
               <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">View Bookings</h4>

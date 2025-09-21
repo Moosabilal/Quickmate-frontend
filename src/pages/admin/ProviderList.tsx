@@ -4,7 +4,7 @@ import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
-import { ProviderList, ProviderStatus } from '../../interface/IProvider';
+import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 
 
 

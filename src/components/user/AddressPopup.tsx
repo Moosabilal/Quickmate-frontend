@@ -2,7 +2,7 @@ import { MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
-import { IAddress } from "../../interface/IAddress";
+import { IAddress } from "../../util/interface/IAddress";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
 import { findProviderRange } from "../../util/findProviderRange";

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, MapPin, Star, Filter, Search, Eye, Download, MoreHorizontal, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingHistoryPage } from '../../interface/IBooking';
+import { BookingStatus, IBookingHistoryPage } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 

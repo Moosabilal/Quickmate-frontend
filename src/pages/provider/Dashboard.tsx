@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { StatCard } from '../../components/provider/StatusCard';
-import { Booking, IDashboardResponse, IDashboardStatus, RatingHistoryPoint, RatingPoint, Stats } from '../../interface/IProvider';
+import { Booking, IDashboardResponse, IDashboardStatus, RatingHistoryPoint, RatingPoint, Stats } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
@@ -66,79 +66,13 @@ const Dashboard: React.FC = () => {
     ];
 
     function normalizeRatingHistory(data: RatingHistoryPoint[]): RatingHistoryPoint[] {
-        console.log('the data', data)
         const map = new Map(data.map((d) => [d.month, d.rating]));
-        console.log('the map', map)
-        console.log('the m', fiscalMonths.map((m) => console.log(m, map.has(m) ? map.get(m)! : 0)))
         return fiscalMonths.map((m) => ({
             month: m,
             rating: map.has(m) ? map.get(m)! : 0,
         }));
     }
 
-
-
-    // const stats: Stats = {
-    //     earnings: { current: 450, previous: 380, change: 18.4 },
-    //     completedJobs: { current: 23, previous: 19, change: 21.1 },
-    //     upcomingBookings: { current: 5, previous: 7, change: -28.6 },
-    //     averageRating: { current: 4.8, previous: 4.6, change: 4.3 }
-    // };
-
-    const recentBookings: Booking[] = [
-        {
-            id: 1,
-            service: 'Interior Design Consultation',
-            client: 'Tomorrow, 9 PM',
-            status: 'upcoming',
-            image: '/api/placeholder/80/80',
-            category: 'Interior Design'
-        },
-        {
-            id: 2,
-            service: 'Home Cleaning',
-            client: 'Next Week, 10 AM',
-            status: 'scheduled',
-            image: '/api/placeholder/80/80',
-            category: 'Cleaning'
-        },
-        {
-            id: 3,
-            service: 'Plumbing Service',
-            client: 'Next Week, 3 PM',
-            status: 'scheduled',
-            image: '/api/placeholder/80/80',
-            category: 'Plumbing'
-        },
-        {
-            id: 4,
-            service: 'Electrical Repair',
-            client: 'Next Month, 9 AM',
-            status: 'scheduled',
-            image: '/api/placeholder/80/80',
-            category: 'Electrical'
-        },
-        {
-            id: 5,
-            service: 'Landscaping',
-            client: 'Next Month, 2 PM',
-            status: 'scheduled',
-            image: '/api/placeholder/80/80',
-            category: 'Landscaping'
-        }
-    ];
-
-    const ratingData: RatingPoint[] = [
-        { month: 'Jan', rating: 4.2 },
-        { month: 'Feb', rating: 4.5 },
-        { month: 'Mar', rating: 4.3 },
-        { month: 'Apr', rating: 4.7 },
-        { month: 'May', rating: 4.9 },
-        { month: 'Jun', rating: 4.8 }
-    ];
-
-    const maxRating = 5;
-    const minRating = Math.min(...ratingData.map(d => d.rating)) - 0.5;
 
     const getStatusColor = (status: string): string => {
         switch (status.toLowerCase()) {
@@ -165,21 +99,21 @@ const Dashboard: React.FC = () => {
                             <p className="text-gray-600 mt-1">Here's what's happening with your services today.</p>
                         </div>
                         {/* <div className="flex items-center space-x-3">
-              <select 
-                value={timeFrame}
-                onChange={handleTimeFrameChange}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option>This Week</option>
-                <option>Last Week</option>
-                <option>This Month</option>
-                <option>Last Month</option>
-              </select>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
-            </div> */}
+                            <select
+                                value={timeFrame}
+                                onChange={handleTimeFrameChange}
+                                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option>This Week</option>
+                                <option>Last Week</option>
+                                <option>This Month</option>
+                                <option>Last Month</option>
+                            </select>
+                            <button className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                <Download className="w-4 h-4" />
+                                <span>Export</span>
+                            </button>
+                        </div> */}
                     </div>
                 </div>
 
@@ -360,7 +294,7 @@ const Dashboard: React.FC = () => {
 
                         </div>
                     </div>
-                </div>                
+                </div>
             </div>
         </div>
     );

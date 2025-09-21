@@ -17,7 +17,7 @@ import {
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
 import { AddFundsModal } from '../../components/AddWithdrawFund';
-import { TransactionStatus, WalletFilter } from '../../interface/IPayment';
+import { TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
 
 const inr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);

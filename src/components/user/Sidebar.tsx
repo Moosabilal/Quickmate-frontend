@@ -17,7 +17,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { authService } from '../../services/authService';
 
 const Sidebar = () => {

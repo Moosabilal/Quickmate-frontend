@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2, User, Send } from 'lucide-react';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
-import type { ICategoryResponse } from '../../interface/ICategory';
-import type { IFeaturedProviders } from '../../interface/IProvider';
+import type { ICategoryResponse } from '../../util/interface/ICategory';
+import type { IFeaturedProviders } from '../../util/interface/IProvider';
 import ChatbotIcon from '../../components/user/ChatbotIcon';
 import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { CompanyInfo } from '../../CompanyInfo';
 import { toast } from 'react-toastify';
-import { ChatbotMessage } from '../../interface/IChatBot';
-import { Testimonial, StarRatingProps, QuickAction } from '../../interface/IChatBot';
+import { ChatbotMessage } from '../../util/interface/IChatBot';
+import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/IChatBot';
 
 
 const StarRating: React.FC<StarRatingProps> = ({ rating }) => {

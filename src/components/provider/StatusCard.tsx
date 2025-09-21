@@ -1,4 +1,4 @@
-import { StatCardProps } from "../../interface/IProvider";
+import { StatCardProps } from "../../util/interface/IProvider";
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, prefix = '', suffix = '' }) => {
         const isPositive = change > 0;

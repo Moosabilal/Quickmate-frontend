@@ -1,6 +1,6 @@
 import axiosInstance from "../API/axiosInstance";
-import { BookingStatus, IBookingRequest } from "../interface/IBooking";
-import { paymentVerificationRequest } from "../interface/IPayment";
+import { BookingStatus, IBookingRequest } from "../util/interface/IBooking";
+import { paymentVerificationRequest } from "../util/interface/IPayment";
 const BOOKING_URL = `/bookings`;
 
 export const bookingService = {

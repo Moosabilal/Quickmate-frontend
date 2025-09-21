@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Calendar, MapPin, Phone, User, CreditCard, Clock, Package, FileText, Loader2 } from 'lucide-react';
-import { IBookingConfirmationPage } from '../../interface/IBooking';
+import { IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate, useParams } from 'react-router-dom';
 

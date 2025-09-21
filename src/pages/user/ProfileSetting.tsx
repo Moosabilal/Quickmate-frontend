@@ -11,7 +11,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
-import { IAddress } from '../../interface/IAddress';
+import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
 
 

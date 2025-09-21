@@ -6,7 +6,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
 interface User {
   id: string;

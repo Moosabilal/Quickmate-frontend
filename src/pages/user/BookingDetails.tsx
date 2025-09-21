@@ -22,13 +22,13 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingConfirmationPage } from '../../interface/IBooking';
+import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import { providerService } from '../../services/providerService';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { reviewService } from '../../services/reviewService';
 
 const BookingDetails: React.FC = () => {

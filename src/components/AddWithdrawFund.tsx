@@ -2,8 +2,8 @@ import { IndianRupee, X } from 'lucide-react';
 import { walletService } from '../services/walletService';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { TransactionStatus } from '../interface/IPayment';
-import { Props } from '../interface/IPayment';
+import { TransactionStatus } from '../util/interface/IPayment';
+import { Props } from '../util/interface/IPayment';
   
 
 

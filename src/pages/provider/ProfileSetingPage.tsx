@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile, ProviderStatus } from '../../interface/IProvider';
+import { IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';

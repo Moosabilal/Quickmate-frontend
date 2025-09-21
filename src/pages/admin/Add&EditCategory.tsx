@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse } from '../../interface/ICategory';
+import { CommissionTypes, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify'
 

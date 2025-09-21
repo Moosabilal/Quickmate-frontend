@@ -24,7 +24,10 @@ import { toast } from 'react-toastify';
 import { serviceService } from '../../services/serviceService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
+import { Provider } from 'react-redux';
+import { SubscriptionStatus } from '../../util/interface/IProvider';
+import SubscriptionPlansModal from '../../components/provider/SubscriptionPlanModel';
 
 interface IService {
     id: string;
@@ -40,11 +43,13 @@ interface IService {
 const ProviderServicesPage: React.FC = () => {
 
     const { provider } = useAppSelector(state => state.provider)
+    console.log('the provider', provider)
 
     const [services, setServices] = useState<IService[]>([])
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState<IService | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const navigate = useNavigate()
 
@@ -55,6 +60,14 @@ const ProviderServicesPage: React.FC = () => {
         }
         fetchServices()
     }, [provider])
+
+    const handleAddNewService = () => {
+        console.log('the plan ', provider.subscription)
+        if(true){
+            setIsModalOpen(true)
+        }
+        // navigate(`/provider/providerService/new`)
+    }
 
     const handleDeleteClick = (service: IService) => {
         setServiceToDelete(service);
@@ -77,6 +90,10 @@ const ProviderServicesPage: React.FC = () => {
             setIsDeleting(false);
         }
     };
+    
+    const handleSubscribe = () => {
+        console.log('you subscribed')
+    }
 
     const handleDeleteCancel = () => {
         setShowDeleteModal(false);
@@ -95,7 +112,7 @@ const ProviderServicesPage: React.FC = () => {
                                 <p className="text-gray-600">Manage your service offerings and certificates</p>
                             </div>
                             {services.length > 0 && <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/25"
-                                onClick={() => navigate(`/provider/providerService/new`)}
+                                onClick={handleAddNewService}
                             >
                                 <Plus className="w-5 h-5" />
                                 Add a service
@@ -249,6 +266,11 @@ const ProviderServicesPage: React.FC = () => {
                 itemDetails={`${serviceToDelete?.category} • ₹${serviceToDelete?.price}`}
                 isLoading={isDeleting}
                 additionalInfo="Any existing bookings for this service will need to be handled separately."
+            />
+            <SubscriptionPlansModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubscribe={handleSubscribe}
             />
         </div>
     );

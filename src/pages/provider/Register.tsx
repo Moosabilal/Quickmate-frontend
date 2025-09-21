@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory';
+import { ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { MapPin } from 'lucide-react';
-import { Availability } from '../../interface/IProvider';
+import { Availability } from '../../util/interface/IProvider';
 
 
 

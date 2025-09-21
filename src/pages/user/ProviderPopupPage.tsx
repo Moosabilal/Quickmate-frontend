@@ -1,5 +1,5 @@
 import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter, IndianRupee } from 'lucide-react';
-import { IBackendProvider } from '../../interface/IProvider';
+import { IBackendProvider } from '../../util/interface/IProvider';
 import { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';

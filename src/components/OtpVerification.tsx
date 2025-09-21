@@ -8,7 +8,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login, updateProfile } from '../features/auth/authSlice';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
-import { BookingStatus, LocationState } from '../interface/IBooking';
+import { BookingStatus, LocationState } from '../util/interface/IBooking';
 import { bookingService } from '../services/bookingService';
 
 let OTP_RESEND_TIMEOUT_SECONDS = 60;

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { IProviderForChatListPage } from '../../interface/IProvider';
+import { IProviderForChatListPage } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
 import { toast } from 'react-toastify';
 

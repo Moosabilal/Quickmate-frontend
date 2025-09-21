@@ -9,7 +9,7 @@ import { authService } from '../../services/authService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Bell, Menu, X, ChevronDown } from 'lucide-react';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);

@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import {ICategoryResponse} from "../interface/ICategory"; 
+import {ICategoryResponse} from "../util/interface/ICategory"; 
 
 const CATEGORIES_PATH = '/categories';
 const CATEGORIES_TOP_LEVEL_DETAILS_PATH = '/categories/top-level-details';

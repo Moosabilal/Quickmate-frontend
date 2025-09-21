@@ -1,4 +1,4 @@
-import { ChatMessageProps } from '../../interface/IChatBot';
+import { ChatMessageProps } from '../../util/interface/IChatBot';
 import ChatbotIcon from './ChatbotIcon';
 
 import React from 'react';

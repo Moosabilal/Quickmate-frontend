@@ -1,4 +1,4 @@
-import { ChatbotMessage } from '../../interface/IChatBot';
+import { ChatbotMessage } from '../../util/interface/IChatBot';
 
 export interface ChatFormProps {
     chatHistory: ChatbotMessage[];

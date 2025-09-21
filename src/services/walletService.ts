@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance"
-import { TransactionStatus, WalletFilter } from "../interface/IPayment"
+import { TransactionStatus, WalletFilter } from "../util/interface/IPayment"
 
 const WALLET_URL = `/wallet`
 

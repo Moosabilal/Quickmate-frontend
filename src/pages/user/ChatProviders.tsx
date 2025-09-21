@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { IProviderForChatListPage } from '../../interface/IProvider';
+import { IProviderForChatListPage } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
+import { toast } from 'react-toastify';
 
 
 
@@ -37,7 +38,7 @@ const ChatProvidersPage: React.FC = () => {
         const response = await providerService.getProviderForChatPage()
         setProviders(response)
       } catch (error) {
-        console.log(error)
+        toast.error(`error`)
       } finally {
         setLoading(false);
       }
@@ -60,42 +61,16 @@ const ChatProvidersPage: React.FC = () => {
     return matchesSearch && matchesService;
   });
 
-  const handleStartChat = (bookingId: string, providerName: string) => {
+  const handleStartChat = (bookingId: string, providerName: string, providerId: string) => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
+    console.log('the joinign id in user side', `${user?.id}-${providerId}`)
     navigate(`/profile/chatListPage/live-chat`, {
-      state: { bookingId, name: providerName }
+      state: { bookingId, name: providerName, joiningId: `${user?.id}-${providerId}` }
     });
   };
-
-  if (!isAuthenticated) {
-    return (
-      <>
-        <main className="pt-20 min-h-screen bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-              <MessageCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Sign In to Start Chatting
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Please sign in to connect with service providers and start chatting.
-              </p>
-              <button
-                onClick={() => navigate('/login')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-              >
-                Sign In
-              </button>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   return (
     <>
@@ -179,7 +154,6 @@ const ChatProvidersPage: React.FC = () => {
                     >
                       <div className="p-6">
                         <div className="flex items-center justify-between">
-                          {/* Left side - Provider Info */}
                           <div className="flex items-center space-x-4 flex-1">
                             <div className="relative flex-shrink-0">
                               <img
@@ -239,7 +213,7 @@ const ChatProvidersPage: React.FC = () => {
 
                           <div className="flex-shrink-0 ml-6">
                             <button
-                              onClick={() => handleStartChat(provider.bookingId!, provider.name)}
+                              onClick={() => handleStartChat(provider.bookingId!, provider.name, provider.id)}
                               className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                             >
                               <MessageCircle className="w-4 h-4" />

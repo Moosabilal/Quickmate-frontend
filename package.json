@@ -18,25 +18,30 @@
     "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.10.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "gapi-script": "^1.2.0",
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
     "mongoose": "^8.16.0",
     "nanoid": "^5.1.5",
     "react": "^19.1.0",
+    "react-big-calendar": "^1.19.4",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.2",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.2.0",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@types/leaflet": "^1.9.20",
     "@types/react": "^19.1.2",
+    "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19.1.2",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
@@ -49,6 +54,6 @@
     "globals": "^16.0.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "vite": "^6.3.5"
+    "vite": "^6.3.6"
   }
 }

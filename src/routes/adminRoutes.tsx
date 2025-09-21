@@ -10,6 +10,7 @@ const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 const CategoryCommissionManagement = lazy(() => import('../pages/admin/Category'));
 const CategoryForm = lazy(() => import('../pages/admin/Add&EditCategory'));
 const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
+const AdminSubscriptionPlans = lazy(() => import('../pages/admin/SubscriptionPlan'));
 
 
 import AdminLayout from '../layouts/AdminLayout';
@@ -19,7 +20,7 @@ const adminRoutes = [
     {
       element: <ProtectedRoute roles={['Admin']} />,
       children: [
-        { path: '/admin', element: <AdminDashboard /> },
+      { path: '/admin', element: <AdminDashboard /> },
       { path: '/admin/users', element: <AdminUsersPage /> },
       { path: '/admin/providers', element: <AdminProvidersPage /> },
       { path: '/admin/categories', element: <CategoryCommissionManagement /> },
@@ -28,6 +29,7 @@ const adminRoutes = [
       { path: '/admin/categories/edit/:categoryId', element: <CategoryForm /> },
       { path: '/admin/subcategories/new/:parentId', element: <CategoryForm /> },
       { path: '/admin/subcategories/edit/:parentId/:subcategoryId', element: <CategoryForm /> },
+      { path: '/admin/subscriptionPlan', element: <AdminSubscriptionPlans /> },
       ],
     },
   ]),

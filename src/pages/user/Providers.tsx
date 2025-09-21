@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { IFeaturedProviders } from '../../interface/IProvider';
+import { IFeaturedProviders } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import Pagination from '../../components/user/Pagination';

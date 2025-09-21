@@ -2,32 +2,10 @@ import { IndianRupee, X } from 'lucide-react';
 import { walletService } from '../services/walletService';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { TransactionStatus } from '../interface/IPayment';
-// const inr = (n: number) =>
-//   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
-
-
-// const loadRazorpay = () =>
-//   new Promise<boolean>((resolve) => {
-//     if ((window as any).Razorpay) return resolve(true);
-//     const s = document.createElement("script");
-//     s.src = "https://checkout.razorpay.com/v1/checkout.js";
-//     s.onload = () => resolve(true);
-//     s.onerror = () => resolve(false);
-//     document.body.appendChild(s);
-//   });
+import { TransactionStatus } from '../util/interface/IPayment';
+import { Props } from '../util/interface/IPayment';
   
 
-
-
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  description: string;
-  transactionType: string;
-  status: TransactionStatus;
-};
 
 
 export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, description, status, transactionType}) => {
@@ -35,13 +13,12 @@ export const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, descr
   const [loading, setLoading] = useState(false);
   if (!open) return null;
 
-  console.log('the status in fron end', status)
-
   const handleRazorpayDeposit = async () => {
     setLoading(true);
     try {
-      // const ok = await loadRazorpay();
-      // if (!ok) throw new Error("Razorpay SDK failed to load");
+      if (!(window as any).Razorpay){
+         throw new Error("Razorpay SDK failed to load");
+      }
 
       const { data } = await walletService.initiateDeposit(amount);
 

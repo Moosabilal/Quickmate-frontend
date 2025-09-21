@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Calendar, MapPin, Phone, User, CreditCard, Clock, Package, FileText, Loader2 } from 'lucide-react';
-import { IBookingConfirmationPage } from '../../interface/IBooking';
+import { IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -18,11 +18,9 @@ const BookingConfirmation: React.FC = () => {
       try {
         setLoading(true);
         const response = await bookingService.getBookingById(bookingId!);
-        console.log('the returned response', response);
         setBooking(response);
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error fetching booking:', err);
       } finally {
         setLoading(false);
       }

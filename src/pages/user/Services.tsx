@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Pagination from '../../components/user/Pagination';
 import { categoryService } from '../../services/categoryService';
-import { IserviceResponse } from '../../interface/ICategory';
+import { IserviceResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 

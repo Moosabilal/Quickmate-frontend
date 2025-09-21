@@ -11,7 +11,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
-import { IAddress } from '../../interface/IAddress';
+import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
 
 
@@ -94,8 +94,7 @@ const ProfileSetting: React.FC = () => {
             toast.success('profile Updated Successfully')
             setIsEditing(false);
         } catch (error) {
-            console.error('Failed to update profile:', error);
-            alert('Failed to save profile. Please try again.');
+            toast.error('Failed to save profile. Please try again.');
         }
     };
 
@@ -106,19 +105,12 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(false);
     };
 
-    
-
-
-
     const handleAddAddress = async (newAddress: IAddress) => {
 
             try {
-                let savedAddress;
-
-                console.log('the divide conqou', isEditing, currentAddress)
+                let savedAddress: IAddress;
 
                 if (isEditingAddress && currentAddress.id) {
-                    console.log('editing')
                     savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
 
                     setAddressList(prev =>
@@ -126,7 +118,6 @@ const ProfileSetting: React.FC = () => {
                     );
                     toast.success("Address Updated")
                 } else {
-                    console.log('the address', newAddress)
                     savedAddress = await addressService.createAddress(newAddress);
                     setAddressList(prev => [...prev, savedAddress]);
                     toast.success("Address Created")
@@ -147,7 +138,6 @@ const ProfileSetting: React.FC = () => {
 
 
     const handleAddressConfirm = (address: IAddress) => {
-        console.log('the add address', address)
         setSelectedAddress(address);
         setCurrentAddress(address)
         setAddressPopup(false);

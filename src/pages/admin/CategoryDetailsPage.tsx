@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory'; // Import shared types
+import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { toast } from 'react-toastify';
 
 const CategoryDetailsPage: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
@@ -24,10 +25,8 @@ const CategoryDetailsPage: React.FC = () => {
             setError(null);
             try {
                 const response = await categoryService.getCategoryById(categoryId);
-                console.log('the fetched categories', response)
                 setCategoryDetails(response);
             } catch (err) {
-                console.error("Failed to fetch category details:", err);
                 setError("Failed to load category details. Please try again.");
             } finally {
                 setIsLoading(false);
@@ -79,10 +78,13 @@ const CategoryDetailsPage: React.FC = () => {
                     return { ...prevDetails, subCategories: updatedSubCategories };
                 });
             }
-            console.log("Subcategory status updated locally (simulate success).");
         } catch (err) {
-            console.error("Failed to toggle subcategory status:", err);
-            setError(err.message || "Failed to toggle subcategory status.");
+            toast.error(`Failed to toggle subcategory status:, ${err}`);
+            if (err instanceof Error) {
+                setError(err.message || "Failed to toggle subcategory status.");
+            } else {
+                setError(String(err) || "Failed to toggle subcategory status.");
+            }
         }
     };
 

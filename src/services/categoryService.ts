@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import {ICategoryResponse} from "../interface/ICategory"; 
+import {ICategoryResponse} from "../util/interface/ICategory"; 
 
 const CATEGORIES_PATH = '/categories';
 const CATEGORIES_TOP_LEVEL_DETAILS_PATH = '/categories/top-level-details';
@@ -9,12 +9,7 @@ export const categoryService = {
 
     async createCategory(formData: FormData): Promise<ICategoryResponse> {
         try {
-            console.log('createding category', formData)
-            for(const [key, value] of formData.entries()){
-                console.log(`${key} : ${ value}`)
-            }
             const response = await axiosInstance.post(CATEGORIES_PATH, formData);
-            console.log('response from create category', response)
             return response.data.category || response.data;
         } catch (error) {
             console.error("Error creating category/subcategory in service:", error);

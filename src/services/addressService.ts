@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import { IAddress } from "../interface/IAddress";
+import { IAddress } from "../util/interface/IAddress";
 const ADDRESS_URL = `/address`
 
 export const addressService = {

@@ -5,9 +5,6 @@ const SERVICE_URL = `/services`
 export const serviceService = {
     createdService: async (formData: FormData) => {
         try {
-            for(const [key, value] of formData.entries()){
-                console.log(`${key} : ${value}`)
-            }
             const response = await axiosInstance.post(`${SERVICE_URL}/addService`, formData)
             return response.data
         } catch (error) {
@@ -18,9 +15,6 @@ export const serviceService = {
 
     updateService: async (id: string, formData: FormData) => {
         try {
-            for(const [key, value] of formData.entries()){
-                console.log(`${key} : ${value}`)
-            }
             const response = await axiosInstance.put(`${SERVICE_URL}/updateService/${id}`, formData)
             return response.data
         } catch (error) {

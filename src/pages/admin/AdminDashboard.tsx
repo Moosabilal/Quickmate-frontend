@@ -1,119 +1,261 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from '../../hooks/useAppSelector';
-import { useAppDispatch } from '../../hooks/useAppDispatch'; 
-import { logout } from '../../features/auth/authSlice'; 
-import ThemeToggle from '../../components/ThemeToggle';
+import { adminService } from '../../services/adminService';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from 'recharts';
+import { DailyBooking, MonthlyRevenue, DashboardData } from '../../util/interface/IAdminDashboard';
 
-const dashboardStats = [
-  { label: 'Total Users', value: '12,345', change: '+12%', color: 'text-green-500' },
-  { label: 'Total Service Providers', value: '2,567', change: '+8%', color: 'text-green-500' },
-  { label: 'Total Bookings', value: '8,912', change: '+15%', color: 'text-green-500' },
-  { label: 'Revenue This Month', value: '₹45,678', change: '+20%', color: 'text-green-500' },
-];
 
-const topActiveProviders = [
-  { id: 1, name: 'Sophia Carter', rating: 4.8, reviews: 123, imageUrl: 'https://via.placeholder.com/40/a78bfa/ffffff?text=SC' },
-  { id: 2, name: 'Ethan Bennett', rating: 4.9, reviews: 150, imageUrl: 'https://via.placeholder.com/40/34d399/ffffff?text=EB' },
-  { id: 3, name: 'Olivia Hayes', rating: 4.7, reviews: 75, imageUrl: 'https://via.placeholder.com/40/facc15/ffffff?text=OH' },
-  { id: 4, name: 'Liam Foster', rating: 4.6, reviews: 95, imageUrl: 'https://via.placeholder.com/40/fb7185/ffffff?text=LF' },
-  { id: 5, name: 'Ava Mitchell', rating: 4.9, reviews: 130, imageUrl: 'https://via.placeholder.com/40/60a5fa/ffffff?text=AM' },
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const alerts = [
-  { id: 1, message: '5 Unverified Providers', type: 'warning' },
-  { id: 2, message: '3 Failed Payments', type: 'error' },
-  { id: 3, message: '2 User Complaints', type: 'info' },
-];
+const AdminDashboard: React.FC = () => {
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-const AdminDashboard = () => {
-  
+  const getAdminDashboard = async () => {
+    try {
+      setLoading(true);
+      const response = await adminService.fetchAdminDashboard();
+      console.log(response)
+      setDashboardData(response as DashboardData);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(typeof err === 'string' ? err : 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAdminDashboard();
+  }, []);
+
+  const formatCurrency = (amount?: number) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount || 0);
+
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return (((current - previous) / previous) * 100).toFixed(1);
+  };
+
+  const prepareDailyBookingsChart = (dailyBookings?: DailyBooking[]) => {
+    const map = new Map<string, number>();
+    dailyBookings?.forEach(item => {
+      const d = new Date(item.date);
+      const weekday = isNaN(d.getTime()) ? item.date : d.toLocaleDateString("en-US", { weekday: "short" });
+      map.set(weekday, (map.get(weekday) || 0) + (item.total ?? 0));
+    });
+
+    return WEEKDAYS.map(day => ({
+      date: day,
+      bookings: map.get(day) || 0,
+    }));
+  };
+
+  const prepareMonthlyRevenueChart = (monthlyRevenue?: MonthlyRevenue[]) => {
+    const map = new Map<string, number>();
+    monthlyRevenue?.forEach(item => {
+      const d = new Date(item.month + "-01");
+      const label = isNaN(d.getTime()) ? item.month : d.toLocaleDateString("en-US", { month: "short" });
+      map.set(label, item.total ?? 0);
+    });
+    console.log('the map', map)
+
+    return MONTHS.map(month => ({
+      month,
+      revenue: map.get(month) || 0,
+      fullMonth: month,
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <button onClick={getAdminDashboard} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="p-6">
+        <p className="text-gray-600 dark:text-gray-400">No dashboard data available.</p>
+        <button onClick={getAdminDashboard} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg">
+          Reload
+        </button>
+      </div>
+    );
+  }
+
+  const { totalUsers, totalProviders, totalBookings, monthlyRevenue, dailyBookings, topActiveProviders } = dashboardData;
+
+  const monthlyChart = prepareMonthlyRevenueChart(monthlyRevenue);
+  const dailyChart = prepareDailyBookingsChart(dailyBookings);
+  const now = new Date();
+  const currentMonthIndex = now.getMonth();
+  const currentMonthRevenue = monthlyChart[currentMonthIndex]?.revenue || 0;
+  const prevMonthRevenue = monthlyChart[currentMonthIndex - 1]?.revenue || 0;
+
+  const revenueGrowth = calculateGrowth(currentMonthRevenue, prevMonthRevenue);
+
+  const currentBookingIndex = now.getDay()
+  const currentDayBookings = dailyChart[currentBookingIndex]?.bookings || 0;
+  const prevDayBookings = dailyChart[currentBookingIndex - 1]?.bookings || 0;
+  const bookingGrowth = calculateGrowth(currentDayBookings, prevDayBookings);
+
+  const dashboardStats = [
+    { label: 'Total Users', value: totalUsers?.toLocaleString() ?? '0' },
+    { label: 'Total Service Providers', value: totalProviders?.toLocaleString() ?? '0' },
+    { label: 'Total Bookings', value: totalBookings?.toLocaleString() ?? '0' },
+    { label: 'Revenue This Month', value: formatCurrency(currentMonthRevenue) },
+  ];
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-
       <div className="flex-1 flex flex-col overflow-hidden">
-
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Overview of key metrics and recent activities</p>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400">Overview of key metrics and recent activities</p>
+            </div>
+            <button onClick={getAdminDashboard} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              Refresh Data
+            </button>
+          </div>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {dashboardStats.map((stat, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            {dashboardStats.map((stat, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{stat.label}</p>
                 <p className="text-3xl font-bold mt-1">{stat.value}</p>
-                <p className={`text-sm mt-1 ${stat.color}`}>{stat.change}</p>
               </div>
             ))}
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Revenue Over Time</h3>
-              <p className="text-2xl font-bold mb-2">₹123,456</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Last 12 Months <span className="text-green-500">+15%</span></p>
-              <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-gray-500">
-                (Chart Placeholder)
-              </div>
-              <div className="flex justify-around text-xs text-gray-500 dark:text-gray-400 mt-2">
-                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg p-8">
+              <h3 className="text-xl font-bold mb-4">Monthly Revenue</h3>
+              <p className="text-3xl font-bold">{formatCurrency(currentMonthRevenue)}</p>
+              <p className={`text-sm mt-1 ${+revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {+revenueGrowth >= 0 ? `+${revenueGrowth}%` : `${revenueGrowth}%`} vs last month
+              </p>
+              <div className="h-48 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(v) => `₹${v}`} />
+                    <Tooltip formatter={(value: any) => [formatCurrency(Number(value)), 'Revenue']} />
+                    <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Daily Bookings</h3>
-              <p className="text-2xl font-bold mb-2">245</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Last 30 Days <span className="text-green-500">+10%</span></p>
-              <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-gray-500">
-                (Chart Placeholder)
-              </div>
-              <div className="flex justify-around text-xs text-gray-500 dark:text-gray-400 mt-2">
-                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            <div className="bg-gradient-to-br from-white to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg p-8">
+              <h3 className="text-xl font-bold mb-4">Daily Bookings</h3>
+              <p className="text-3xl font-bold">{currentDayBookings}</p>
+              <p className={`text-sm mt-1 ${+bookingGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {+bookingGrowth >= 0 ? `+${bookingGrowth}%` : `${bookingGrowth}%`} vs previous day
+              </p>
+              <div className="h-48 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dailyChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip formatter={(value: any) => [value, 'Bookings']} />
+                    <Bar dataKey="bookings" fill="#10B981" radius={[8, 8, 4, 4]} maxBarSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </section>
 
-          {/* Top Active Providers */}
           <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-lg font-semibold mb-4">Top Active Providers</h3>
-            <div className="space-y-4">
-              {topActiveProviders.map(provider => (
-                <div key={provider.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <img src={provider.imageUrl} alt={provider.name} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="font-medium">{provider.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{provider.rating} &#9733; ({provider.reviews} reviews)</p>
+            {topActiveProviders && topActiveProviders.length > 0 ? (
+              <div className="space-y-4">
+                {topActiveProviders.map((provider) => (
+                  <div key={provider._id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                        {provider.fullName ? provider.fullName.charAt(0).toUpperCase() : 'P'}
+                      </div>
+                      <div>
+                        <p className="font-medium">{provider.fullName || 'Unknown Provider'}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {provider.rating ?? 'No rating'} ★ ({provider.reviewCount ?? 0} reviews) • {provider.totalBookings ?? 0} bookings
+                        </p>
+                      </div>
                     </div>
+                    {/* <Link to={`/admin/providers/${provider._id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                      View Profile
+                    </Link> */}
                   </div>
-                  <Link to={`/admin/providers/${provider.id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">View Profile</Link>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">No provider data available</div>
+            )}
           </section>
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link
+              to="/admin/users"
+              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Manage Users</h4>
+              <p className="text-sm text-blue-700 dark:text-blue-300">View and manage user accounts</p>
+            </Link>
 
-          {/* Alerts */}
-          <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4">Alerts</h3>
-            <div className="space-y-3">
-              {alerts.map(alert => (
-                <div
-                  key={alert.id}
-                  className={`flex items-center p-3 rounded-md ${
-                    alert.type === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300' :
-                    alert.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' :
-                    'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
-                  }`}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    {alert.type === 'warning' && <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.487 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>}
-                    {alert.type === 'error' && <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>}
-                    {alert.type === 'info' && <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>}
-                  </svg>
-                  <span>{alert.message}</span>
-                </div>
-              ))}
-            </div>
+            <Link
+              to="/admin/providers"
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            >
+              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">Manage Providers</h4>
+              <p className="text-sm text-green-700 dark:text-green-300">Review and verify service providers</p>
+            </Link>
+
+            <Link
+              to="/admin/bookings"
+              className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+            >
+              <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">View Bookings</h4>
+              <p className="text-sm text-purple-700 dark:text-purple-300">Monitor all booking activities</p>
+            </Link>
           </section>
         </main>
       </div>

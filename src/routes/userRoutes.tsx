@@ -6,7 +6,7 @@ import ProviderPage from '../pages/user/Providers';
 import AboutPage from '../pages/user/About_us';
 import HowItWorksPage from '../pages/user/HowitWorks';
 import ServiceDetailsPage from '../pages/user/ServiceDetailsPage';
-import UserLayout from '../layouts/userLayout';
+import UserLayout from '../layouts/UserLayout';
 
 
 const Home = lazy(() => import('../pages/user/Home'));

@@ -8,7 +8,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login, updateProfile } from '../features/auth/authSlice';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
-import { BookingStatus, LocationState } from '../interface/IBooking';
+import { BookingStatus, LocationState } from '../util/interface/IBooking';
 import { bookingService } from '../services/bookingService';
 
 let OTP_RESEND_TIMEOUT_SECONDS = 60;
@@ -18,7 +18,6 @@ const RegistrationOTPVerification = () => {
   const location = useLocation();
 
   const { email: registrationEmail, role, bookingId, newStatus } = (location.state as LocationState) || {};
-  console.log('the email and others', registrationEmail, bookingId, newStatus)
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,16 +96,15 @@ const RegistrationOTPVerification = () => {
         navigate('/login', { replace: true });
       } else if (role === "ServiceProvider") {
         const { user, provider, message } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
-        console.log('the user provider message', user, provider, message)
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
         toast.success(message);
-        navigate(`/providerProfile/${user.id}`, { replace: true });
+        navigate(`/provider/providerProfile/${user.id}`, { replace: true });
       } else if (bookingId && newStatus) {
         const email = registrationEmail
         await bookingService.verifyOtp(email, otp)
         toast.success('Your Service completed successfully')
-        navigate(`/providerBookingManagement`)
+        navigate(`/provider/providerBookingManagement`)
       }
 
     } catch (err: any) {

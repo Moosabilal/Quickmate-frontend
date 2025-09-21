@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ICategoryResponse } from '../../interface/ICategory';
+import { ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Award, CalendarClockIcon, IndianRupee } from 'lucide-react';
+import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
-import { IBackendProvider } from '../../interface/IProvider';
+import { IBackendProvider } from '../../util/interface/IProvider';
 import { toast } from 'react-toastify';
 import { bookingService } from '../../services/bookingService';
-import { IProvider } from '../../interface/IProvider';
+import { IProvider } from '../../util/interface/IProvider';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { PaymentMethod, paymentVerificationRequest } from '../../interface/IPayment';
-import { IAddress } from '../../interface/IAddress';
+import { PaymentMethod, paymentVerificationRequest } from '../../util/interface/IPayment';
+import { IAddress } from '../../util/interface/IAddress';
 import { providerService } from '../../services/providerService';
 import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
@@ -21,6 +21,12 @@ const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 declare var Razorpay: any;
 
+
+
+interface CalendarModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 
 
@@ -52,8 +58,11 @@ const ServiceDetailsPage: React.FC = () => {
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
   const [walletBalance, setWalletBalance] = useState<number>(0)
+  const [showCalendar, setShowCalendar] = useState(false)
 
-  const paymentOptions = [
+  console.log('the all provider we are getting', allProviders)
+
+    const paymentOptions = [
     { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
     { value: PaymentMethod.WALLET, label: "Wallet" },
   ]
@@ -61,16 +70,184 @@ const ServiceDetailsPage: React.FC = () => {
 
   const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
   const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
+  console.log('the provider times', providerTimes)
+
+
+
+
+  function generateAvailability(rawAvailability: any[], daysAhead = 7) {
+  const result: { date: string; slots: string[] }[] = [];
+  const today = new Date();
+
+  for (let i = 0; i < daysAhead; i++) {
+    const date = new Date();
+    date.setDate(today.getDate() + i);
+
+    const weekday = date.toLocaleDateString("en-US", { weekday: "long" });
+
+    // Get all availability rules for this weekday
+    const matches = rawAvailability.filter(av => av.day === weekday);
+
+    if (matches.length > 0) {
+      const slotsSet = new Set<string>();
+
+      matches.forEach(match => {
+        const [startH, startM] = match.startTime.split(":").map(Number);
+        const [endH, endM] = match.endTime.split(":").map(Number);
+
+        let current = new Date(date);
+        current.setHours(startH, startM, 0, 0);
+
+        const end = new Date(date);
+        end.setHours(endH, endM, 0, 0);
+
+        while (current < end) {
+          slotsSet.add(
+            current.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+          );
+          current.setMinutes(current.getMinutes() + 60); // interval = 1 hour
+        }
+      });
+
+      result.push({
+        date: date.toISOString().split("T")[0],
+        slots: Array.from(slotsSet).sort(
+          (a, b) =>
+            new Date(`1970-01-01T${a}`).getTime() -
+            new Date(`1970-01-01T${b}`).getTime()
+        ),
+      });
+    }
+  }
+
+  return result;
+}
+
+
+
+
+
+  const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+    const providerAvailability = generateAvailability(providerTimes, 7);
+    console.log('the provider availabitly', providerAvailability)
+
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-indigo-50">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Provider Availability</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Side - Availability List */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-indigo-600" />
+                  Available Time Slots
+                </h3>
+                <div className="space-y-4">
+                  {providerAvailability.map((day) => (
+                    <div key={day.date} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <h4 className="font-medium text-gray-800 mb-2">
+                        {new Date(day.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {day.slots.map((slot) => (
+                          <button
+                            key={slot}
+                            onClick={() => {
+                              setSelectedDate(day.date);
+                              setSelectedTime(slot);
+                              onClose();
+                            }}
+                            className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors border border-green-300"
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side - Google Calendar Embed */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Calendar View</h3>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <iframe
+                    src="https://calendar.google.com/calendar/embed?src=bcbe92b9d4f0d42530c5902c2c8d5dc0bed7c6394c89a38c42e24b532ac95258%40group.calendar.google.com&ctz=Asia%2FKolkata"
+                    style={{
+                      border: 0,
+                      width: "100%",
+                      height: "400px",
+                      borderRadius: "8px"
+                    }}
+                    frameBorder="0"
+                    scrolling="no"
+                    title="Provider Availability Calendar"
+                    loading="lazy"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  * Green slots in calendar represent available time slots
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
+
+
+
+
+
+
+
+
+
+
 
   const getProvider = async (filterParams = {}) => {
     try {
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
       const res = await walletService.getWallet()
-      console.log('the wallet', res)
       setWalletBalance(res.data.wallet.balance)
       setAllProviders(providers);
     } catch (error: any) {
-      console.error(error);
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
     }
   };
@@ -101,17 +278,13 @@ const ServiceDetailsPage: React.FC = () => {
   }, [serviceId]);
 
   const handleAddAddress = async (address: IAddress) => {
-    console.log('the new address', newAddress)
     if (address.label && address.street && address.city && address.state && address.zip && address.locationCoords) {
       const newAddressObj = {
         id: String(Date.now()),
         ...address,
       };
       try {
-        console.log('the new address', newAddressObj)
-        const res = await addressService.createAddress(newAddressObj)
-        console.log('the added response', res)
-
+        await addressService.createAddress(newAddressObj)
       } catch (error) {
         toast.error('Something went wrong! Please try again later')
       }
@@ -146,7 +319,7 @@ const ServiceDetailsPage: React.FC = () => {
     e.preventDefault()
 
     if (paymentMethod === PaymentMethod.WALLET) {
-      if(walletBalance < Number(selectedProvider?.price)){
+      if (walletBalance < Number(selectedProvider?.price)) {
         toast.info('Insufficient balance in wallet')
         return;
       }
@@ -165,10 +338,10 @@ const ServiceDetailsPage: React.FC = () => {
           razorpay_order_id: `${Date.now()}`,
         };
         const validationRes = await bookingService.verifyPayment(walletPayment);
-          toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
-          navigate(`/confirmationModel/${bookingResponse.bookingId}`)
+        toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
+        navigate(`/confirmationModel/${bookingResponse.bookingId}`)
       } catch (error) {
-        toast.error('booking failed please try again later', error)
+        toast.error(`booking failed please try again later, ${error}`)
       }
       return
     }
@@ -227,7 +400,7 @@ const ServiceDetailsPage: React.FC = () => {
       }
     };
     var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response) {
+    rzp1.on('payment.failed', function (response: { error: { reason: any; metadata: { order_id: any; }; }; }) {
       toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
     });
     rzp1.open();
@@ -257,10 +430,7 @@ const ServiceDetailsPage: React.FC = () => {
     };
 
     try {
-      const res = await bookingService.createBooking(bookingPayload);
-      return res
-      // // toast.success("Booking confirmed!");
-      // navigate('/');
+      return await bookingService.createBooking(bookingPayload);
     } catch (err) {
       console.error("Booking failed:", err);
       toast.error("Failed to confirm booking. Please try again.");
@@ -325,7 +495,7 @@ const ServiceDetailsPage: React.FC = () => {
             </div>
             <div className="md:ml-14">
               <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
-              <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ₹ 100</p>
+              {/* <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ₹ 100</p> */}
               <p className="text-gray-700 leading-relaxed text-lg mb-8">
                 {serviceDetails.description || 'No detailed description available.'}<br />
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
@@ -354,6 +524,57 @@ const ServiceDetailsPage: React.FC = () => {
                     : "Choose Address"}
                 </button>
               </div>
+
+
+
+
+              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                  <CalendarIcon className="w-4 h-4 mr-2" />
+                  Check Availability
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(true)}
+                  disabled={!selectedAddress}
+                  className={`w-full px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-300 shadow text-sm focus:outline-none flex items-center justify-center gap-2 ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  title={!selectedAddress ? "Please select your location first" : ""}
+                >
+                  <Calendar className="w-4 h-4" />
+                  View Availability Calendar
+                </button>
+              </div>
+
+              {/* Selected Date & Time Display */}
+              {selectedDate && selectedTime && (
+                <div className="p-4 rounded-xl border border-green-200 shadow-sm bg-green-50">
+                  <h3 className="text-base font-semibold text-green-700 mb-2">Selected Slot</h3>
+                  <div className="text-sm text-green-800">
+                    <p className="font-medium">
+                      {new Date(selectedDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <p>Time: {selectedTime}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(true)}
+                    className="mt-2 text-xs text-green-600 hover:text-green-800 underline"
+                  >
+                    Change time slot
+                  </button>
+                </div>
+              )}
+
+
+
+
+
 
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
@@ -509,6 +730,7 @@ const ServiceDetailsPage: React.FC = () => {
 
         </div>
       </main>
+      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
       <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={providerTimes} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} providerLoc={providersLocations} />

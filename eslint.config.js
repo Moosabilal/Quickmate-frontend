@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -9,7 +8,6 @@ import tsParser from '@typescript-eslint/parser'
 export default [
   { ignores: ['dist'] },
 
-  // JavaScript / JSX
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -32,7 +30,6 @@ export default [
     },
   },
 
-  // TypeScript / TSX
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

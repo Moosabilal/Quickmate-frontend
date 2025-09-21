@@ -25,30 +25,11 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
-import { BookingStatus } from '../../interface/IBooking';
+import { BookingStatus } from '../../util/interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { toast } from 'react-toastify';
-
-interface IProviderBookingManagement {
-  id: string;
-  customerName: string;
-  customerImage: string;
-  service: string;
-  date: string;
-  time: string;
-  duration: string;
-  location: string;
-  payment: number;
-  paymentStatus: string;
-  status: BookingStatus;
-  description: string;
-  customerPhone: string;
-  customerEmail: string;
-  specialRequests: string;
-  createdAt: string;
-  // rating: number | null;
-}
+import { IProviderBookingManagement } from '../../util/interface/IBooking';
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);
@@ -80,8 +61,8 @@ const ProviderBookingManagementPage: React.FC = () => {
         setLoading(true)
         const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string)
         setBookings(response)
-      } catch (error) {
-        console.log(error.message || 'Oops something went wrong')
+      } catch (error: any) {
+        toast.error(error.message || 'Oops something went wrong')
       } finally {
         setLoading(false)
       }
@@ -140,10 +121,10 @@ const ProviderBookingManagementPage: React.FC = () => {
       setBookings(prev => prev.map(booking =>
         booking.id === bookingId ? { ...booking, status: newStatus as BookingStatus } : booking
       ));
-      if(newStatus === BookingStatus.COMPLETED){
+      if (newStatus === BookingStatus.COMPLETED) {
         toast.info(response)
-      }else {
-      toast.success(response)
+      } else {
+        toast.success(response)
       }
       setShowDetails(false);
     } catch (error) {
@@ -203,9 +184,11 @@ const ProviderBookingManagementPage: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl">
-                      <div className="text-green-600 dark:text-green-400 font-semibold">
-                        ${bookings.filter(b => b.status === BookingStatus.COMPLETED).reduce((sum, b) => sum + b.payment, 0)}
+                      <div className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                        <IndianRupee className="h-3.5 w-3.5" />
+                        {bookings.filter(b => b.status === BookingStatus.COMPLETED).reduce((sum, b) => sum + b.payment, 0)}
                       </div>
+
                       <div className="text-xs text-green-500">Total Earnings</div>
                     </div>
                   </div>
@@ -352,23 +335,27 @@ const ProviderBookingManagementPage: React.FC = () => {
                               <Eye className="w-5 h-5" />
                             </button>
                             {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
-                              <><button
-                                onClick={() => window.open(`tel:${booking.customerPhone}`)}
-                                className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
-                                title="Call Customer"
+                              // <><button
+                              //   onClick={() => window.open(`tel:${booking.customerPhone}`)}
+                              //   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
+                              //   title="Call Customer"
+                              // >
+                              //   <Phone className="w-5 h-5" />
+                              // </button>
+                              <button
+                                onClick={() => {
+                                  console.log('the joininng id', `${booking.customerId}-${provider.id}`)
+
+                                  navigate('/provider/providerBookingManagement/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName, joiningId: `${booking.customerId}-${provider.id}` } })
+                                }}
+                                className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
+                                title="Message Customer"
                               >
-                                <Phone className="w-5 h-5" />
+                                <MessageCircle className="w-5 h-5"
+                                />
                               </button>
-                                <button
-                                  onClick={() => {
-                                    navigate('/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName } })
-                                  }}
-                                  className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
-                                  title="Message Customer"
-                                >
-                                  <MessageCircle className="w-5 h-5"
-                                  />
-                                </button></>}
+                              // </>
+                            }
                           </div>
                         </div>
 
@@ -478,9 +465,11 @@ const ProviderBookingManagementPage: React.FC = () => {
                     <div className="space-y-3">
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment</label>
-                        <p className="text-gray-900 dark:text-white font-medium">
-                          ${selectedBooking.payment} ({selectedBooking.paymentStatus})
+                        <p className="flex items-center text-gray-900 dark:text-white font-medium">
+                          <IndianRupee className="h-3 w-3 mr-1" />
+                          {selectedBooking.payment} ({selectedBooking.paymentStatus})
                         </p>
+
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>

@@ -6,7 +6,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
 interface User {
   id: string;
@@ -22,7 +22,6 @@ const USERS_PER_PAGE = 6;
 const AdminUsersPage = () => {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(state => state.auth.user);
-  console.log('the current user', currentUser)
 
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,15 +49,13 @@ const AdminUsersPage = () => {
         setTotalUsers(response.total)
         setError("")
       } catch (error) {
-        setError(error)
+        setError(`${error}`)
         console.error('Failed to fetch users:', error);
       }
     };
 
     fetchUsers();
   }, [currentPage, searchTerm, statusFilter]);
-
-  console.log('the usersssss', users)
 
   const getStatusColor = (isVerified: boolean) => {
     return isVerified

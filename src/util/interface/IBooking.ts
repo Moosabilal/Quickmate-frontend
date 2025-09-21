@@ -27,8 +27,6 @@ export interface IBookingRequest {
   phone: string;
   instructions?: string;
   addressId?: string
-  // scheduledDate?: string;
-  // scheduledTime?: string;
 }
 
 
@@ -58,6 +56,9 @@ export interface IBookingConfirmationPage {
   specialInstruction: string;
   providerTimings?: { day: string; startTime: string; endTime: string }[];
   createdAt: Date;
+  reviewed: boolean;
+  rating: number;
+  review: string;
 }
 
 export interface IBookingHistoryPage {
@@ -75,4 +76,25 @@ export interface IBookingHistoryPage {
   duration?: string;
   description?: string;
   createdAt?: Date;
+}
+
+export interface IProviderBookingManagement {
+  id: string;
+  customerId?: string;
+  customerName: string;
+  customerImage: string;
+  service: string;
+  date: string;
+  time: string;
+  duration: string;
+  location: string;
+  payment: number;
+  paymentStatus: string;
+  status: BookingStatus;
+  description: string;
+  customerPhone: string;
+  customerEmail: string;
+  specialRequests: string;
+  createdAt: string;
+  // rating: number | null;
 }

@@ -17,7 +17,7 @@ import {
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
 import { AddFundsModal } from '../../components/AddWithdrawFund';
-import { TransactionStatus, WalletFilter } from '../../interface/IPayment';
+import { TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
 
 const inr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
@@ -54,10 +54,8 @@ const Wallet: React.FC = () => {
 
     
 
-    console.log("the filter for sorting", filters, "query:", query);
 
     const res = await walletService.getWallet(query);
-    console.log('the response new response', res)
     setTotalPages(res.data.totalPages)
     setBalance(res.data.wallet.balance);
     setTransactions(res.data.transactions);

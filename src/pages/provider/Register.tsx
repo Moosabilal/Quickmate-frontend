@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../interface/ICategory';
+import { ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { MapPin } from 'lucide-react';
-import { Availability } from '../../interface/IProvider';
+import { Availability } from '../../util/interface/IProvider';
 
 
 
@@ -60,7 +60,7 @@ const ProviderRegistration: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [services, setServices] = useState<{ value: string; label: string }[]>([]);
     const [address, setAddress] = useState('')
-    const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+    const [errors, setErrors] = useState<Record<string, string | undefined>>({});
     const navigate = useNavigate();
 
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
@@ -148,7 +148,7 @@ const ProviderRegistration: React.FC = () => {
     };
 
     const validateForm = () => {
-        const newErrors: Partial<Record<keyof FormData, string>> = {};
+        const newErrors: Record<string, string | undefined> = {};
 
         if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required.';
         if (!formData.phoneNumber.trim()) {
@@ -186,7 +186,10 @@ const ProviderRegistration: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!validateForm()) {
-            console.log('Form has validation errors:', errors);
+            const firstError = Object.values(errors)[0];
+            if (firstError) {
+                toast.error(firstError);
+            }
             return;
         }
 
@@ -207,18 +210,13 @@ const ProviderRegistration: React.FC = () => {
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
 
         try {
-            for (const [key, value] of data.entries()) {
-                console.log(`${key} : ${value}`)
-            }
             setIsLoading(true)
             const res = await providerService.register(data);
-            console.log('the res', res)
             toast.success(res.message)
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
         } catch (error) {
-            console.error('Error submitting form:', error);
             toast.error('Something went wrong. Please try again.');
         } finally {
             setIsLoading(false)

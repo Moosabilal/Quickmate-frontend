@@ -80,3 +80,9 @@ export interface IserviceResponse {
     iconUrl?: string | null;
     parentId?: string | null
 }
+
+export interface ICategoryData {
+    id: string;
+    name: string;
+    parentId?: string;
+}

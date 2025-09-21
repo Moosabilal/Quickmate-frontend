@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile, ProviderStatus } from '../../interface/IProvider';
+import { IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -153,7 +153,7 @@ const ProviderProfile: React.FC = () => {
                 setProviderDetails(updatedProvider);
                 toast.success('Profile updated successfully!');
             } catch (error) {
-                toast.error('Error updating provider:', error);
+                toast.error(`Error updating provider:, ${error}`);
                 toast.error('Error updating profile. Please try again.');
             } finally {
                 setIsSaving(false);
@@ -230,7 +230,6 @@ const ProviderProfile: React.FC = () => {
 
             const newLocation = formData.serviceLocation;
             const originalLocation = providerDetails.serviceLocation;
-            // const newLocationString = newLocation ? formatLocationString(newLocation) : null;
 
             if (newLocation && `${newLocation.lat},${newLocation.lng}` !== originalLocation) {
                 const latLngString = `${newLocation.lat},${newLocation.lng}`;
@@ -255,9 +254,6 @@ const ProviderProfile: React.FC = () => {
             }
 
             if (hasChanges) {
-                for (let [key, value] of formDataToSend.entries()) {
-                    console.log(`${key} : ${value}`)
-                }
                 const updatedProvider = await providerService.updateProvider(formDataToSend);
                 setProviderDetails(updatedProvider.provider);
                 toast.success(updatedProvider.message);
@@ -287,10 +283,8 @@ const ProviderProfile: React.FC = () => {
 
         let updated;
         if (exists) {
-            // remove the day if already selected
             updated = current.filter(a => a.day !== day);
         } else {
-            // add with empty times
             updated = [...current, { day, startTime: "", endTime: "" }];
         }
 

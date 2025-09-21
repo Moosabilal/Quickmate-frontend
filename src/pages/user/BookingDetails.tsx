@@ -22,13 +22,13 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingConfirmationPage } from '../../interface/IBooking';
+import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import { providerService } from '../../services/providerService';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { reviewService } from '../../services/reviewService';
 
 const BookingDetails: React.FC = () => {
@@ -45,6 +45,7 @@ const BookingDetails: React.FC = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState<string>('');
+  const [showRated, SetShowRated] = useState(false)
 
 
   useEffect(() => {
@@ -52,6 +53,8 @@ const BookingDetails: React.FC = () => {
       try {
         const response = await bookingService.getBookingById(id!);
         setBooking(response);
+        setRating(response.rating)
+        setReview(response.review)
         setSelectedDate(response.date);
         setSelectedTime(response.time);
       } catch (error) {
@@ -82,13 +85,11 @@ const BookingDetails: React.FC = () => {
     setIsDeleting(true);
     try {
       const { message } = await bookingService.updateBookingStatus(bookingToDelete.id, BookingStatus.CANCELLED);
-      console.log('the delete response', message);
       toast.info(message);
       setBooking((prev) => prev ? { ...prev, status: BookingStatus.CANCELLED } : prev);
       setShowDeleteModal(false);
       setBookingToDelete(null);
     } catch (error: any) {
-      console.log('error in deleting');
       toast.error(error.response?.data?.message || 'Failed to delete service');
     } finally {
       setIsDeleting(false);
@@ -96,14 +97,11 @@ const BookingDetails: React.FC = () => {
   };
 
   const handleDateTimeConfirm = async (date: string, time: string) => {
-    // setSelectedDate(date);
-    // setSelectedTime(time);
     try {
       await bookingService.updateBookingDateTime(booking!.id, date, time);
       toast.success('Booking date and time updated successfully');
       setBooking((prev) => prev ? { ...prev, date, time } : prev);
     } catch (error) {
-      console.log('Error updating booking date/time', error);
       toast.error('Failed to update booking date and time');
     }
 
@@ -111,9 +109,8 @@ const BookingDetails: React.FC = () => {
   };
 
   const handleReviewSubmit = async (bookingId: string) => {
-    console.log('the rating', rating, review)
-    await reviewService.addReview(bookingId, { rating, review })
-    toast.success("Review submitted!");
+    const response = await reviewService.addReview(bookingId, { rating, review })
+    toast.success(response.message);
     setShowReviewForm(false);
     setRating(0);
     setReview('');
@@ -387,7 +384,7 @@ const BookingDetails: React.FC = () => {
                       ✓ Service completed successfully!
                     </p>
                     {!showReviewForm ? (
-                      <button
+                      !booking.review && <button
                         onClick={() => setShowReviewForm(true)}
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
                       >
@@ -395,7 +392,6 @@ const BookingDetails: React.FC = () => {
                       </button>
                     ) : (
                       <div className="space-y-4 mt-4">
-                        {/* Rating */}
                         <div className="flex gap-2">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
@@ -407,7 +403,6 @@ const BookingDetails: React.FC = () => {
                           ))}
                         </div>
 
-                        {/* Review Input */}
                         <textarea
                           value={review}
                           onChange={(e) => setReview(e.target.value)}
@@ -416,7 +411,6 @@ const BookingDetails: React.FC = () => {
                           rows={4}
                         />
 
-                        {/* Buttons */}
                         <div className="flex gap-3">
                           <button
                             onClick={() => handleReviewSubmit(booking.id)}
@@ -497,12 +491,32 @@ const BookingDetails: React.FC = () => {
                   <MapIcon className="w-5 h-5 text-gray-600" />
                   <span className="font-medium">View Location</span>
                 </button> */}
-                {/* {booking.status === BookingStatus.COMPLETED && (
-                  <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left">
+                {booking.status === BookingStatus.COMPLETED && (
+                  <button
+                    onClick={() => SetShowRated(prev => !prev)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left"
+                  >
                     <Star className="w-5 h-5 text-gray-600" />
                     <span className="font-medium">Rate & Review</span>
                   </button>
-                )} */}
+                )}
+
+                {showRated && (
+                  <div className="mt-4 p-4 border rounded-xl bg-gray-50 space-y-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-5 h-5 ${booking.rating >= star ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                            }`}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="text-gray-700">{booking.review || "No review provided"}</p>
+                  </div>
+                )}
+
                 {booking.status === BookingStatus.PENDING && (
                   <button>
                     <div className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left text-gray-600"

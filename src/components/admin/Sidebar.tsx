@@ -10,7 +10,8 @@ const Sidebar = () => {
     { icon: <Users className="w-5 h-5" />, label: 'Users', path: '/admin/users' },
     { icon: <Briefcase className="w-5 h-5" />, label: 'Providers', path: '/admin/providers' },
     { icon: <FolderTree className="w-5 h-5" />, label: 'Category Management', path: '/admin/categories' },
-    { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
+    { icon: <FolderTree className="w-5 h-5" />, label: 'Subscription Plans', path: '/admin/subscriptionPlan' },
+    // { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 
   return (

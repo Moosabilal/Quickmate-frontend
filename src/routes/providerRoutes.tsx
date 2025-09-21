@@ -3,6 +3,7 @@ const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const Provider_profile = lazy(() => import('../pages/provider/ProfileSetingPage'))
 const Chat_Room = lazy(() => import('../components/ChatRoom'))
 const RegistrationOTPVerification = lazy(() => import('../components/OtpVerification'))
+const ProviderDashboard = lazy(() => import ('../pages/provider/Dashboard'))
 
 import { LayoutRoute } from './LayoutRoute';
 import ProviderSidebarLayout from '../layouts/ProviderSidebarLayout';
@@ -17,12 +18,13 @@ const providerRoutes = [
         {
             element: <ProtectedRoute roles={['ServiceProvider']} />,
             children: [
-                { path: '/providerProfile/:userId', element: <Provider_profile /> },
-                { path: '/providerService', element: <ProviderServicesPage /> },
-                { path: '/providerService/new', element: <ServiceManagementPage /> },
-                { path: '/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
-                { path: '/providerBookingManagement', element: <ProviderBookingManagementPage /> },
-                { path: '/providerLiveChat', element: <Chat_Room /> },
+                { path: '/provider/providerDashboard', element: <ProviderDashboard /> },
+                { path: '/provider/providerProfile/:userId', element: <Provider_profile /> },
+                { path: '/provider/providerService', element: <ProviderServicesPage /> },
+                { path: '/provider/providerService/new', element: <ServiceManagementPage /> },
+                { path: '/provider/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
+                { path: '/provider/providerBookingManagement', element: <ProviderBookingManagementPage /> },
+                { path: '/provider/providerBookingManagement/providerLiveChat', element: <Chat_Room /> },
 
             ],
         },

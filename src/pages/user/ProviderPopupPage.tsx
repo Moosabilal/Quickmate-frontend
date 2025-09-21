@@ -1,5 +1,5 @@
-import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter } from 'lucide-react';
-import { IBackendProvider } from '../../interface/IProvider';
+import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter, IndianRupee } from 'lucide-react';
+import { IBackendProvider } from '../../util/interface/IProvider';
 import { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -44,6 +44,8 @@ const ProviderPopup = ({
   const [filters, setFilters] = useState<FilterParams>({});
   const [appliedFilters, setAppliedFilters] = useState<FilterParams>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
+
 
   const getProvider = async (filterParams: FilterParams = {}) => {
     try {
@@ -57,15 +59,11 @@ const ProviderPopup = ({
       ) as FilterParams
 
       if (selectedTime) {
-        console.log('the selected time', selectedTime)
         const convertedTime = convertTo24Hour(selectedTime);
-        console.log('the converted time', convertedTime )
         filteredParams.time = convertedTime;
       }
 
-      console.log('the filtered params', filteredParams)
       const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
-      console.log('the fetched providers', providers)
       setAllProviders(providers);
     } catch (error: any) {
       console.error(error);
@@ -103,6 +101,14 @@ const ProviderPopup = ({
     setAppliedFilters(initialFilters);
     getProvider(initialFilters);
   };
+
+  const averageRating = selectedProvider?.reviews?.length
+    ? (
+      selectedProvider.reviews.reduce((sum, r) => sum + r.rating, 0) /
+      selectedProvider.reviews.length
+    ).toFixed(1)
+    : "0";
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -234,7 +240,7 @@ const ProviderPopup = ({
                         </div>
                       </div>
                       <p className="text-sm text-blue-600 font-medium">{provider.serviceArea}</p>
-                      <p className="text-xs text-gray-500">{provider.reviews} reviews </p>
+                      <p className="text-xs text-gray-500">{provider.reviews?.length ?? 0} reviews</p>
                     </div>
                   </div>
                 </div>
@@ -273,18 +279,63 @@ const ProviderPopup = ({
                   <h4 className="text-2xl font-bold text-gray-900 mb-1">{selectedProvider.fullName}</h4>
                   <p className="text-green-600 font-semibold text-lg">{selectedProvider.serviceName}</p>
                   <div className="flex items-center justify-center gap-2 mt-2">
-                    <div className="flex items-center gap-1 text-amber-500">
+                    <div
+                      className="flex items-center gap-1 text-amber-500 cursor-pointer"
+                      onClick={() => setShowReviews(!showReviews)}
+                    >
                       <Star className="w-5 h-5 fill-current" />
-                      <span className="font-bold">{selectedProvider.rating}</span>
+                      <span className="font-bold">{averageRating}</span>
                     </div>
                     <span className="text-gray-400">•</span>
-                    <span className="text-gray-600">{selectedProvider.reviews} reviews</span>
+                    <span
+                      className="text-gray-600 cursor-pointer hover:underline"
+                      onClick={() => setShowReviews(!showReviews)}
+                    >
+                      {selectedProvider.reviews?.length ?? 0} reviews
+                    </span>
                   </div>
+                  {showReviews && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h5 className="font-medium text-gray-900 mb-3">User Reviews</h5>
+                      {(selectedProvider.reviews?.length ?? 0) > 0 ? (
+                        <div className="space-y-3">
+                          {(selectedProvider.reviews ?? []).map((review, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={getCloudinaryUrl(review.userImg)}
+                                    alt={review.userName}
+                                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                  />
+                                  <span className="font-semibold text-gray-800">{review.userName}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-amber-500">
+                                  {Array.from({ length: review.rating }).map((_, i) => (
+                                    <Star key={i} className="w-4 h-4 fill-current" />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-gray-700 text-sm">{review.review}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-600 text-sm">No reviews yet.</p>
+                      )}
+                    </div>
+                  )}
+
+
+
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 text-blue-600 mb-1">
-                      <DollarSign className="w-4 h-4" />
+                      <IndianRupee className="w-4 h-4" />
                       <span className="font-medium">Price</span>
                     </div>
                     <p className="text-xl font-bold text-gray-900">{selectedProvider.price}</p>
@@ -300,16 +351,16 @@ const ProviderPopup = ({
                   </div>
                 </div>
                 <div className="space-y-4">
-                  
+
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="font-medium text-gray-900">Available Hours & Days</p>
                       <p className="text-gray-600">
-                        {selectedProvider.availability? selectedProvider.availability.map((slot, index) => (
+                        {selectedProvider.availability ? selectedProvider.availability.map((slot, index) => (
                           <span key={index}>
                             {slot.day}: {slot.startTime} - {slot.endTime}
-                            {index < selectedProvider.availability.length - 1 && <br/>}
+                            {index < selectedProvider.availability.length - 1 && <br />}
                           </span>
                         )) : 'Not specified'}
                       </p>

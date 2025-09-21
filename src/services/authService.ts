@@ -38,7 +38,7 @@ export const authService = {
     return response
   },
 
-  contactUsSubmission: async (formData) => {
+  contactUsSubmission: async (formData: {name: string, email: string, message: string}) => {
     const response = await axiosInstance.post(`${API_URL}/contactUsSubmission`,formData)
     return response.data
   },
@@ -53,7 +53,7 @@ export const authService = {
     return response.data;
   },
 
-  getUserWithAllDetails: async ({ page, limit, search, status }) => {
+  getUserWithAllDetails: async ({ page, limit, search, status }: {page: number; limit: number; search: string; status: string;}) => {
   const response = await axiosInstance.get(`${API_URL}/getUserWithAllDetails`, {
     params: { page, limit, search, status },
   });
@@ -64,16 +64,6 @@ export const authService = {
     const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`);
     return response.data;
   },
-
-  // verifyPassword: async (email: string, currentPassword: string) => {
-  //   try {
-  //     const response = await axiosInstance.post(`${API_URL}/verify-password`, { email, currentPassword });
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('Error verifying password:', error);
-  //     throw error;
-  //   }
-  // },
 
   getAllDataForChatBot: async () => {
     const response = await axiosInstance.get(`${API_URL}/getAllDataForChatBot`)

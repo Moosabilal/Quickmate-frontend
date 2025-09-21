@@ -2,7 +2,7 @@ import { MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
-import { IAddress } from "../../interface/IAddress";
+import { IAddress } from "../../util/interface/IAddress";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
 import { findProviderRange } from "../../util/findProviderRange";
@@ -38,22 +38,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const [radius, setRadius] = useState(10)
-
-  // const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  //   const toRad = (value: number) => (value * Math.PI) / 180;
-
-  //   const R = 6371;
-  //   const dLat = toRad(lat2 - lat1);
-  //   const dLon = toRad(lon2 - lon1);
-
-  //   const a =
-  //     Math.sin(dLat / 2) ** 2 +
-  //     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-
-  //   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  //   return R * c;
-  // };
+  const [loading, setLoading] = useState(false)
 
   const validateAddress = (address: IAddress) => {
     const errors: { [key: string]: string } = {};
@@ -73,7 +58,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const getCoordinates = async (street: string, city: string, state: string, pincode: string) => {
     const data = await addressService.getLocationByPincode(street, city, state, pincode);
-    console.log('the data from pincode', data)
     if (data && data.length > 0) {
       return {
         lat: parseFloat(data[0].lat),
@@ -91,6 +75,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       toast.error("Geolocation is not supported by your browser");
       return;
     }
+    setLoading(true)
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -117,13 +102,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           };
 
           if (providerLoc) {
-            // const withinRange = providerLoc.some((loc: string) => {
-            //   const [provLat, provLng] = loc.split(",").map(Number);
-            //   const distance = getDistanceInKm(lat, lng, provLat, provLng);
-            //   return distance <= radius;
-            // });
             const withinRange = findProviderRange(lat, lng, radius, providerLoc)
-            console.log('the range calculation', withinRange)
 
             if (!withinRange) {
               setError("No service provider found to your place, Please select different address.");
@@ -141,32 +120,26 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         } catch (err) {
           console.error("Failed to fetch address:", err);
           alert("Unable to fetch address for current location");
+        } finally {
+          setLoading(false)
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        alert("Unable to fetch your current location");
+        toast.error("Unable to fetch your current location");
       }
     );
   };
 
   const handleAddressConfirmWithCheck = (address: IAddress) => {
-    console.log('the addres for tlocaitoncaion', address)
     if (!providerLoc || !address.locationCoords) {
       handleAddressConfirm(address);
       setAddressPopup(false);
       return;
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
-      console.log('the user lat long', userLat, userLng)
 
-      // const withinRange = providerLoc.some((loc: string) => {
-      //   const [provLat, provLng] = loc.split(",").map(Number);
-      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-      //   return distance <= radius;
-      // });
       const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
-      console.log('the seciond within range', withinRange)
 
       if (withinRange) {
         handleAddressConfirm(address);
@@ -191,22 +164,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       return;
     }
     const newAddr = { ...newAddress, locationCoords: `${coords.lat},${coords.lng}`, };
-    console.log('the provider loca', providerLoc)
     if (providerLoc) {
-      console.log('this will print on wokrking')
       const [userLat, userLng] = newAddr.locationCoords!.split(",").map(Number);
 
-      // const withinRange = providerLoc.some((loc: string) => {
-      //   const [provLat, provLng] = loc.split(",").map(Number);
-      //   const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-      //   return distance <= radius;
-      // });
       const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
-      console.log('the third coordination ', withinRange)
 
       if (withinRange) {
         setNewAddress(newAddr)
-        console.log('the new address in address popup', newAddr)
         handleAddAddress(newAddr)
         handleAddressConfirm(newAddr);
 
@@ -215,7 +179,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         toast.info("No service provider found on this location.");
       }
     } else {
-      console.log('the new adre', newAddr)
       setNewAddress(newAddr)
       handleAddressConfirm(newAddr)
       handleAddAddress(newAddr)
@@ -224,9 +187,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
   const fetchAddress = async () => {
     try {
-      console.log('this will work again')
       const res = await addressService.getAddress()
-      console.log('the res', res)
       setMockAddresses(res)
     } catch (error) {
       toast.error('Failed to fetch Address! Please try again later')
@@ -290,7 +251,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   onClick={handleCurrentLocation}
                   className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  📍 Use Current Location
+                  {loading ? 'fetching your address...' :'📍 Use Current Location'}
                 </button>
               </div>
 

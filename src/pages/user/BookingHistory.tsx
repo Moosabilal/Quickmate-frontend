@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, MapPin, Star, Filter, Search, Eye, Download, MoreHorizontal, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingHistoryPage } from '../../interface/IBooking';
+import { BookingStatus, IBookingHistoryPage } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,10 +21,9 @@ const BookingHistory: React.FC = () => {
     getBooking()
   }, [])
 
-  console.log('the bookings', bookings)
-
   const tabs = [
     { id: BookingStatus.All, label: 'All Bookings', count: bookings.length },
+    { id: BookingStatus.PENDING, label: 'Pending', count: bookings.filter(b => b.status === BookingStatus.PENDING).length },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
     { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
     { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },

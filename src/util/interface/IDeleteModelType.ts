@@ -5,5 +5,6 @@ export enum DeleteConfirmationTypes {
     PROFILE = "profile",
     REVIEW = "review",
     CERTIFICATE = "certificate",
+    SUBSCRIPTION = "subscriptionPlan",
     LOGOUT = "logout",
 }

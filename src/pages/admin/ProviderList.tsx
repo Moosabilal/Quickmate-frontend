@@ -4,7 +4,7 @@ import Pagination from '../../components/admin/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
-import { ProviderList, ProviderStatus } from '../../interface/IProvider';
+import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 
 
 
@@ -45,7 +45,7 @@ const AdminProvidersPage: React.FC = () => {
         setError('')
 
       } catch (error) {
-        setError(error.response?.data.message)
+        setError(`error.response?.data.message`)
         console.error('Error fetching data:', error);
       }
     };
@@ -66,8 +66,6 @@ const AdminProvidersPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
-
-  console.log('the provideers ', providers)
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">

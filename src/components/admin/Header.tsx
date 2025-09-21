@@ -7,7 +7,7 @@ import ThemeToggle from '../../components/ThemeToggle';
 import { authService } from '../../services/authService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
-import { DeleteConfirmationTypes } from '../../interface/IDeleteModelType';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
 const Header = () => {
 

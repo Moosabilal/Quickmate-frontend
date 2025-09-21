@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, LogOutIcon } from 'lucide-react';
-import { DeleteConfirmationTypes } from '../interface/IDeleteModelType';
+import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, LogOutIcon, CreditCard } from 'lucide-react';
+import { DeleteConfirmationTypes } from '../util/interface/IDeleteModelType';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -88,7 +88,16 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         defaultMessage: 'Are you sure you want to log out? You will need to sign in again to access your account.',
         warningText: 'Make sure you have saved your work before logging out.',
         confirmText: 'Logout'
-      }
+      },
+      [DeleteConfirmationTypes.SUBSCRIPTION]: {
+        icon: <CreditCard className="w-6 h-6 text-red-600" />,
+        iconBg: 'bg-red-100',
+        title: 'Remove Subscription Plan',
+        defaultMessage: 'Are you sure you want to delete this subscription plan? Users currently subscribed may be affected.',
+        warningText: 'This action cannot be undone. Ensure no active users depend on this plan before proceeding.',
+        confirmText: 'Delete Plan',
+      },
+
     };
     return configs[type];
   };
@@ -162,7 +171,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             </div>
           )}
 
-          {/* Warning */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
@@ -180,21 +188,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             </div>
           </div>
 
-          {/* Provider-specific notice */}
-          {/* <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-blue-800 mb-1">Provider Account Impact</p>
-                <p className="text-sm text-blue-700">
-                  This action will be reflected in your provider dashboard and may affect your service visibility.
-                </p>
-              </div>
-            </div>
-          </div> */}
+          
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
           <button
             onClick={handleCancel}

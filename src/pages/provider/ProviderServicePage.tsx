@@ -28,6 +28,8 @@ import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { Provider } from 'react-redux';
 import { SubscriptionStatus } from '../../util/interface/IProvider';
 import SubscriptionPlansModal from '../../components/provider/SubscriptionPlanModel';
+import { ISubscriptionPlan } from '../../util/interface/ISubscriptionPlan';
+import { subscriptionPlanService } from '../../services/subscriptionPlanService';
 
 interface IService {
     id: string;
@@ -50,20 +52,39 @@ const ProviderServicesPage: React.FC = () => {
     const [serviceToDelete, setServiceToDelete] = useState<IService | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [subscriptionPlans, setSubscriptionPlans] = useState<ISubscriptionPlan[]>([])
 
     const navigate = useNavigate()
 
+    console.log('the ppalns',subscriptionPlans)
+
     useEffect(() => {
         const fetchServices = async () => {
-            const response = await serviceService.getServicesByProviderId(provider.id || '')
-            setServices(response.services)
+            if(!provider.id) return
+            try {
+                const response = await serviceService.getServicesByProviderId(provider.id)
+                setServices(response.services)
+            } catch (error) {
+                toast.error(`${error}`)
+            }
+        }
+        const fetchSubscriptionPlan = async () => {
+            try {
+                const response = await subscriptionPlanService.getSubscriptionPlan()
+                console.log('this is the response', response)
+                setSubscriptionPlans(response);
+            } catch (error) {
+                toast.error(`${error}`)
+            }
         }
         fetchServices()
+        fetchSubscriptionPlan()
     }, [provider])
 
+
+
     const handleAddNewService = () => {
-        console.log('the plan ', provider.subscription)
-        if(true){
+        if (services.length >= 1 && !provider.subscription?.planId) {
             setIsModalOpen(true)
         }
         // navigate(`/provider/providerService/new`)
@@ -90,7 +111,7 @@ const ProviderServicesPage: React.FC = () => {
             setIsDeleting(false);
         }
     };
-    
+
     const handleSubscribe = () => {
         console.log('you subscribed')
     }
@@ -271,6 +292,7 @@ const ProviderServicesPage: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubscribe={handleSubscribe}
+                subscriptionPlans={subscriptionPlans}
             />
         </div>
     );

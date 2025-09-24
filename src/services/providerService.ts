@@ -1,7 +1,6 @@
-import axios from "axios";
+import qs from "qs";
 import axiosInstance from "../API/axiosInstance";
-import { FilterParams } from "../pages/user/ProviderPopupPage";
-
+import { FilterParams } from "../util/interface/IProvider";
 const PROVIDER_URL = `/provider`;
 
 export const providerService = {
@@ -103,6 +102,52 @@ export const providerService = {
         } catch (error) {
             console.log('Error in getting getProviderForChatPage', error)
             throw error
+        }
+    },
+
+    googleAuth: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/google/auth`)
+            console.log('the response in porvideer service', response)
+            return response.data
+        } catch (error) {
+            console.log('the erorr in googleAuth', error)
+            throw error
+        }
+    },
+
+    getProviderAvailability: async (providerIds: string[]) => {
+        try {
+            console.log('the provider idssdfsds', providerIds)
+            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, 
+                {
+                    params: {providerIds},
+                    paramsSerializer: params => qs.stringify(params, { arrayFormat: "repeat" })
+                })
+            console.log('the response in the fron end', response)
+            return response.data
+        } catch (error) {
+            console.log('error in getProviderAvailability', error)
+            throw error
+        }
+
+    },
+
+    getProvidersByLocation: async (
+        serviceId: string,
+        lat: number,
+        lon: number,
+        radius: number,
+        filters: Partial<FilterParams> = {}
+    ) => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/availability-by-location`, {
+                params: { serviceId, lat, lon, radius, ...filters },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching providers by location:', error);
+            throw error;
         }
     }
 

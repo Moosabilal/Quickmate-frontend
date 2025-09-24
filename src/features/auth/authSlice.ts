@@ -1,16 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { IUser } from '../../util/interface/IUser';
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    isVerified?: boolean; 
-    profilePicture?: string; 
-}
 
 interface AuthState {
-    user: User | null;
+    user: IUser | null;
     isAuthenticated: boolean;
 }
 
@@ -47,7 +40,7 @@ const authSlice = createSlice({
     reducers: {
         login: (
             state,
-            action: PayloadAction<{ user: User; }>
+            action: PayloadAction<{ user: IUser; }>
         ) => {
             state.user = action.payload.user;
             state.isAuthenticated = true;
@@ -64,7 +57,7 @@ const authSlice = createSlice({
 
         updateProfile: (
             state,
-            action: PayloadAction<{ user: User }>
+            action: PayloadAction<{ user: IUser }>
         ) => {
             state.user = action.payload.user;
             state.isAuthenticated = action.payload.user.isVerified || false;

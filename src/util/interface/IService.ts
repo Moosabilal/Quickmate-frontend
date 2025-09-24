@@ -13,3 +13,14 @@ export interface IAddAndEditServiceForm {
     businessCertification?: string | File;
     categoryName?: string;
 }
+
+export interface IService {
+    id: string;
+    category: string;
+    title: string;
+    price: number;
+    serviceImage: string;
+    description: string;
+    // rating: number;
+    // reviews: number;
+}

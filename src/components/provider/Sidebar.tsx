@@ -12,14 +12,14 @@ const Sidebar = () => {
 
   const navigationItems = [
     { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/provider/providerDashboard` },
+    { icon: <User className="w-5 h-5" />, label: 'Service Profile', path: `/provider/providerProfile/${user?.id}` },
     { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/provider/providerBookingManagement` },
     { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/provider/providerService` },
     // { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/provider/providerProfile` },
     // { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/provider/providerProfile` },
-    { icon: <User className="w-5 h-5" />, label: 'Service Profile', path: `/provider/providerProfile/${user?.id}` },
   ];
 
-    const isActive = (path: string) => {
+  const isActive = (path: string) => {
     if (path === "/provider") {
       return !!useMatch("/provider");
     }
@@ -50,8 +50,8 @@ const Sidebar = () => {
                 key={index}
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.path)
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                   }`}
               >
                 {item.icon}

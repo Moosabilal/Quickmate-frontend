@@ -8,15 +8,15 @@ export enum ProviderStatus {
 }
 
 export enum SubscriptionStatus {
-    ACTIVE = "ACTIVE",
-    EXPIRED = "EXPIRED",
-    NONE = "NONE"
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  NONE = "NONE"
 }
 
- export interface Availability {
-    day: string;    
-    startTime: string;
-    endTime: string; 
+export interface Availability {
+  day: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface IProvider {
@@ -90,8 +90,8 @@ export interface IBackendProvider {
   earnings: number;
   price: number;
   totalBookings: number;
-  rating?: number;         
-  reviews?: IReviewOfUser[]; 
+  rating?: number;
+  reviews?: IReviewOfUser[];
 }
 
 
@@ -126,41 +126,41 @@ export interface ProviderList {
 }
 
 export interface StatCardProps {
-    title: string;
-    value: number;
-    change: number;
-    icon: React.ReactNode;
-    prefix?: string;
-    suffix?: string;
+  title: string;
+  value: number;
+  change: number;
+  icon: React.ReactNode;
+  prefix?: string;
+  suffix?: string;
 }
 
 export interface RatingPoint {
-    month: string;
-    rating: number;
+  month: string;
+  rating: number;
 }
 
 export interface Booking {
-    id: number;
-    service: string;
-    client: string;
-    status: 'upcoming' | 'scheduled' | 'completed' | 'cancelled';
-    image: string;
-    category: string;
+  id: number;
+  service: string;
+  client: string;
+  status: 'upcoming' | 'scheduled' | 'completed' | 'cancelled';
+  image: string;
+  category: string;
 }
 
 export interface StatData {
-    toFixed: any;
-    current: number;
-    previous: number;
-    change: number;
+  toFixed: any;
+  current: number;
+  previous: number;
+  change: number;
 }
 
 export interface Stats {
-    ratingHistory: never[];
-    earnings: StatData;
-    completedJobs: StatData;
-    upcomingBookings: StatData;
-    averageRating: StatData;
+  ratingHistory: never[];
+  earnings: StatData;
+  completedJobs: StatData;
+  upcomingBookings: StatData;
+  averageRating: StatData;
 }
 
 
@@ -186,3 +186,13 @@ export interface IDashboardStatus {
   averageRating?: number;
   ratingHistory?: RatingHistoryPoint[]
 }
+
+export type FilterParams = {
+  area?: string;
+  experience?: number;
+  day?: string;
+  time?: string;
+  price?: number;
+  radius?: number;
+  locationCoords?: string;
+};

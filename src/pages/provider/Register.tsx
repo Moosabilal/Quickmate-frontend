@@ -66,9 +66,6 @@ const ProviderRegistration: React.FC = () => {
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
     const profilePhotoRef = useRef<HTMLInputElement>(null);
 
-    const dispatch = useAppDispatch()
-
-
     const dayOptions = [
         'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
     ];
@@ -208,11 +205,12 @@ const ProviderRegistration: React.FC = () => {
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
+        
 
         try {
             setIsLoading(true)
             const res = await providerService.register(data);
-            toast.success(res.message)
+            toast.info(res.message)
 
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 

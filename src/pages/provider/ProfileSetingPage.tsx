@@ -9,7 +9,9 @@ import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateProviderProfile } from '../../features/provider/providerSlice';
 
 let DefaultIcon = L.divIcon({
     html: `<svg width="25" height="41" viewBox="0 0 25 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,6 +79,7 @@ interface IEditedProviderProfile extends Partial<IProviderProfile> {
 
 const ProviderProfile: React.FC = () => {
     const { provider } = useAppSelector((state) => state.provider);
+    const { user } = useAppSelector((state) => state.auth)
 
     const [providerDetails, setProviderDetails] = useState<Partial<IProviderProfile>>({});
     const [editedDetails, setEditedDetails] = useState<IEditedProviderProfile>({});
@@ -93,6 +96,10 @@ const ProviderProfile: React.FC = () => {
         serviceLocation: null as { lat: number; lng: number } | null
     });
 
+    const location = useLocation();
+    const dispatch = useAppDispatch()
+
+
     const parseLocationString = (locationString: string) => {
         if (!locationString) return null;
         const [lat, lng] = locationString.split(',');
@@ -101,6 +108,43 @@ const ProviderProfile: React.FC = () => {
             lng: parseFloat(lng)
         };
     };
+
+    const handleConnectCalendar = async () => {
+        try {
+            console.log('this is started')
+            const response = await providerService.googleAuth()
+            console.log('the aut resonse', response)
+            window.location.href = response.url;
+        } catch (error) {
+            console.error('Error connecting to Google Calendar:', error);
+            toast.error('Could not connect to Google Calendar. Please try again.');
+        }
+    }
+
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+
+        if (params.get("calendar") === "success") {
+            toast.success("Google Calendar connected successfully!");
+            const newParams = new URLSearchParams(location.search);
+            newParams.delete("calendar");
+            window.history.replaceState({}, '', `${location.pathname}?${newParams.toString()}`);
+            fetchProvider()
+        }
+    }, [location]);
+
+    const fetchProvider = async () => {
+        try {
+            const providerData = await providerService.getProvider()
+            setProviderDetails(providerData)
+            dispatch(updateProviderProfile({ provider: providerData }))
+        } catch (error) {
+            console.log('the error in fetching provider', error)
+            throw error
+        }
+    }
+
 
 
     useEffect(() => {
@@ -118,7 +162,7 @@ const ProviderProfile: React.FC = () => {
                 }
             }
         }
-    }, []);
+    }, [provider]);
 
 
 
@@ -678,6 +722,40 @@ const ProviderProfile: React.FC = () => {
                 </div>
             )}
 
+            {(!user?.googleCalendar?.tokens || Object.values(user?.googleCalendar?.tokens).length === 0) && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full relative">
+                        {/* <button
+                            onClick={handleCloseCalendarModal}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+                        >
+                            <X className="w-6 h-6" />
+                        </button> */}
+
+                        <h2 className="text-xl font-bold text-slate-800 mb-3">Google Calendar Sync</h2>
+                        <p className="text-slate-600 mb-6">
+                            By connecting your Google Calendar, your availability and bookings will automatically sync.
+                        </p>
+
+                        <div className="flex justify-end space-x-3">
+                            {/* <button
+                                onClick={handleCloseCalendarModal}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg"
+                            >
+                                Cancel
+                            </button> */}
+                            <button
+                                onClick={handleConnectCalendar}
+                                className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                            >
+                                Connect Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             {isMapOpen && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-4xl h-[600px] rounded-lg shadow-xl relative">
@@ -693,6 +771,7 @@ const ProviderProfile: React.FC = () => {
 
                         <div className="h-[calc(600px-73px)] w-full">
                             <MapContainer
+                                // Corrected center prop: use currentLocation if available, otherwise use mapCenter
                                 center={currentLocation ? [currentLocation.lat, currentLocation.lng] : mapCenter}
                                 zoom={currentLocation ? 10 : 5}
                                 className="h-full w-full rounded-b-lg"
@@ -705,6 +784,7 @@ const ProviderProfile: React.FC = () => {
                                     setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
                                     setIsMapOpen(false);
                                 }} />
+                                {/* Corrected Marker: only render if currentLocation is not null */}
                                 {currentLocation && (
                                     <Marker position={[currentLocation.lat, currentLocation.lng]} />
                                 )}

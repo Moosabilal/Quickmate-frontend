@@ -46,7 +46,6 @@ const Dashboard: React.FC = () => {
     const getProviderDashboard = async () => {
         try {
             const response = await providerService.getProviderDash()
-            console.log('the ressopnse of dashboard', response)
             setDashboardData(response.dashboardData || []);
             setDashboardStat(response.dashboardStat || null);
             setDashboard(response);
@@ -279,7 +278,7 @@ const Dashboard: React.FC = () => {
                                                 strokeWidth: 2,
                                                 stroke: "#fff",
                                             }}
-                                            connectNulls={false} // gaps where no data
+                                            connectNulls={false}
                                         />
                                         <Line
                                             type="monotone"

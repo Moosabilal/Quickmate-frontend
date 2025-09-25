@@ -72,7 +72,7 @@ const BookingLogsPage: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalBookings, setTotalBookings] = useState(0);
 
-    const debouncedSearch = useDebounce(filters.search, 500); // 500ms delay
+    const debouncedSearch = useDebounce(filters.search, 500);
 
     useEffect(() => {
         const fetchBookings = async () => {

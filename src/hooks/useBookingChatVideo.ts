@@ -66,7 +66,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         const getAllChats = async () => {
             try {
                 setLoadingHistory(true); 
-                console.log('the joiningin id in frontend', joiningId)
                 const data = await bookingService.getAllPreviousChat(joiningId)
                 const formatted = data.map((msg: any) => ({
                     joiningId: String(msg.joiningId),
@@ -91,7 +90,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         socket.emit("joinBookingRoom", joiningId);
 
         const chatHandler = (msg: any) => {
-            console.log('the return message', msg)
             const parsed: ChatMessage = {
                 joiningId: String(msg.joiningId || joiningId),
                 senderId: String(msg.senderId || "unknown"),

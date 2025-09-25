@@ -1,4 +1,3 @@
-// Helper function to calculate distance between two lat/lng points in km
 export const getDistanceInKm = (
   lat1: number,
   lng1: number,
@@ -7,7 +6,7 @@ export const getDistanceInKm = (
 ): number => {
   const toRad = (value: number) => (value * Math.PI) / 180;
 
-  const R = 6371; // Earth's radius in km
+  const R = 6371; 
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
 
@@ -24,7 +23,6 @@ export const getDistanceInKm = (
   return distance;
 };
 
-// Updated findProviderRange to return boolean + nearest distance (optional)
 export const findProviderRange = (
   userLat: number,
   userLng: number,
@@ -34,8 +32,6 @@ export const findProviderRange = (
   return providerLoc.some((loc: string) => {
     const [provLat, provLng] = loc.split(",").map(Number);
     const distance = getDistanceInKm(userLat, userLng, provLat, provLng);
-
-    console.log(`Distance to provider ${provLat},${provLng}: ${distance.toFixed(2)} km`);
 
     return distance <= radius;
   });

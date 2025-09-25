@@ -116,21 +116,24 @@ export const providerService = {
         }
     },
 
-    getProviderAvailability: async (providerIds: string[]) => {
+    getProviderAvailability: async (providerIds: string[], timeMin: string, timeMax: string) => {
         try {
-            console.log('the provider idssdfsds', providerIds)
-            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, 
-                {
-                    params: {providerIds},
-                    paramsSerializer: params => qs.stringify(params, { arrayFormat: "repeat" })
-                })
-            console.log('the response in the fron end', response)
-            return response.data
-        } catch (error) {
-            console.log('error in getProviderAvailability', error)
-            throw error
-        }
+            const params = {
+                providerIds,
+                timeMin,
+                timeMax  
+            };
 
+            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, {
+                params,
+                paramsSerializer: params => qs.stringify(params, { arrayFormat: "repeat" })
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error('Error in getProviderAvailability:', error);
+            throw error;
+        }
     },
 
     getProvidersByLocation: async (

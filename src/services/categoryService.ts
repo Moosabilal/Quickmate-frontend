@@ -73,7 +73,7 @@ export const categoryService = {
         }
     },
 
-    async getAllSubCategories({page, limit, search}){
+    async getAllSubCategories({page, limit, search}:{page: number, limit: number, search: string}){
         try {
             const response = await axiosInstance.get(`${CATEGORIES_PATH}/getAllSubCategories`, {
                 params: { page, limit, search}

@@ -39,7 +39,6 @@ const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 const ProviderServicesPage: React.FC = () => {
 
     const { provider } = useAppSelector(state => state.provider)
-    console.log('the provider', provider)
 
     const [services, setServices] = useState<IService[]>([])
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -51,8 +50,6 @@ const ProviderServicesPage: React.FC = () => {
 
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
-
-    console.log('the ppalns', subscriptionPlans)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -80,7 +77,6 @@ const ProviderServicesPage: React.FC = () => {
 
     const handleAddNewService = () => {
         const { subscription } = provider;
-        console.log('the subscription', subscription)
 
         if (!subscription || subscription.status === "NONE") {
             if (services.length >= 1) {

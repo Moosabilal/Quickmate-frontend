@@ -198,7 +198,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   }
 
   useEffect(() => {
-    if (!addressPopup) return; // only fetch when popup opens
+    if (!addressPopup) return;
 
     fetchAddress()
   }, [addressPopup])

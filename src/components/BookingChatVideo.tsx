@@ -26,8 +26,6 @@ export default function BookingChatVideo({
     remoteStreamRef
   } = useBookingChatVideo(currentUserId, joiningId);
 
-  console.log('the messages', messages)
-
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,23 +70,6 @@ export default function BookingChatVideo({
     const t = window.setTimeout(scrollToBottom, 50);
     return () => window.clearTimeout(t);
   }, [messages]);
-
-  // const formatDate = (dateInput?: Date | string | number) => {
-  //   if (!dateInput) return '';
-  //   const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  //   if (isNaN(d.getTime())) return '';
-  //   const today = new Date();
-  //   const messageDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  //   const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  //   if (messageDate.getTime() === todayDate.getTime()) {
-  //     return 'Today';
-  //   } else if (messageDate.getTime() === todayDate.getTime() - 86400000) {
-  //     return 'Yesterday';
-  //   } else {
-  //     return d.toLocaleDateString();
-  //   }
-  // };
 
 
   const handleEmojiClick = (emoji: string) => {

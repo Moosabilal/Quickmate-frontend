@@ -62,7 +62,6 @@ const UserDetailsPage: React.FC = () => {
             try {
                 setLoading(true);
                 const response = await authService.getUserDetailsForAdmin(userId);
-                console.log('the frontend response', response)
                 setUser(response);
             } catch (err) {
                 setError("Failed to fetch user details. Please try again later.");

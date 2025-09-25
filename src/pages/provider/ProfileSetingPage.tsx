@@ -111,9 +111,7 @@ const ProviderProfile: React.FC = () => {
 
     const handleConnectCalendar = async () => {
         try {
-            console.log('this is started')
             const response = await providerService.googleAuth()
-            console.log('the aut resonse', response)
             window.location.href = response.url;
         } catch (error) {
             console.error('Error connecting to Google Calendar:', error);

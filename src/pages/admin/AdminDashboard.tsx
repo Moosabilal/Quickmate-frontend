@@ -27,7 +27,6 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const response = await adminService.fetchAdminDashboard();
-      console.log(response)
       setDashboardData(response as DashboardData);
       setError(null);
     } catch (err) {
@@ -71,7 +70,6 @@ const AdminDashboard: React.FC = () => {
       const label = isNaN(d.getTime()) ? item.month : d.toLocaleDateString("en-US", { month: "short" });
       map.set(label, item.total ?? 0);
     });
-    console.log('the map', map)
 
     return MONTHS.map(month => ({
       month,

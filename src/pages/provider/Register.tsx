@@ -104,14 +104,6 @@ const ProviderRegistration: React.FC = () => {
             if (id === 'agreeTerms') {
                 setFormData(prev => ({ ...prev, agreeTerms: checked }));
             }
-            //  else {
-            //     setFormData(prev => ({
-            //         ...prev,
-            //         availableDays: checked
-            //             ? [...prev.availableDays, checkboxValue]
-            //             : prev.availableDays.filter(day => day !== checkboxValue),
-            //     }));
-            // }
         } else {
             if (id === 'servicesOffered') {
                 const selectedService = services.find(service => service.value === value);

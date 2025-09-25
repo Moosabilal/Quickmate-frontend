@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon } from 'lucide-react';
+import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -19,16 +19,9 @@ import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
 import { all } from 'axios';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
+import {CalendarModal} from '../../components/user/CalendarModal'
 
 declare var Razorpay: any;
-
-
-
-interface CalendarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 
 
 const ServiceDetailsPage: React.FC = () => {
@@ -62,7 +55,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
 
-  console.log('the all provider we are getting', allProviders)
 
   const paymentOptions = [
     { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
@@ -71,214 +63,11 @@ const ServiceDetailsPage: React.FC = () => {
 
   const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
   const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
-  console.log('the provider times', providerTimes)
 
-
- const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose }) => {
-  const [availability, setAvailability] = useState<
-    { providerName: string; date: string; slots: string[] }[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-
-  if (!isOpen) return null;
-
-  // Helper function to convert UTC time to local time and format consistently
-  const formatTimeSlot = (utcTime: Date): string => {
-    return utcTime.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true
-    });
-  };
-
-  // Helper function to convert local time to 24-hour format for backend
-  const convertTo24Hour = (time12h: string): string => {
-    const [time, modifier] = time12h.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-    if (modifier === "PM" && hours !== 12) {
-      hours += 12;
-    }
-    if (modifier === "AM" && hours === 12) {
-      hours = 0;
-    }
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  // Fetch availability for the selected providers
-  const fetchAvailability = async () => {
-    if (!allProviders.length) return;
-    setLoading(true);
-
-    try {
-      const providerIds = allProviders.map((provider) => provider._id);
-      console.log("Provider IDs:", providerIds);
-
-      const response = await providerService.getProviderAvailability(providerIds);
-      console.log("Backend response:", response);
-
-      const allSlots: { providerName: string; date: string; slots: string[] }[] = [];
-
-      Object.entries(response).forEach(([providerId, slots]) => {
-        const provider = allProviders.find((p) => p._id === providerId);
-        if (!provider || !slots) return;
-
-        const slotsByDate: { [date: string]: string[] } = {};
-
-        (slots as { start: string; end: string }[]).forEach((slot) => {
-          const startDate = new Date(slot.start);
-          const endDate = new Date(slot.end);
-          const dateKey = startDate.toISOString().split("T")[0];
-
-          if (!slotsByDate[dateKey]) slotsByDate[dateKey] = [];
-
-          // Generate hourly slots between start and end time
-          let current = new Date(startDate);
-          while (current < endDate) {
-            const timeString = formatTimeSlot(current);
-            if (!slotsByDate[dateKey].includes(timeString)) {
-              slotsByDate[dateKey].push(timeString);
-            }
-            current.setHours(current.getHours() + 1);
-          }
-          
-          // Sort time slots chronologically
-          slotsByDate[dateKey].sort((a, b) => {
-            const timeA = convertTo24Hour(a);
-            const timeB = convertTo24Hour(b);
-            return timeA.localeCompare(timeB);
-          });
-        });
-
-        Object.entries(slotsByDate).forEach(([date, slots]) => {
-          allSlots.push({ providerName: provider.fullName, date, slots });
-        });
-      });
-
-      setAvailability(allSlots);
-    } catch (error) {
-      console.error("Error fetching provider availability:", error);
-      toast.error("Failed to fetch availability");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTimeSlotClick = (date: string, time: string) => {
-    console.log("Selected time from calendar:", time);
-    console.log("Converted to 24h format:", convertTo24Hour(time));
-    
+  const handleSlotSelection = (date: string, time: string) => {
     setSelectedDate(date);
-    setSelectedTime(time); // Keep the 12-hour format for display
-    onClose();
+    setSelectedTime(time);
   };
-
-  useEffect(() => {
-    if (selectedAddress) {
-      fetchAvailability();
-    }
-  }, [selectedAddress]);
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-indigo-50">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Provider Availability</h2>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Side - Available Slots */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-indigo-600" /> Available Time Slots
-              </h3>
-
-              {loading ? (
-                <div className="flex items-center justify-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                  <p className="ml-3">Loading availability...</p>
-                </div>
-              ) : availability.length === 0 ? (
-                <div className="text-center p-8 bg-gray-50 rounded-lg">
-                  <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600">No available slots for the selected providers at this location.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {availability.map((entry, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <h4 className="font-semibold text-gray-800 mb-3">
-                        {entry.providerName}
-                      </h4>
-                      <p className="text-sm text-gray-600 mb-3">
-                        {new Date(entry.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {entry.slots.map((slot, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleTimeSlotClick(entry.date, slot)}
-                            className="px-3 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-all duration-200 text-sm font-medium border border-green-200 hover:border-green-300"
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Right Side - Google Calendar Embed */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Calendar View</h3>
-              <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <iframe
-                  src="https://calendar.google.com/calendar/embed?src=bcbe92b9d4f0d42530c5902c2c8d5dc0bed7c6394c89a38c42e24b532ac95258%40group.calendar.google.com&ctz=Asia%2FKolkata"
-                  style={{ border: 0, width: "100%", height: "400px", borderRadius: "8px" }}
-                  frameBorder="0"
-                  scrolling="no"
-                  title="Provider Availability Calendar"
-                  loading="lazy"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                * Green slots represent available time slots
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 
   const getProvider = async (filterParams: FilterParams = {}) => {
     try {
@@ -286,9 +75,7 @@ const ServiceDetailsPage: React.FC = () => {
         filterParams.radius = radius;
         filterParams.locationCoords = selectedAddress.locationCoords
       }
-      console.log('the selelcitnieae', selectedAddress)
 
-      console.log('the provideradsfasdfdsf', filterParams)
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
       setAllProviders(providers);
     } catch (error: any) {
@@ -306,7 +93,6 @@ const ServiceDetailsPage: React.FC = () => {
   }
 
   useEffect(() => {
-    console.log('working')
     if (serviceId) {
       getProvider();
     }
@@ -374,7 +160,7 @@ const ServiceDetailsPage: React.FC = () => {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
 
-     await fetchWallet()
+    await fetchWallet()
 
     if (paymentMethod === PaymentMethod.WALLET) {
       if (walletBalance < Number(selectedProvider?.price)) {
@@ -599,7 +385,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Selected Date & Time Display */}
               {selectedDate && selectedTime && (
                 <div className="p-4 rounded-xl border border-green-200 shadow-sm bg-green-50">
                   <h3 className="text-base font-semibold text-green-700 mb-2">Selected Slot</h3>
@@ -774,8 +559,12 @@ const ServiceDetailsPage: React.FC = () => {
         </div>
       </main>
 
-      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
+      <CalendarModal
+        isOpen={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        providers={allProviders}
+        onSlotSelect={handleSlotSelection}
+      />      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={providerTimes} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} providerLoc={providersLocations} />
     </div>

@@ -41,18 +41,14 @@ const ProviderPopup = ({
   const [showFilters, setShowFilters] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
 
-  // Improved time conversion function
   function convertTo24Hour(time12h: string): string {
     try {
       const timeStr = time12h.trim();
       
-      // Check if it's already in 24-hour format
       if (timeStr.match(/^\d{2}:\d{2}$/)) {
         return timeStr;
       }
-      
-      // Handle 12-hour format with AM/PM
-      const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+            const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
       if (!match) {
         console.warn('Invalid time format:', time12h);
         return timeStr;
@@ -87,19 +83,15 @@ const ProviderPopup = ({
         )
       ) as FilterParams;
 
-      // Handle selected time from calendar
       if (selectedTime) {
         const convertedTime = convertTo24Hour(selectedTime);
         filteredParams.time = convertedTime;
         console.log('Filtering by time:', selectedTime, '→', convertedTime);
       }
-
-      console.log('Filter parameters being sent:', filteredParams);
       
       const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
       setAllProviders(providers);
       
-      console.log('Received providers:', providers.length);
     } catch (error: any) {
       console.error('Error fetching providers:', error);
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
@@ -108,8 +100,6 @@ const ProviderPopup = ({
 
   useEffect(() => {
     if (serviceId) {
-      console.log('Fetching providers with filters:', appliedFilters);
-      console.log('Selected time:', selectedTime);
       getProvider(appliedFilters);
     }
   }, [serviceId, appliedFilters, selectedTime]);

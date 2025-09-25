@@ -1,5 +1,5 @@
 import axiosInstance from "../API/axiosInstance";
-import { BookingStatus, IBookingRequest } from "../util/interface/IBooking";
+import { BookingStatus, IAdminBookingFilters, IBookingRequest } from "../util/interface/IBooking";
 import { paymentVerificationRequest } from "../util/interface/IPayment";
 const BOOKING_URL = `/bookings`;
 
@@ -97,6 +97,18 @@ export const bookingService = {
   resendRegistrationOtp: async (email: string) => {
     const response = await axiosInstance.post(`${BOOKING_URL}/resend-bookingCompletion-otp`, { email });
     return response.data;
+  },
+
+  getAllBookingsForAdmin: async (params: IAdminBookingFilters) => {
+    try {
+      const response = await axiosInstance.get(`${BOOKING_URL}/admin/bookings`, {
+        params: params,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching admin booking logs:", error);
+      throw error;
+    }
   },
 
 

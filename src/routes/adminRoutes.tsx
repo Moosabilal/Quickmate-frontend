@@ -31,7 +31,7 @@ const adminRoutes = [
       { path: '/admin/subcategories/new/:parentId', element: <CategoryForm /> },
       { path: '/admin/subcategories/edit/:parentId/:subcategoryId', element: <CategoryForm /> },
       { path: '/admin/subscriptionPlan', element: <AdminSubscriptionPlans /> },
-      { path: '/admin/userList/userDetails', element: <UserDetailsPage /> },
+      { path: '/admin/users/userDetails/:userId', element: <UserDetailsPage /> },
       ],
     },
   ]),

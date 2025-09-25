@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -34,6 +35,7 @@ const AdminUsersPage = () => {
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -180,6 +182,12 @@ const AdminUsersPage = () => {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
+                      <button
+                        className="text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 px-3 py-1 rounded-lg text-sm"
+                        onClick={() => navigate(`/admin/users/userDetails/${user.id}`)}
+                      >
+                        View
+                      </button>
                       <button
                         className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 px-3 py-1 rounded-lg text-sm"
                         onClick={() => {

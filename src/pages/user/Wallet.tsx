@@ -52,8 +52,6 @@ const Wallet: React.FC = () => {
       }, {} as Record<string, string>)
     ).toString();
 
-    
-
 
     const res = await walletService.getWallet(query);
     setTotalPages(res.data.totalPages)

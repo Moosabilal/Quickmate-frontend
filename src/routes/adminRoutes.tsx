@@ -11,6 +11,8 @@ const CategoryCommissionManagement = lazy(() => import('../pages/admin/Category'
 const CategoryForm = lazy(() => import('../pages/admin/Add&EditCategory'));
 const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
 const AdminSubscriptionPlans = lazy(() => import('../pages/admin/SubscriptionPlan'));
+const UserDetailsPage = lazy(() => import('../pages/admin/UsersDetails'))
+const Bookings = lazy(() => import('../pages/admin/Bookings'))
 
 
 import AdminLayout from '../layouts/AdminLayout';
@@ -30,6 +32,8 @@ const adminRoutes = [
       { path: '/admin/subcategories/new/:parentId', element: <CategoryForm /> },
       { path: '/admin/subcategories/edit/:parentId/:subcategoryId', element: <CategoryForm /> },
       { path: '/admin/subscriptionPlan', element: <AdminSubscriptionPlans /> },
+      { path: '/admin/users/userDetails/:userId', element: <UserDetailsPage /> },
+      { path: '/admin/bookings', element: <Bookings /> },
       ],
     },
   ]),

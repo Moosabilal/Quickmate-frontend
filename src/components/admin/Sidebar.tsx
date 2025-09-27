@@ -11,6 +11,7 @@ const Sidebar = () => {
     { icon: <Briefcase className="w-5 h-5" />, label: 'Providers', path: '/admin/providers' },
     { icon: <FolderTree className="w-5 h-5" />, label: 'Category Management', path: '/admin/categories' },
     { icon: <FolderTree className="w-5 h-5" />, label: 'Subscription Plans', path: '/admin/subscriptionPlan' },
+    { icon: <FolderTree className="w-5 h-5" />, label: 'Bookings', path: '/admin/bookings' },
     // { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 

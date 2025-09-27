@@ -4,14 +4,7 @@ import { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
-
-export type FilterParams = {
-  area?: string;
-  experience?: number;
-  day?: string;
-  time?: string;
-  price?: number;
-};
+import { FilterParams } from '../../util/interface/IProvider';
 
 interface ProviderPopupProps {
   setSelectedProvider: (provider: IBackendProvider | null) => void;
@@ -38,6 +31,8 @@ const ProviderPopup = ({
     time: '',
     experience: undefined,
     price: undefined,
+    radius: 10,
+    locationCoords: ''
   };
 
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
@@ -46,6 +41,36 @@ const ProviderPopup = ({
   const [showFilters, setShowFilters] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
 
+  function convertTo24Hour(time12h: string): string {
+    try {
+      const timeStr = time12h.trim();
+      
+      if (timeStr.match(/^\d{2}:\d{2}$/)) {
+        return timeStr;
+      }
+            const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) {
+        console.warn('Invalid time format:', time12h);
+        return timeStr;
+      }
+      
+      const [, hourStr, minuteStr, modifier] = match;
+      let hours = parseInt(hourStr, 10);
+      const minutes = parseInt(minuteStr, 10);
+      
+      if (modifier.toLowerCase() === 'pm' && hours !== 12) {
+        hours += 12;
+      }
+      if (modifier.toLowerCase() === 'am' && hours === 12) {
+        hours = 0;
+      }
+      
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+    } catch (error) {
+      console.error('Error converting time:', error, time12h);
+      return time12h;
+    }
+  }
 
   const getProvider = async (filterParams: FilterParams = {}) => {
     try {
@@ -56,40 +81,28 @@ const ProviderPopup = ({
             value !== undefined &&
             !(typeof value === 'number' && value === 0)
         )
-      ) as FilterParams
+      ) as FilterParams;
 
       if (selectedTime) {
         const convertedTime = convertTo24Hour(selectedTime);
         filteredParams.time = convertedTime;
+        console.log('Filtering by time:', selectedTime, '→', convertedTime);
       }
-
+      
       const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
       setAllProviders(providers);
+      
     } catch (error: any) {
-      console.error(error);
+      console.error('Error fetching providers:', error);
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
     }
   };
-
-  function convertTo24Hour(time12h: string): string {
-    const [time, modifier] = time12h.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-    if (modifier === "PM" && hours !== 12) {
-      hours += 12;
-    }
-    if (modifier === "AM" && hours === 12) {
-      hours = 0;
-    }
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  }
 
   useEffect(() => {
     if (serviceId) {
       getProvider(appliedFilters);
     }
-  }, [serviceId, appliedFilters]);
+  }, [serviceId, appliedFilters, selectedTime]);
 
   const handleApplyFilters = () => {
     setAppliedFilters(filters);
@@ -109,7 +122,6 @@ const ProviderPopup = ({
     ).toFixed(1)
     : "0";
 
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-6xl h-[80vh] flex gap-4">
@@ -121,24 +133,29 @@ const ProviderPopup = ({
                   <Award className="w-6 h-6" />
                   Available Providers
                 </h3>
-                <p className="text-blue-100 text-sm mt-1">{allProviders.length} service providers</p>
+                <div className="flex items-center gap-2 text-blue-100 text-sm mt-1">
+                  <span>{allProviders.length} service providers</span>
+                  {selectedTime && (
+                    <>
+                      <span>•</span>
+                      <span>Filtered for {selectedTime}</span>
+                    </>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`p-2 rounded-lg transition-all duration-200 hover:bg-white/20 ${showFilters ? 'bg-white/20 shadow-md' : ''
-                  }`}
+                className={`p-2 rounded-lg transition-all duration-200 hover:bg-white/20 ${showFilters ? 'bg-white/20 shadow-md' : ''}`}
                 title="Toggle Filters"
-              >Filter
+              >
                 <Filter className={`w-5 h-5 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
               </button>
-
             </div>
           </div>
 
           <div className="overflow-y-auto h-full pb-20">
             <div className="p-4 space-y-3">
-              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
-                }`}>
+              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'}`}>
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200 shadow-sm">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <Filter className="w-4 h-4 text-blue-600" />
@@ -149,14 +166,14 @@ const ProviderPopup = ({
                       <input
                         type="text"
                         placeholder="Search by area"
-                        value={filters.area}
+                        value={filters.area || ''}
                         onChange={(e) => setFilters((prev) => ({ ...prev, area: e.target.value }))}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
                     <div className="relative">
                       <select
-                        value={filters.day}
+                        value={filters.day || ''}
                         onChange={(e) => setFilters((prev) => ({ ...prev, day: e.target.value }))}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       >
@@ -170,7 +187,6 @@ const ProviderPopup = ({
                         <option value="Sunday">Sunday</option>
                       </select>
                     </div>
-
                     <div className="relative">
                       <input
                         type="number"
@@ -211,46 +227,53 @@ const ProviderPopup = ({
                 </div>
               </div>
 
-              {allProviders.length > 0 ? (allProviders.map((provider) => (
-                <div
-                  key={provider._id}
-                  className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:-translate-y-1 ${selectedProvider?._id === provider._id
-                    ? 'bg-blue-50 border-blue-300 shadow-md ring-2 ring-blue-200'
-                    : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                    }`}
-                  onClick={() => setSelectedProvider(provider)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img
-                        src={getCloudinaryUrl(provider.profilePhoto)}
-                        alt={provider.fullName}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
-                      />
-                      {selectedProvider?._id === provider._id && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-gray-900 truncate">{provider.fullName}</h4>
-                        <div className="flex items-center gap-1 text-amber-500">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span className="text-sm font-medium">{provider.rating}</span>
-                        </div>
+              {allProviders.length > 0 ? (
+                allProviders.map((provider) => (
+                  <div
+                    key={provider._id}
+                    className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:-translate-y-1 ${selectedProvider?._id === provider._id
+                      ? 'bg-blue-50 border-blue-300 shadow-md ring-2 ring-blue-200'
+                      : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    onClick={() => setSelectedProvider(provider)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <img
+                          src={getCloudinaryUrl(provider.profilePhoto)}
+                          alt={provider.fullName}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                        />
+                        {selectedProvider?._id === provider._id && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>
+                        )}
                       </div>
-                      <p className="text-sm text-blue-600 font-medium">{provider.serviceArea}</p>
-                      <p className="text-xs text-gray-500">{provider.reviews?.length ?? 0} reviews</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold text-gray-900 truncate">{provider.fullName}</h4>
+                          <div className="flex items-center gap-1 text-amber-500">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm font-medium">{provider.rating}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-blue-600 font-medium">{provider.serviceArea}</p>
+                        <p className="text-xs text-gray-500">{provider.reviews?.length ?? 0} reviews</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))) : (
+                ))
+              ) : (
                 <div className="w-full text-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 border border-dashed border-gray-300 rounded-xl">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
                     <Award className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-gray-600 text-sm font-medium">No service providers found</p>
-                  <p className="text-gray-500 text-xs mt-1">Try adjusting your filters or search criteria</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    {selectedTime 
+                      ? `No providers available at ${selectedTime}. Try a different time or adjust filters.`
+                      : 'Try adjusting your filters or search criteria'
+                    }
+                  </p>
                 </div>
               )}
             </div>
@@ -295,7 +318,7 @@ const ProviderPopup = ({
                     </span>
                   </div>
                   {showReviews && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-gray-50 p-4 rounded-lg mt-4">
                       <h5 className="font-medium text-gray-900 mb-3">User Reviews</h5>
                       {(selectedProvider.reviews?.length ?? 0) > 0 ? (
                         <div className="space-y-3">
@@ -328,10 +351,8 @@ const ProviderPopup = ({
                       )}
                     </div>
                   )}
-
-
-
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 text-blue-600 mb-1">
@@ -347,11 +368,11 @@ const ProviderPopup = ({
                       <span className="font-medium">Experience</span>
                     </div>
                     <p className="text-xl font-bold text-gray-900">{selectedProvider.experience}</p>
-                    <p className="text-sm text-gray-600">of practice</p>
+                    <p className="text-sm text-gray-600">years of practice</p>
                   </div>
                 </div>
-                <div className="space-y-4">
 
+                <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
@@ -374,6 +395,7 @@ const ProviderPopup = ({
                       <p className="text-gray-600">{selectedProvider.serviceArea}</p>
                     </div>
                   </div>
+
                   <div className="flex items-start gap-3">
                     <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
@@ -381,6 +403,7 @@ const ProviderPopup = ({
                       <p className="text-gray-600">{selectedProvider.phoneNumber}</p>
                     </div>
                   </div>
+
                   <div className="flex items-start gap-3">
                     <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
@@ -389,10 +412,14 @@ const ProviderPopup = ({
                     </div>
                   </div>
                 </div>
+
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h5 className="font-medium text-gray-900 mb-2">About</h5>
-                  <p className="text-gray-700 text-sm leading-relaxed">description need to be update</p>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Professional service provider with extensive experience in their field.
+                  </p>
                 </div>
+
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setProviderPopup(false)}
@@ -400,9 +427,6 @@ const ProviderPopup = ({
                   >
                     Select Provider
                   </button>
-                  {/* <button className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium">
-                    View Reviews
-                  </button> */}
                 </div>
               </div>
             ) : (
@@ -421,4 +445,4 @@ const ProviderPopup = ({
   );
 };
 
-export default ProviderPopup
+export default ProviderPopup;

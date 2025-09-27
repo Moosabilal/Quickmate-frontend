@@ -28,46 +28,95 @@ import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { Provider } from 'react-redux';
 import { SubscriptionStatus } from '../../util/interface/IProvider';
 import SubscriptionPlansModal from '../../components/provider/SubscriptionPlanModel';
+import { ISubscriptionPlan } from '../../util/interface/ISubscriptionPlan';
+import { subscriptionPlanService } from '../../services/subscriptionPlanService';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateProviderProfile } from '../../features/provider/providerSlice';
+import { IService } from '../../util/interface/IService';
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
-interface IService {
-    id: string;
-    category: string;
-    title: string;
-    price: number;
-    serviceImage: string;
-    description: string;
-    // rating: number;
-    // reviews: number;
-}
 
 const ProviderServicesPage: React.FC = () => {
 
     const { provider } = useAppSelector(state => state.provider)
-    console.log('the provider', provider)
 
     const [services, setServices] = useState<IService[]>([])
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState<IService | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [subscriptionPlans, setSubscriptionPlans] = useState<ISubscriptionPlan[]>([])
+    const [isLoading, setIsLoading] = useState(false)
 
     const navigate = useNavigate()
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        const fetchServices = async () => {
-            const response = await serviceService.getServicesByProviderId(provider.id || '')
-            setServices(response.services)
-        }
-        fetchServices()
-    }, [provider])
+        const fetchData = async () => {
+            if (!provider.id) return;
+
+            setIsLoading(true);
+            try {
+                const servicesResponse = await serviceService.getServicesByProviderId(provider.id);
+                setServices(servicesResponse.services);
+
+                const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan();
+                setSubscriptionPlans(subscriptionResponse);
+            } catch (error: any) {
+                toast.error(error || "Something went wrong while fetching data");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [provider]);
+
+
+
 
     const handleAddNewService = () => {
-        console.log('the plan ', provider.subscription)
-        if(true){
-            setIsModalOpen(true)
+        const { subscription } = provider;
+
+        if (!subscription || subscription.status === "NONE") {
+            if (services.length >= 1) {
+                setIsModalOpen(true);
+                return;
+            }
+            return navigate(`/provider/providerService/new`);
         }
-        // navigate(`/provider/providerService/new`)
-    }
+
+        if (subscription.status === "EXPIRED") {
+            toast.info("Your subscription has expired. Please renew to add more services.");
+            setIsModalOpen(true);
+            return;
+        }
+
+        if (subscription.status === "ACTIVE") {
+            const currentPlan = subscriptionPlans.find(
+                (plan) => plan._id === subscription.planId
+            );
+
+            if (!currentPlan) {
+                toast.error("Subscription plan not found. Please subscribe again.");
+                setIsModalOpen(true);
+                return;
+            }
+
+            const serviceLimit = currentPlan.features.find(f => f.includes("max service limit"));
+            if (serviceLimit) {
+                const maxServices = parseInt(serviceLimit.match(/\d+/)?.[0] || "0", 10);
+                if (services.length >= maxServices) {
+                    toast.info("You’ve reached your service limit for this plan. Please upgrade.");
+                    setIsModalOpen(true);
+                    return;
+                }
+            }
+
+            return navigate(`/provider/providerService/new`);
+        }
+    };
+
 
     const handleDeleteClick = (service: IService) => {
         setServiceToDelete(service);
@@ -90,15 +139,90 @@ const ProviderServicesPage: React.FC = () => {
             setIsDeleting(false);
         }
     };
-    
-    const handleSubscribe = () => {
-        console.log('you subscribed')
-    }
+
+    const handleSubscribe = async (planId: string) => {
+        if (!provider.id) {
+            toast.error("Something went wrong!, please try again later");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await subscriptionPlanService.createSubscriptionOrder(provider.id, planId);
+            const options = {
+                key: paymentKey,
+                amount: response.plan.price,
+                currency: "INR",
+                name: "QuickMate",
+                description: response.plan.name,
+                order_id: response.order.id,
+                handler: async function (razorpayResponse: any) {
+                    if (!provider.id) {
+                        toast.error("Something went wrong!, please try again later");
+                        return;
+                    }
+                    try {
+                        const res = await subscriptionPlanService.verifySubscriptionPayment(
+                            provider.id,
+                            planId,
+                            razorpayResponse.razorpay_order_id,
+                            razorpayResponse.razorpay_payment_id,
+                            razorpayResponse.razorpay_signature
+                        );
+
+                        if (res.provider) {
+                            dispatch(updateProviderProfile({ provider: res.provider }));
+                        }
+                        toast.success(res.message);
+                    } catch (error) {
+                        console.error("Payment handler error:", error);
+                        toast.error("Payment verification failed.");
+                    } finally {
+                        setIsModalOpen(false);
+                        setIsLoading(false);
+                    }
+                },
+                prefill: {
+                    name: provider.fullName,
+                    email: provider.email,
+                    contact: provider.phoneNumber,
+                },
+                notes: {
+                    address: "Razorpay Corporate Office",
+                },
+                theme: {
+                    color: "#3057b0ff",
+                },
+                modal: {
+                    ondismiss: () => {
+                        setIsLoading(false);
+                        toast.info("Payment process was cancelled.");
+                    },
+                },
+            };
+
+            const razor = new (window as any).Razorpay(options);
+            razor.open();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to create subscription order");
+            setIsLoading(false);
+        }
+    };
+
 
     const handleDeleteCancel = () => {
         setShowDeleteModal(false);
         setServiceToDelete(null);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500" role="status" aria-label="Loading"></div>
+                <p className="ml-4 text-xl">Loading...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -271,6 +395,7 @@ const ProviderServicesPage: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubscribe={handleSubscribe}
+                subscriptionPlans={subscriptionPlans}
             />
         </div>
     );

@@ -73,7 +73,12 @@ export const authService = {
   logout: async () => {
     const response = await axiosInstance.post(`${API_URL}/logout`)
     return
-  }
+  },
+
+    getUserDetailsForAdmin: async (userId: string) => {
+    const response = await axiosInstance.get(`${API_URL}/users/${userId}`);
+    return response.data;
+  },
   
 
 };

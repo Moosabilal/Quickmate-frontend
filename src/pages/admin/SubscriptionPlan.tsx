@@ -117,7 +117,6 @@ export default function AdminSubscriptionPlans() {
           ...savedPlan,
           id: editingPlan.id
         }
-        console.log(savedPlan)
         await subscriptionPlanService.updateSubscriptionPlan(savedPlan);
         fetchPlans()
         setPlans(prev => prev.map(p => p.id === savedPlan.id ? savedPlan : p));

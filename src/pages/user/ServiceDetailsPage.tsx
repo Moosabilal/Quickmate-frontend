@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon } from 'lucide-react';
+import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
-import { IBackendProvider } from '../../util/interface/IProvider';
+import { FilterParams, IBackendProvider } from '../../util/interface/IProvider';
 import { toast } from 'react-toastify';
 import { bookingService } from '../../services/bookingService';
 import { IProvider } from '../../util/interface/IProvider';
@@ -17,17 +17,11 @@ import { IAddress } from '../../util/interface/IAddress';
 import { providerService } from '../../services/providerService';
 import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
+import { all } from 'axios';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
+import {CalendarModal} from '../../components/user/CalendarModal'
 
 declare var Razorpay: any;
-
-
-
-interface CalendarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 
 
 const ServiceDetailsPage: React.FC = () => {
@@ -51,6 +45,7 @@ const ServiceDetailsPage: React.FC = () => {
     zip: '',
     locationCoords: '',
   });
+  const [radius, setRadius] = useState(10)
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -60,203 +55,49 @@ const ServiceDetailsPage: React.FC = () => {
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
 
-  console.log('the all provider we are getting', allProviders)
 
-    const paymentOptions = [
+  const paymentOptions = [
     { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
     { value: PaymentMethod.WALLET, label: "Wallet" },
   ]
 
-
   const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
   const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
-  console.log('the provider times', providerTimes)
 
-
-
-
-  function generateAvailability(rawAvailability: any[], daysAhead = 7) {
-  const result: { date: string; slots: string[] }[] = [];
-  const today = new Date();
-
-  for (let i = 0; i < daysAhead; i++) {
-    const date = new Date();
-    date.setDate(today.getDate() + i);
-
-    const weekday = date.toLocaleDateString("en-US", { weekday: "long" });
-
-    // Get all availability rules for this weekday
-    const matches = rawAvailability.filter(av => av.day === weekday);
-
-    if (matches.length > 0) {
-      const slotsSet = new Set<string>();
-
-      matches.forEach(match => {
-        const [startH, startM] = match.startTime.split(":").map(Number);
-        const [endH, endM] = match.endTime.split(":").map(Number);
-
-        let current = new Date(date);
-        current.setHours(startH, startM, 0, 0);
-
-        const end = new Date(date);
-        end.setHours(endH, endM, 0, 0);
-
-        while (current < end) {
-          slotsSet.add(
-            current.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-          );
-          current.setMinutes(current.getMinutes() + 60); // interval = 1 hour
-        }
-      });
-
-      result.push({
-        date: date.toISOString().split("T")[0],
-        slots: Array.from(slotsSet).sort(
-          (a, b) =>
-            new Date(`1970-01-01T${a}`).getTime() -
-            new Date(`1970-01-01T${b}`).getTime()
-        ),
-      });
-    }
-  }
-
-  return result;
-}
-
-
-
-
-
-  const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
-    const providerAvailability = generateAvailability(providerTimes, 7);
-    console.log('the provider availabitly', providerAvailability)
-
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-indigo-50">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-6 h-6 text-indigo-600" />
-              <h2 className="text-xl font-semibold text-gray-800">Provider Availability</h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Side - Availability List */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-indigo-600" />
-                  Available Time Slots
-                </h3>
-                <div className="space-y-4">
-                  {providerAvailability.map((day) => (
-                    <div key={day.date} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <h4 className="font-medium text-gray-800 mb-2">
-                        {new Date(day.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {day.slots.map((slot) => (
-                          <button
-                            key={slot}
-                            onClick={() => {
-                              setSelectedDate(day.date);
-                              setSelectedTime(slot);
-                              onClose();
-                            }}
-                            className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors border border-green-300"
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Side - Google Calendar Embed */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Calendar View</h3>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <iframe
-                    src="https://calendar.google.com/calendar/embed?src=bcbe92b9d4f0d42530c5902c2c8d5dc0bed7c6394c89a38c42e24b532ac95258%40group.calendar.google.com&ctz=Asia%2FKolkata"
-                    style={{
-                      border: 0,
-                      width: "100%",
-                      height: "400px",
-                      borderRadius: "8px"
-                    }}
-                    frameBorder="0"
-                    scrolling="no"
-                    title="Provider Availability Calendar"
-                    loading="lazy"
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  * Green slots in calendar represent available time slots
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  const handleSlotSelection = (date: string, time: string) => {
+    setSelectedDate(date);
+    setSelectedTime(time);
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-  const getProvider = async (filterParams = {}) => {
+  const getProvider = async (filterParams: FilterParams = {}) => {
     try {
+      if (selectedAddress) {
+        filterParams.radius = radius;
+        filterParams.locationCoords = selectedAddress.locationCoords
+      }
+
       const providers = await providerService.getserviceProvider(serviceId!, filterParams);
-      const res = await walletService.getWallet()
-      setWalletBalance(res.data.wallet.balance)
       setAllProviders(providers);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
     }
   };
 
+  const fetchWallet = async () => {
+    try {
+      const res = await walletService.getWallet()
+      setWalletBalance(res.data.wallet.balance)
+    } catch (error) {
+
+    }
+  }
+
   useEffect(() => {
     if (serviceId) {
       getProvider();
     }
-  }, [selectedTime, selectedAddress]);
+
+  }, []);
 
   const navigate = useNavigate()
 
@@ -301,8 +142,9 @@ const ServiceDetailsPage: React.FC = () => {
     setDateTimePopup(false);
   };
 
-  const handleAddressConfirm = (address: IAddress) => {
+  const handleAddressConfirm = (address: IAddress, radius: number) => {
     setSelectedAddress(address);
+    setRadius(radius);
     setAddressPopup(false);
   };
 
@@ -317,6 +159,8 @@ const ServiceDetailsPage: React.FC = () => {
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    await fetchWallet()
 
     if (paymentMethod === PaymentMethod.WALLET) {
       if (walletBalance < Number(selectedProvider?.price)) {
@@ -438,9 +282,6 @@ const ServiceDetailsPage: React.FC = () => {
   };
 
 
-
-
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -526,8 +367,6 @@ const ServiceDetailsPage: React.FC = () => {
               </div>
 
 
-
-
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
                   <CalendarIcon className="w-4 h-4 mr-2" />
@@ -546,7 +385,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Selected Date & Time Display */}
               {selectedDate && selectedTime && (
                 <div className="p-4 rounded-xl border border-green-200 shadow-sm bg-green-50">
                   <h3 className="text-base font-semibold text-green-700 mb-2">Selected Slot</h3>
@@ -570,10 +408,6 @@ const ServiceDetailsPage: React.FC = () => {
                   </button>
                 </div>
               )}
-
-
-
-
 
 
               <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
@@ -616,7 +450,7 @@ const ServiceDetailsPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+              {/* <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
                 <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
                   <CalendarClockIcon className="w-4 h-4 mr-2" />
                   Select Date & Time
@@ -634,9 +468,7 @@ const ServiceDetailsPage: React.FC = () => {
                     ? `${selectedDate} at ${selectedTime}`
                     : "Choose Date & Time"}
                 </button>
-              </div>
-
-
+              </div> */}
 
               {selectedAddress && selectedProvider &&
                 <>
@@ -722,16 +554,17 @@ const ServiceDetailsPage: React.FC = () => {
                     </button>
                   </div>
                 </>}
-
-
-
             </form>
           </div>
-
         </div>
       </main>
-      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
+
+      <CalendarModal
+        isOpen={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        providers={allProviders}
+        onSlotSelect={handleSlotSelection}
+      />      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={providerTimes} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} providerLoc={providersLocations} />
     </div>

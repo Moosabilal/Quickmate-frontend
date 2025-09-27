@@ -249,22 +249,6 @@ const CategoryForm: React.FC = () => {
         );
     }
 
-    // if (error) {
-    //     return (
-    //         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-    //             <div className="flex-1 flex flex-col items-center justify-center">
-    //                 <p className="text-xl text-red-500">Error: {error}</p>
-    //                 <button
-    //                     onClick={() => navigate(backPath)}
-    //                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-    //                 >
-    //                     Go Back
-    //                 </button>
-    //             </div>
-    //         </div>
-    //     );
-    // }
-
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

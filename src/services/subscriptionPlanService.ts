@@ -39,5 +39,29 @@ export const subscriptionPlanService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    createSubscriptionOrder: async (providerId: string, planId: string) => {
+        try {
+            const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/create-order`, {providerId, planId})
+            return response.data
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    verifySubscriptionPayment: async (providerId: string, planId: string, razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string) => {
+        try {
+            const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/verify-payment`, {
+                providerId, 
+                planId, 
+                razorpay_order_id, 
+                razorpay_payment_id, 
+                razorpay_signature
+            })
+            return response.data
+        } catch (error) {
+            throw error;
+        }
     }
 }

@@ -98,3 +98,30 @@ export interface IProviderBookingManagement {
   createdAt: string;
   // rating: number | null;
 }
+
+export interface IAdminBookingFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  bookingStatus?: string;
+  serviceType?: string;
+  dateRange?: string;
+}
+
+export interface IBookingLog {
+  id: string;
+  userName: string;
+  userAvatar: string;
+  providerName: string;
+  serviceType: string;
+  dateTime: string;
+  paymentStatus: PaymentStatus;
+  bookingStatus: BookingStatus;
+}
+
+export interface IAdminBookingsResponse {
+  bookings: IBookingLog[];
+  totalPages: number;
+  currentPage: number;
+  totalBookings: number;
+}

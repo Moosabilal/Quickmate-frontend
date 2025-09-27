@@ -11,7 +11,7 @@ interface AddressPopupProps {
   addressPopup: boolean;
   setAddressPopup: React.Dispatch<React.SetStateAction<boolean>>;
   selectedAddress: IAddress | null;
-  handleAddressConfirm: (address: IAddress) => void;
+  handleAddressConfirm: (address: IAddress, radius: number) => void;
   setShowAddAddress: React.Dispatch<React.SetStateAction<boolean>>;
   showAddAddress: boolean;
   newAddress: IAddress;
@@ -75,7 +75,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       toast.error("Geolocation is not supported by your browser");
       return;
     }
-    setLoading(true)
+    setLoading(true);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -90,6 +90,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             street:
               locationData?.address?.road ||
               locationData?.address?.neighbourhood ||
+              locationData?.address?.county ||
               "",
             city:
               locationData?.address?.village ||
@@ -102,7 +103,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           };
 
           if (providerLoc) {
-            const withinRange = findProviderRange(lat, lng, radius, providerLoc)
+            const withinRange = findProviderRange(lat, lng, radius, providerLoc);
 
             if (!withinRange) {
               setError("No service provider found to your place, Please select different address.");
@@ -112,16 +113,16 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
           try {
             const response = await addressService.createAddress(newAddress);
-            handleAddressConfirm(response);
+            handleAddressConfirm(response, radius);
           } catch (err) {
             console.error("Failed to save address:", err);
           }
 
         } catch (err) {
           console.error("Failed to fetch address:", err);
-          alert("Unable to fetch address for current location");
+          toast.error("Unable to fetch address for current location");
         } finally {
-          setLoading(false)
+          setLoading(false);
         }
       },
       (error) => {
@@ -131,9 +132,10 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     );
   };
 
+
   const handleAddressConfirmWithCheck = (address: IAddress) => {
     if (!providerLoc || !address.locationCoords) {
-      handleAddressConfirm(address);
+      handleAddressConfirm(address, radius);
       setAddressPopup(false);
       return;
     } else {
@@ -142,7 +144,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
 
       if (withinRange) {
-        handleAddressConfirm(address);
+        handleAddressConfirm(address, radius);
       } else {
         setError("No service provider found on this location.");
       }
@@ -172,7 +174,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       if (withinRange) {
         setNewAddress(newAddr)
         handleAddAddress(newAddr)
-        handleAddressConfirm(newAddr);
+        handleAddressConfirm(newAddr, radius);
 
       } else {
         setError("No service provider found on this location.");
@@ -180,7 +182,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       }
     } else {
       setNewAddress(newAddr)
-      handleAddressConfirm(newAddr)
+      handleAddressConfirm(newAddr, radius)
       handleAddAddress(newAddr)
     }
   }
@@ -196,6 +198,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   }
 
   useEffect(() => {
+    if (!addressPopup) return;
+
     fetchAddress()
   }, [addressPopup])
 
@@ -251,7 +255,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   onClick={handleCurrentLocation}
                   className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {loading ? 'fetching your address...' :'📍 Use Current Location'}
+                  {loading ? 'fetching your address...' : '📍 Use Current Location'}
                 </button>
               </div>
 

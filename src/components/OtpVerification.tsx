@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
-import ThemeToggle from '../components/ThemeToggle';
+import ThemeToggle from './ThemeToggle';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login, updateProfile } from '../features/auth/authSlice';

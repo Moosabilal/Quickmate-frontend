@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
-import ThemeToggle from '../../components/ThemeToggle';
+import ThemeToggle from '../ThemeToggle';
 import { authService } from '../../services/authService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../deleteConfirmationModel';

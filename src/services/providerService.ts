@@ -105,29 +105,29 @@ export const providerService = {
         }
     },
 
-    googleAuth: async () => {
-        try {
-            const response = await axiosInstance.get(`${PROVIDER_URL}/google/auth`)
-            console.log('the response in porvideer service', response)
-            return response.data
-        } catch (error) {
-            console.log('the erorr in googleAuth', error)
-            throw error
-        }
-    },
+    // googleAuth: async () => {
+    //     try {
+    //         const response = await axiosInstance.get(`${PROVIDER_URL}/google/auth`)
+    //         console.log('the response in porvideer service', response)
+    //         return response.data
+    //     } catch (error) {
+    //         console.log('the erorr in googleAuth', error)
+    //         throw error
+    //     }
+    // },
 
-    getProviderAvailability: async (providerIds: string[], timeMin: string, timeMax: string) => {
+    getProviderAvailability: async (latitude: number, longitude: number, serviceId: string, radius: number, timeMin: string, timeMax: string) => {
         try {
             const params = {
-                providerIds,
+                latitude,
+                longitude,
+                serviceId,
+                radius,
                 timeMin,
                 timeMax  
             };
 
-            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, {
-                params,
-                paramsSerializer: params => qs.stringify(params, { arrayFormat: "repeat" })
-            });
+            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, { params });
 
             return response.data;
         } catch (error) {

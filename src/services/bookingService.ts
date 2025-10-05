@@ -111,5 +111,11 @@ export const bookingService = {
     }
   },
 
+  findProviderRange: async (serviceId: string, lat: number, lng: number, radius: number) => {
+    const response = await axiosInstance.get(`${BOOKING_URL}/findProviderRange`, {
+      params: { serviceId, lat, lng, radius },
+    });
+    return response.data;
+  },
 
 }

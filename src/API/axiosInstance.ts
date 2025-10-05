@@ -64,7 +64,7 @@ axiosInstance.interceptors.response.use(
         console.warn('Unhandled error:', error.response?.data?.message || error.message);
     }
 
-    return Promise.reject(error.response.data.message || "Something went wrong!, Please try again later");
+    return Promise.reject(error.response.data || "Something went wrong!, Please try again later");
   }
 );
 

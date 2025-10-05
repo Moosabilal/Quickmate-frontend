@@ -81,6 +81,7 @@ const ProviderProfile: React.FC = () => {
     const { provider } = useAppSelector((state) => state.provider);
     const { user } = useAppSelector((state) => state.auth)
 
+    console.log('the user', user)
     const [providerDetails, setProviderDetails] = useState<Partial<IProviderProfile>>({});
     const [editedDetails, setEditedDetails] = useState<IEditedProviderProfile>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,15 +110,15 @@ const ProviderProfile: React.FC = () => {
         };
     };
 
-    const handleConnectCalendar = async () => {
-        try {
-            const response = await providerService.googleAuth()
-            window.location.href = response.url;
-        } catch (error) {
-            console.error('Error connecting to Google Calendar:', error);
-            toast.error('Could not connect to Google Calendar. Please try again.');
-        }
-    }
+    // const handleConnectCalendar = async () => {
+    //     try {
+    //         const response = await providerService.googleAuth()
+    //         window.location.href = response.url;
+    //     } catch (error) {
+    //         console.error('Error connecting to Google Calendar:', error);
+    //         toast.error('Could not connect to Google Calendar. Please try again.');
+    //     }
+    // }
 
 
     useEffect(() => {
@@ -735,20 +736,20 @@ const ProviderProfile: React.FC = () => {
                             By connecting your Google Calendar, your availability and bookings will automatically sync.
                         </p>
 
-                        <div className="flex justify-end space-x-3">
-                            {/* <button
+                        {/* <div className="flex justify-end space-x-3">
+                            <button
                                 onClick={handleCloseCalendarModal}
                                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg"
                             >
                                 Cancel
-                            </button> */}
+                            </button>
                             <button
-                                onClick={handleConnectCalendar}
+                                // onClick={handleConnectCalendar}
                                 className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
                             >
                                 Connect Now
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             )}

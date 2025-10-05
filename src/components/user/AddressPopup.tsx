@@ -6,6 +6,7 @@ import { IAddress } from "../../util/interface/IAddress";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
 import { findProviderRange } from "../../util/findProviderRange";
+import { bookingService } from "../../services/bookingService";
 
 interface AddressPopupProps {
   addressPopup: boolean;
@@ -17,7 +18,7 @@ interface AddressPopupProps {
   newAddress: IAddress;
   setNewAddress: React.Dispatch<React.SetStateAction<any>>;
   handleAddAddress: (address: IAddress) => void;
-  providerLoc?: string[];
+  serviceId: string;
 }
 
 
@@ -31,7 +32,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   newAddress,
   setNewAddress,
   handleAddAddress,
-  providerLoc,
+  serviceId,
 }) => {
 
   const [mockAddresses, setMockAddresses] = useState<IAddress[]>([])
@@ -70,21 +71,29 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
 
 
-  const handleCurrentLocation = async () => {
+  const handleCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
     setLoading(true);
-
+    setError(null);
+  
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
         try {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+  
+          const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
+  
+          if (!withinRange) {
+            setError("No service provider found at your location. Please select a different address.");
+            return;
+          }
+  
           const locationData = await providerService.getState(lat, lng);
-
+  
           const newAddress: IAddress = {
             label: "Current Location",
             street:
@@ -101,52 +110,46 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             zip: locationData?.address?.postcode || "",
             locationCoords: `${lat},${lng}`,
           };
-
-          if (providerLoc) {
-            const withinRange = findProviderRange(lat, lng, radius, providerLoc);
-
-            if (!withinRange) {
-              setError("No service provider found to your place, Please select different address.");
-              return;
-            }
-          }
-
-          try {
-            const response = await addressService.createAddress(newAddress);
-            handleAddressConfirm(response, radius);
-          } catch (err) {
-            console.error("Failed to save address:", err);
-          }
-
-        } catch (err) {
-          console.error("Failed to fetch address:", err);
-          toast.error("Unable to fetch address for current location");
+          
+          // Step 3: If everything is successful, save the address
+          const response = await addressService.createAddress(newAddress);
+          handleAddressConfirm(response, radius);
+  
+        } catch (err: any) {
+          console.error("An error occurred while fetching current location:", err);
+          setError(err.message || "Failed to process current location. Please try again.");
         } finally {
           setLoading(false);
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        toast.error("Unable to fetch your current location");
+        toast.error("Unable to retrieve your location. Please check your browser's location permissions.");
+        setLoading(false); // Also handle loading state here
       }
     );
   };
 
 
-  const handleAddressConfirmWithCheck = (address: IAddress) => {
-    if (!providerLoc || !address.locationCoords) {
+  const handleAddressConfirmWithCheck = async (address: IAddress) => {
+    if (!address.locationCoords) {
       handleAddressConfirm(address, radius);
       setAddressPopup(false);
+      setError('')
       return;
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
+      try {
+        const withinRange = await bookingService.findProviderRange(serviceId, userLat, userLng, radius)
 
-      const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
-
-      if (withinRange) {
-        handleAddressConfirm(address, radius);
-      } else {
-        setError("No service provider found on this location.");
+        if (withinRange) {
+          handleAddressConfirm(address, radius);
+          setError('')
+        } else {
+          setError("No service provider found on this location.");
+        }
+      } catch (error) {
+        setError((error as Error).message || 'An unexpected error occurred.');
       }
     }
 
@@ -166,10 +169,10 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       return;
     }
     const newAddr = { ...newAddress, locationCoords: `${coords.lat},${coords.lng}`, };
-    if (providerLoc) {
+    if (serviceId) {
       const [userLat, userLng] = newAddr.locationCoords!.split(",").map(Number);
 
-      const withinRange = findProviderRange(userLat, userLng, radius, providerLoc)
+      const withinRange = await bookingService.findProviderRange(serviceId, userLat, userLng, radius)
 
       if (withinRange) {
         setNewAddress(newAddr)
@@ -212,7 +215,10 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white flex justify-between items-center">
           <h3 className="text-xl font-bold">Select Address</h3>
           <button
-            onClick={() => setAddressPopup(false)}
+            onClick={() => {
+              setAddressPopup(false)
+              setError('')
+            }}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
@@ -224,7 +230,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
               {error && <p className="text-red-600 mb-2">{error}</p>}
             </div>
             <div className="flex flex-col gap-4">
-              {providerLoc && <div className="flex items-center gap-4">
+              {serviceId && <div className="flex items-center gap-4">
                 <label className="block text-sm font-medium text-gray-700 whitespace-nowrap">
                   Search Radius: {radius} km
                 </label>

@@ -50,7 +50,7 @@ const ServiceDetailsPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
+  // const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -61,27 +61,27 @@ const ServiceDetailsPage: React.FC = () => {
     { value: PaymentMethod.WALLET, label: "Wallet" },
   ]
 
-  const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
-  const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
+  // const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
+  // const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
 
   const handleSlotSelection = (date: string, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
   };
 
-  const getProvider = async (filterParams: FilterParams = {}) => {
-    try {
-      if (selectedAddress) {
-        filterParams.radius = radius;
-        filterParams.locationCoords = selectedAddress.locationCoords
-      }
+  // const getProvider = async (filterParams: FilterParams = {}) => {
+  //   try {
+  //     if (selectedAddress) {
+  //       filterParams.radius = radius;
+  //       filterParams.locationCoords = selectedAddress.locationCoords
+  //     }
 
-      const providers = await providerService.getserviceProvider(serviceId!, filterParams);
-      setAllProviders(providers);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to fetch providers');
-    }
-  };
+  //     const providers = await providerService.getserviceProvider(serviceId!, filterParams);
+  //     setAllProviders(providers);
+  //   } catch (error: any) {
+  //     toast.error(error?.response?.data?.message || 'Failed to fetch providers');
+  //   }
+  // };
 
   const fetchWallet = async () => {
     try {
@@ -92,12 +92,12 @@ const ServiceDetailsPage: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    if (serviceId) {
-      getProvider();
-    }
+  // useEffect(() => {
+  //   if (serviceId) {
+  //     getProvider();
+  //   }
 
-  }, []);
+  // }, []);
 
   const navigate = useNavigate()
 
@@ -562,11 +562,15 @@ const ServiceDetailsPage: React.FC = () => {
       <CalendarModal
         isOpen={showCalendar}
         onClose={() => setShowCalendar(false)}
-        providers={allProviders}
+        latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0}
+        longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
+        serviceId={serviceId || ''}
+        radius={radius}
         onSlotSelect={handleSlotSelection}
-      />      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
-      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={providerTimes} />
-      <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} providerLoc={providersLocations} />
+      />
+      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
+      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
+      <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} serviceId={serviceId || ''}/>
     </div>
   );
 };

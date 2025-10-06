@@ -19,7 +19,7 @@ import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
 import { all } from 'axios';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
-import {CalendarModal} from '../../components/user/CalendarModal'
+import { CalendarModal } from '../../components/user/CalendarModal'
 
 declare var Razorpay: any;
 
@@ -568,9 +568,15 @@ const ServiceDetailsPage: React.FC = () => {
         radius={radius}
         onSlotSelect={handleSlotSelection}
       />
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedTime={selectedTime} />
+      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} 
+        selectedDate={selectedDate}
+        selectedTime={selectedTime} 
+        latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0}
+        longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
+        radiusKm={radius}
+      />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
-      <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} serviceId={serviceId || ''}/>
+      <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} serviceId={serviceId || ''} />
     </div>
   );
 };

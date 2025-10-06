@@ -12,7 +12,11 @@ interface ProviderPopupProps {
   selectedProvider: IBackendProvider | null;
   setProviderPopup: (open: boolean) => void;
   serviceId: string;
+  selectedDate: string | null;
   selectedTime: string | null;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
 }
 
 const ProviderPopup = ({
@@ -21,22 +25,28 @@ const ProviderPopup = ({
   selectedProvider,
   setProviderPopup,
   serviceId,
-  selectedTime
+  selectedDate,
+  selectedTime,
+  latitude,
+  longitude,
+  radiusKm
 }: ProviderPopupProps) => {
   if (!providerPopup) return null;
 
+  console.log('the selected time', selectedTime)
+
   const initialFilters: FilterParams = {
-    area: '',
-    day: '',
-    time: '',
-    experience: undefined,
-    price: undefined,
-    radius: 10,
-    locationCoords: ''
+    experience: 0,
+    price: 0,
+    radius: radiusKm || 10,
+    latitude: latitude || 0,
+    longitude: longitude || 0,
+    date: selectedDate || null,
+    time: selectedTime || null
   };
 
   const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
-  const [filters, setFilters] = useState<FilterParams>({});
+  const [filters, setFilters] = useState<FilterParams>(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterParams>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
@@ -44,27 +54,27 @@ const ProviderPopup = ({
   function convertTo24Hour(time12h: string): string {
     try {
       const timeStr = time12h.trim();
-      
+
       if (timeStr.match(/^\d{2}:\d{2}$/)) {
         return timeStr;
       }
-            const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
       if (!match) {
         console.warn('Invalid time format:', time12h);
         return timeStr;
       }
-      
+
       const [, hourStr, minuteStr, modifier] = match;
       let hours = parseInt(hourStr, 10);
       const minutes = parseInt(minuteStr, 10);
-      
+
       if (modifier.toLowerCase() === 'pm' && hours !== 12) {
         hours += 12;
       }
       if (modifier.toLowerCase() === 'am' && hours === 12) {
         hours = 0;
       }
-      
+
       return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
     } catch (error) {
       console.error('Error converting time:', error, time12h);
@@ -72,26 +82,27 @@ const ProviderPopup = ({
     }
   }
 
-  const getProvider = async (filterParams: FilterParams = {}) => {
+  const getProvider = async (filterParams: FilterParams) => {
     try {
-      const filteredParams = Object.fromEntries(
-        Object.entries(filterParams).filter(
-          ([, value]) =>
-            value !== '' &&
-            value !== undefined &&
-            !(typeof value === 'number' && value === 0)
-        )
-      ) as FilterParams;
+      let paramsToSend = { ...filterParams };
 
-      if (selectedTime) {
-        const convertedTime = convertTo24Hour(selectedTime);
-        filteredParams.time = convertedTime;
-        console.log('Filtering by time:', selectedTime, '→', convertedTime);
-      }
-      
-      const providers = await providerService.getserviceProvider(serviceId, filteredParams as FilterParams);
+       const filteredParams: Partial<FilterParams> = Object.fromEntries(
+      Object.entries(filterParams).filter(
+        ([, value]) =>
+          value !== null &&
+          value !== undefined &&
+          value !== '' &&
+          value !== 0 &&
+          !(typeof value === 'number' && isNaN(value))
+      )
+    );
+
+      console.log('the filtered params', filterParams)
+
+      const providers = await providerService.getserviceProvider(serviceId, filteredParams);
+      console.log('the providers', providers)
       setAllProviders(providers);
-      
+
     } catch (error: any) {
       console.error('Error fetching providers:', error);
       toast.error(error?.response?.data?.message || 'Failed to fetch providers');
@@ -164,36 +175,11 @@ const ProviderPopup = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
                       <input
-                        type="text"
-                        placeholder="Search by area"
-                        value={filters.area || ''}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, area: e.target.value }))}
-                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-                    <div className="relative">
-                      <select
-                        value={filters.day || ''}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, day: e.target.value }))}
-                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      >
-                        <option value="">Any Day</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                      </select>
-                    </div>
-                    <div className="relative">
-                      <input
                         type="number"
                         placeholder="Min Experience (years)"
                         value={filters.experience || ''}
                         min={0}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, experience: e.target.value ? Number(e.target.value) : undefined }))}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, experience: e.target.value ? Number(e.target.value) : 0 }))}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
@@ -203,7 +189,7 @@ const ProviderPopup = ({
                         placeholder="Max Price"
                         value={filters.price || ''}
                         min={0}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, price: e.target.value ? Number(e.target.value) : undefined }))}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, price: e.target.value ? Number(e.target.value) : 0 }))}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
@@ -269,7 +255,7 @@ const ProviderPopup = ({
                   </div>
                   <p className="text-gray-600 text-sm font-medium">No service providers found</p>
                   <p className="text-gray-500 text-xs mt-1">
-                    {selectedTime 
+                    {selectedTime
                       ? `No providers available at ${selectedTime}. Try a different time or adjust filters.`
                       : 'Try adjusting your filters or search criteria'
                     }

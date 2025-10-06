@@ -188,11 +188,12 @@ export interface IDashboardStatus {
 }
 
 export type FilterParams = {
-  area?: string;
-  experience?: number;
-  day?: string;
-  time?: string;
-  price?: number;
-  radius?: number;
-  locationCoords?: string;
+  experience: number;
+  price: number;
+  radius: number;
+  latitude: number;
+  longitude: number;
+  date: string | null
+  time: string | null
+  
 };

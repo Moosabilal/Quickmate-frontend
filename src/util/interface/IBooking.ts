@@ -125,3 +125,24 @@ export interface IAdminBookingsResponse {
   currentPage: number;
   totalBookings: number;
 }
+
+export interface IApiSlot {
+  start: string;
+  end: string;
+}
+
+export interface IApiProviderAvailability {
+  providerId: string;
+  providerName: string;
+  availableSlots: IApiSlot[];
+}
+
+export interface CalendarModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  latitude: number;
+  longitude: number;
+  serviceId?: string;
+  radius?: number;
+  onSlotSelect: (date: string, time: string) => void;
+}

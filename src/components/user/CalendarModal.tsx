@@ -4,27 +4,8 @@ import { providerService } from "../../services/providerService";
 import { toast } from "react-toastify";
 import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { bookingService } from "../../services/bookingService";
+import { IApiProviderAvailability, CalendarModalProps } from "../../util/interface/IBooking";
 
-interface IApiSlot {
-  start: string;
-  end: string;
-}
-
-interface IApiProviderAvailability {
-  providerId: string;
-  providerName: string;
-  availableSlots: IApiSlot[];
-}
-
-interface CalendarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  latitude: number;
-  longitude: number;
-  serviceId?: string;
-  radius?: number;
-  onSlotSelect: (date: string, time: string) => void;
-}
 
 export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, latitude, longitude, serviceId, radius, onSlotSelect }) => {
   const [availability, setAvailability] = useState<{ [date: string]: string[] }>({});
@@ -42,73 +23,77 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
   };
   const toISODateString = (date: Date) => {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
-    const fetchAvailabilityForMonth = async () => {
-      if (!isOpen) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-
-      const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
-      const timeMin = new Date(year, month, 1);
-      const timeMax = new Date(year, month + 1, 0);
-
-      try {
-        const response: IApiProviderAvailability[] = await providerService.getProviderAvailability(
-          latitude,
-          longitude,
-          serviceId || "",
-          radius || 10,
-          timeMin.toISOString(),
-          timeMax.toISOString()
-        );
-        console.log('the response', response);
-        const mergedSlotsByDate: { [date: string]: Set<string> } = {};
-
-        // 1. Loop through each provider in the response array
-        response.forEach(provider => {
-          if (provider && Array.isArray(provider.availableSlots)) {
-            // 2. Loop through the available slots for that provider
-            provider.availableSlots.forEach(slot => {
-              const startDate = new Date(slot.start);
-              const dateKey = toISODateString(startDate);
-
-              if (!mergedSlotsByDate[dateKey]) {
-                mergedSlotsByDate[dateKey] = new Set();
-              }
-              // 3. Add the formatted start time to the Set (avoids duplicates)
-              mergedSlotsByDate[dateKey].add(formatTimeSlot(startDate));
-            });
-          }
-        });
-
-        const finalAvailabilityForMonth: { [date: string]: string[] } = {};
-        Object.entries(mergedSlotsByDate).forEach(([date, slotsSet]) => {
-          finalAvailabilityForMonth[date] = Array.from(slotsSet).sort((a, b) =>
-            convertTo24Hour(a).localeCompare(convertTo24Hour(b))
-          );
-        });
-        setAvailability(prev => ({ ...prev, ...finalAvailabilityForMonth }));
-        console.log('the availability', availability);
-      } catch (error) {
-        console.error("Error fetching provider availability:", error);
-        toast.error("Failed to fetch availability for the selected month.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchAvailabilityForMonth();
+  const fetchAvailabilityForMonth = async () => {
+    if (!isOpen) {
+      setLoading(false);
+      return;
     }
-  }, [isOpen, currentMonth, latitude, longitude, serviceId, radius]);
+
+    setAvailability({});
+    setLoading(true);
+
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const timeMin = new Date(year, month, 1);
+    const timeMax = new Date(year, month + 1, 0);
+
+    try {
+      const response: IApiProviderAvailability[] = await providerService.getProviderAvailability(
+        latitude,
+        longitude,
+        serviceId || "",
+        radius || 10,
+        timeMin.toISOString(),
+        timeMax.toISOString()
+      );
+
+      console.log('the response', response);
+      const mergedSlotsByDate: { [date: string]: Set<string> } = {};
+
+      response.forEach(provider => {
+        if (provider && Array.isArray(provider.availableSlots)) {
+          provider.availableSlots.forEach(slot => {
+            const startDate = new Date(slot.start);
+            const dateKey = toISODateString(startDate);
+
+            if (!mergedSlotsByDate[dateKey]) {
+              mergedSlotsByDate[dateKey] = new Set();
+            }
+
+            mergedSlotsByDate[dateKey].add(formatTimeSlot(startDate));
+          });
+        }
+      });
+
+      const finalAvailabilityForMonth: { [date: string]: string[] } = {};
+      Object.entries(mergedSlotsByDate).forEach(([date, slotsSet]) => {
+        finalAvailabilityForMonth[date] = Array.from(slotsSet).sort((a, b) =>
+          convertTo24Hour(a).localeCompare(convertTo24Hour(b))
+        );
+      });
+
+      setAvailability(finalAvailabilityForMonth);
+
+      console.log('Updated availability', finalAvailabilityForMonth);
+    } catch (error) {
+      console.error("Error fetching provider availability:", error);
+      toast.error("Failed to fetch availability for the selected month.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isOpen) {
+    fetchAvailabilityForMonth();
+  }
+}, [isOpen, currentMonth, latitude, longitude, serviceId, radius]);
+
 
   const handleTimeSlotClick = (date: Date, time: string) => {
     onSlotSelect(toISODateString(date), time);

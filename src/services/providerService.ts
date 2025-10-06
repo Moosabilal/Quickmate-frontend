@@ -79,7 +79,7 @@ export const providerService = {
         return response.data
     },
 
-    getserviceProvider: async (serviceId: string, filters: FilterParams) => {
+    getserviceProvider: async (serviceId: string, filters: Partial<FilterParams>) => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getFilteredServiceProvider`, { params: { serviceId, ...filters } })
         return response.data
     },

@@ -67,6 +67,7 @@ const ServiceDetailsPage: React.FC = () => {
   const handleSlotSelection = (date: string, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
+    setSelectedProvider(null)
   };
 
   // const getProvider = async (filterParams: FilterParams = {}) => {
@@ -88,7 +89,8 @@ const ServiceDetailsPage: React.FC = () => {
       const res = await walletService.getWallet()
       setWalletBalance(res.data.wallet.balance)
     } catch (error) {
-
+      toast.error('Failed to fetch wallet balance')
+      setWalletBalance(0)
     }
   }
 

@@ -517,7 +517,7 @@ const BookingDetails: React.FC = () => {
                   </div>
                 )}
 
-                {booking.status === BookingStatus.PENDING && (
+                {/* booking.status === BookingStatus.PENDING && (
                   <button>
                     <div className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left text-gray-600"
                       onClick={() => setDateTimePopup(true)}
@@ -527,7 +527,7 @@ const BookingDetails: React.FC = () => {
                     </div>
                   </button>
 
-                )}
+                ) */}
                 {(booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED) &&
                   <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors text-left text-red-600"
                     onClick={() => handleDeleteClick(booking)}

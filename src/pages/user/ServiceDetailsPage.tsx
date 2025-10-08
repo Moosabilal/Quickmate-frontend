@@ -87,6 +87,7 @@ const ServiceDetailsPage: React.FC = () => {
   const fetchWallet = async () => {
     try {
       const res = await walletService.getWallet()
+      console.log('the res', res.data.wallet.balance)
       setWalletBalance(res.data.wallet.balance)
     } catch (error) {
       toast.error('Failed to fetch wallet balance')

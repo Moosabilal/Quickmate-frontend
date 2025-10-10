@@ -334,7 +334,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
-                            {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
+                            {/* {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
                               // <><button
                               //   onClick={() => window.open(`tel:${booking.customerPhone}`)}
                               //   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
@@ -355,7 +355,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 />
                               </button>
                               // </>
-                            }
+                            } */}
                           </div>
                         </div>
 

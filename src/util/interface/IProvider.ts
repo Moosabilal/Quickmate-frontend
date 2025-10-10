@@ -197,3 +197,23 @@ export type FilterParams = {
   time: string | null
   
 };
+
+export interface EarningsBreakdownItem {
+  date: string; 
+  service: string;
+  client: string;
+  amount: number;
+  status: string;
+}
+
+export interface EarningsAnalyticsData {
+  totalEarnings: number;
+  earningsChangePercentage: number;
+  totalClients: number;
+  newClients: number;
+  topService: {
+    name: string;
+    earnings: number;
+  };
+  breakdown: EarningsBreakdownItem[];
+}

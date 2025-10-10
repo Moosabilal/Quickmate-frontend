@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Link, useLocation, useMatch } from 'react-router-dom';
+import { MdOutlineChat } from 'react-icons/md';
 
 const Sidebar = () => {
   const { provider } = useAppSelector((state) => state.provider);
@@ -14,9 +15,10 @@ const Sidebar = () => {
     { icon: <User className="w-5 h-5" />, label: 'Dashboard', path: `/provider/providerDashboard` },
     { icon: <User className="w-5 h-5" />, label: 'Service Profile', path: `/provider/providerProfile/${user?.id}` },
     { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/provider/providerBookingManagement` },
+    { icon: <MdOutlineChat className="w-5 h-5" />, label: 'Live Chat',  path: '/chat' },
     { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/provider/providerService` },
     // { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/provider/providerProfile` },
-    // { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/provider/providerProfile` },
+    { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/provider/earningsAnalitics` },
   ];
 
   const isActive = (path: string) => {

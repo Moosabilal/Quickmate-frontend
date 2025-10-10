@@ -30,7 +30,7 @@ const Sidebar = () => {
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
     { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/profile/wallet' },
-    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chatListPage' },
+    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/chat' },
     // { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
     // { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
     // { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },

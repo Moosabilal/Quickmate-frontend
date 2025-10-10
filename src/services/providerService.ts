@@ -152,7 +152,19 @@ export const providerService = {
             console.error('Error fetching providers by location:', error);
             throw error;
         }
-    }
+    },
+
+    getEarningsAnalytics: async (period: 'week' | 'month') => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/earnings`, {
+                params: { period }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching earnings analytics:', error);
+            throw error;
+        }
+    },
 
 
 }

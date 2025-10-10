@@ -61,6 +61,7 @@ export const bookingService = {
 
   getAllPreviousChat: async (joiningId: string) => {
     try {
+      console.log('Joining ID:', joiningId); // Debug log to check the joiningId value
       const response = await axiosInstance.get(`${BOOKING_URL}/getAllPreviousChats/${joiningId}`)
       return response.data
     } catch (error) {

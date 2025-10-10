@@ -2,34 +2,39 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
 import { ChatMessage, MaybeStream } from "../util/interface/IChatAndVideo";
+import { useCallStore } from "../app/callStore";
 
 export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
-    
+    const { setIncomingCall } = useCallStore();
+
     const [localStream, setLocalStream] = useState<MaybeStream>(null);
     const [remoteStream, setRemoteStream] = useState<MaybeStream>(null);
-    
-    const [incomingCall, setIncomingCall] = useState<{
-        fromUserId: string;
-        fromUserName?: string;
-        offer: RTCSessionDescriptionInit;
-    } | null>(null);
-    const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'ringing' | 'connecting' | 'connected' | 'ended'>('idle');
+
+    const [isAudioMuted, setIsAudioMuted] = useState(false);
+    const [isVideoOff, setIsVideoOff] = useState(false);
+
+    const [callStatus, setCallStatus] = useState<
+        "idle" | "calling" | "ringing" | "connecting" | "connected" | "ended"
+    >("idle");
 
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const localStreamRef = useRef<MaybeStream>(null);
     const remoteStreamRef = useRef<MaybeStream>(null);
+    const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
 
     const rtcConfig: RTCConfiguration = {
         iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" }
-        ]
+            { urls: "stun:stun1.l.google.com:19302" },
+        ],
     };
 
     const ensurePeerConnection = useCallback(() => {
-        if (pcRef.current) return pcRef.current;
+        if (pcRef.current) {
+            return pcRef.current;
+        }
 
         const pc = new RTCPeerConnection(rtcConfig);
 
@@ -38,35 +43,38 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
                 socket.emit("webrtc:ice-candidate", {
                     joiningId,
                     fromUserId: currentUserId,
-                    candidate: e.candidate
+                    candidate: e.candidate,
                 });
             }
         };
 
         pc.ontrack = (ev) => {
-            console.log("Received remote stream");
             const [stream] = ev.streams;
             remoteStreamRef.current = stream;
-            setRemoteStream(stream); 
-        };
-
-        pc.onconnectionstatechange = () => {
-            console.log("Connection state:", pc.connectionState);
-        };
-
-        pc.oniceconnectionstatechange = () => {
-            console.log("ICE connection state:", pc.iceConnectionState);
+            setRemoteStream(stream);
         };
 
         pcRef.current = pc;
         return pc;
     }, [currentUserId, joiningId]);
 
+    const processIceQueue = useCallback(() => {
+        if (pcRef.current) {
+            iceCandidateQueueRef.current.forEach((candidate) => {
+                pcRef.current!
+                    .addIceCandidate(candidate)
+                    .then(() => {})
+                    .catch((e) => console.error("Error adding queued ICE:", e));
+            });
+            iceCandidateQueueRef.current = [];
+        }
+    }, []);
+
     useEffect(() => {
         const getAllChats = async () => {
             try {
-                setLoadingHistory(true); 
-                const data = await bookingService.getAllPreviousChat(joiningId)
+                setLoadingHistory(true);
+                const data = await bookingService.getAllPreviousChat(joiningId);
                 const formatted = data.map((msg: any) => ({
                     joiningId: String(msg.joiningId),
                     senderId: String(msg.senderId),
@@ -76,13 +84,13 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
                 })) as ChatMessage[];
                 setMessages(formatted);
             } catch (error) {
-                console.log('Oops Error occurred', error)
+                console.error("  [History] Error fetching chat history:", error);
             } finally {
-                setLoadingHistory(false)
+                setLoadingHistory(false);
             }
-        }
-        getAllChats()
-    }, [currentUserId, joiningId])
+        };
+        if (joiningId) getAllChats();
+    }, [currentUserId, joiningId]);
 
     useEffect(() => {
         if (!joiningId) return;
@@ -96,69 +104,68 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
                 text: String(msg.text || ""),
                 timestamp: msg.timestamp ?? new Date().toISOString(),
                 isCurrentUser: String(msg.senderId) === String(currentUserId),
-                _id: msg._id
+                _id: msg._id,
             };
             setMessages((prev) => [...prev, parsed]);
         };
-        socket.on("receiveBookingMessage", chatHandler);
 
-        const offerHandler = async (payload: { joiningId: string, offer: RTCSessionDescriptionInit; fromUserId: string; fromUserName?: string; }) => {
-            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
-            
-            console.log("Received incoming call from:", payload.fromUserId);
-            
-            setIncomingCall({
-                fromUserId: payload.fromUserId,
-                fromUserName: payload.fromUserName,
-                offer: payload.offer
-            });
-            setCallStatus('ringing');
-            
+        const offerHandler = async (payload: any) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) {
+                return;
+            }
+            setIncomingCall(payload);
         };
 
-        const answerHandler = async (payload: { joiningId: string, answer: RTCSessionDescriptionInit; fromUserId: string; }) => {
+        const answerHandler = async (payload: any) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
-            
-            console.log("Received answer from:", payload.fromUserId);
             const pc = ensurePeerConnection();
-            
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
-                setCallStatus('connected');
-                console.log("Call connected successfully");
+                processIceQueue();
+                setCallStatus("connected");
             } catch (error) {
                 console.error("Error handling answer:", error);
-                setCallStatus('ended');
+                setCallStatus("ended");
             }
         };
 
-        const iceHandler = async (payload: { joiningId: string, candidate: RTCIceCandidateInit; fromUserId: string; }) => {
+        const iceHandler = async (payload: any) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
-            
             const pc = ensurePeerConnection();
-            try {
+            if (pc.remoteDescription) {
                 await pc.addIceCandidate(payload.candidate);
-                console.log("Added ICE candidate");
-            } catch (err) {
-                console.error("Error adding ICE candidate", err);
+            } else {
+                iceCandidateQueueRef.current.push(payload.candidate);
             }
         };
 
-        const hangupHandler = (payload: { fromUserId: string }) => {
-            if (payload.fromUserId !== currentUserId) {
-                console.log("Call ended by other user");
-                endCall();
-            }
+        const hangupHandler = (payload: any) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
+            setIncomingCall(null);
+            try {
+                const blockKey = `offerBlockUntil:${joiningId}`;
+                localStorage.setItem(blockKey, String(Date.now() + 5000));
+            } catch {}
+            endCall();
         };
 
-        const callRejectedHandler = (payload: { fromUserId: string }) => {
-            if (payload.fromUserId !== currentUserId) {
-                console.log("Call was rejected");
-                setCallStatus('ended');
-                endCall();
+        const callRejectedHandler = (payload: any) => {
+            if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
+            setIncomingCall(null);
+            setCallStatus("ended");
+            if (pcRef.current) {
+                pcRef.current.getSenders().forEach((s) => s.track?.stop());
+                pcRef.current.close();
+                pcRef.current = null;
             }
+            localStreamRef.current?.getTracks().forEach((t) => t.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+            remoteStreamRef.current = null;
+            setRemoteStream(null);
         };
 
+        socket.on("receiveBookingMessage", chatHandler);
         socket.on("webrtc:offer", offerHandler);
         socket.on("webrtc:answer", answerHandler);
         socket.on("webrtc:ice-candidate", iceHandler);
@@ -173,140 +180,165 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             socket.off("webrtc:hangup", hangupHandler);
             socket.off("webrtc:call-rejected", callRejectedHandler);
         };
-    }, [joiningId, currentUserId, ensurePeerConnection]);
+    }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall]);
 
-    const sendMessage = useCallback((text: string) => {
-        const trimmed = text.trim();
-        if (!trimmed) return;
-
-        socket.emit("sendBookingMessage", {
-            joiningId,
-            senderId: currentUserId,
-            text: trimmed,
-            timestamp: new Date().toISOString()
-        });
-    }, [joiningId, currentUserId]);
+    const sendMessage = useCallback(
+        (text: string) => {
+            const trimmed = text.trim();
+            if (!trimmed) return;
+            socket.emit("sendBookingMessage", {
+                joiningId,
+                senderId: currentUserId,
+                text: trimmed,
+                timestamp: new Date().toISOString(),
+            });
+        },
+        [joiningId, currentUserId]
+    );
 
     const startCall = useCallback(async () => {
         try {
-            setCallStatus('calling');
+            setCallStatus("calling");
             const pc = ensurePeerConnection();
 
             if (!localStreamRef.current) {
-                console.log("Getting user media...");
-                localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
-                    video: true, 
-                    audio: true 
+                localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true,
                 });
-                setLocalStream(localStreamRef.current); 
-                
-                localStreamRef.current.getTracks().forEach(track => {
-                    pc.addTrack(track, localStreamRef.current!);
-                });
+                setLocalStream(localStreamRef.current);
+                localStreamRef.current.getTracks().forEach((track) =>
+                    pc.addTrack(track, localStreamRef.current!)
+                );
             }
 
-            console.log("Creating offer...");
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            socket.emit("webrtc:offer", { 
+            socket.emit("webrtc:offer", {
                 joiningId,
-                offer, 
+                offer,
                 fromUserId: currentUserId,
-                fromUserName: currentUserId 
+                fromUserName: currentUserId,
             });
-            
-            console.log("Sent call offer");
         } catch (error) {
-            console.error("Error starting call:", error);
-            setCallStatus('ended');
-            alert("Could not start call: " + error);
+            console.error("Error in startCall:", error);
+            setCallStatus("ended");
         }
-    }, [, joiningId, currentUserId, ensurePeerConnection]);
+    }, [joiningId, currentUserId, ensurePeerConnection]);
 
     const acceptCall = useCallback(async () => {
-        if (!incomingCall) return;
+        const { incomingCall } = useCallStore.getState();
+        if (!incomingCall) {
+            console.error("   -> acceptCall failed: No incoming call in store.");
+            return;
+        }
 
         try {
-            setCallStatus('connecting');
+            setCallStatus("connecting");
             const pc = ensurePeerConnection();
 
             if (!localStreamRef.current) {
-                localStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
-                    video: true, 
-                    audio: true 
+                localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true,
                 });
                 setLocalStream(localStreamRef.current);
-                localStreamRef.current.getTracks().forEach(track => {
-                    pc.addTrack(track, localStreamRef.current!);
-                });
+                localStreamRef.current.getTracks().forEach((track) =>
+                    pc.addTrack(track, localStreamRef.current!)
+                );
             }
 
             await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+            processIceQueue();
+
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
-            socket.emit("webrtc:answer", { 
+            socket.emit("webrtc:answer", {
                 joiningId,
-                answer, 
-                fromUserId: currentUserId 
+                answer,
+                fromUserId: currentUserId,
             });
 
             setIncomingCall(null);
-            setCallStatus('connected');
-            console.log("Call accepted and answer sent");
+            setCallStatus("connected");
         } catch (error) {
-            console.error("Error accepting call:", error);
+            console.error("Error in acceptCall:", error);
             rejectCall();
         }
-    }, [incomingCall, joiningId, currentUserId, ensurePeerConnection]);
+    }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall]);
 
     const rejectCall = useCallback(() => {
+        const { incomingCall } = useCallStore.getState();
         if (!incomingCall) return;
 
         socket.emit("webrtc:call-rejected", {
             joiningId,
             fromUserId: currentUserId,
-            toUserId: incomingCall.fromUserId
+            toUserId: incomingCall.fromUserId,
         });
 
         setIncomingCall(null);
-        setCallStatus('idle');
-        console.log("Call rejected");
-    }, [incomingCall, joiningId, currentUserId]);
+        setCallStatus("idle");
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((t) => t.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+        }
+    }, [joiningId, currentUserId, setIncomingCall]);
 
     const endCall = useCallback(() => {
-        console.log("Ending call...");
-        
-        if (callStatus !== 'idle') {
-            socket.emit("webrtc:hangup", { 
-                joiningId,
-                fromUserId: currentUserId 
-            });
+        iceCandidateQueueRef.current = [];
+        setIsAudioMuted(false);
+        setIsVideoOff(false);
+
+        if (callStatus !== "idle") {
+            socket.emit("webrtc:hangup", { joiningId, fromUserId: currentUserId });
         }
 
         if (pcRef.current) {
-            pcRef.current.getSenders().forEach(sender => {
-                if (sender.track) {
-                    sender.track.stop();
-                }
-            });
+            pcRef.current.getSenders().forEach((s) => s.track?.stop());
             pcRef.current.close();
             pcRef.current = null;
         }
 
-        if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-            localStreamRef.current = null;
-            setLocalStream(null); 
-        }
+        localStreamRef.current?.getTracks().forEach((t) => t.stop());
+        localStreamRef.current = null;
+        setLocalStream(null);
 
         remoteStreamRef.current = null;
         setRemoteStream(null);
-        
+
         setIncomingCall(null);
-        setCallStatus('idle');
-    }, [joiningId, currentUserId, callStatus]);
+        setCallStatus("idle");
+    }, [joiningId, currentUserId, callStatus, setIncomingCall]);
+
+    useEffect(() => {
+        const { incomingCall } = useCallStore.getState();
+        if (incomingCall && incomingCall.joiningId === joiningId && incomingCall.fromUserId !== currentUserId) {
+            acceptCall();
+        }
+    }, [joiningId, currentUserId, acceptCall]);
+
+    const toggleAudio = useCallback(() => {
+        if (localStreamRef.current) {
+            localStreamRef.current.getAudioTracks().forEach((track) => {
+                track.enabled = !track.enabled;
+                setIsAudioMuted(!track.enabled);
+            });
+        }
+    }, []);
+
+    const toggleVideo = useCallback(() => {
+        if (localStreamRef.current) {
+            localStreamRef.current.getVideoTracks().forEach((track) => {
+                track.enabled = !track.enabled;
+                setIsVideoOff(!track.enabled);
+            });
+        }
+    }, []);
 
     return {
         messages,
@@ -320,7 +352,10 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         remoteStream,
         localStreamRef,
         remoteStreamRef,
-        incomingCall,
         callStatus,
+        toggleAudio,
+        toggleVideo,
+        isAudioMuted,
+        isVideoOff,
     };
 }

@@ -212,6 +212,8 @@ const AdminUsersPage = () => {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
+                  total={totalUsers}
+                  limit={USERS_PER_PAGE}
                   onPageChange={setCurrentPage}
                 />
               </div>

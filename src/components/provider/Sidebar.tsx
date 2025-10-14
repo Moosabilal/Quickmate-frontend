@@ -17,7 +17,7 @@ const Sidebar = () => {
     { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/provider/providerBookingManagement` },
     { icon: <MdOutlineChat className="w-5 h-5" />, label: 'Live Chat',  path: '/chat' },
     { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/provider/providerService` },
-    // { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/provider/providerProfile` },
+    { icon: <Star className="w-5 h-5" />, label: 'Performance & Reviews', path: `/provider/performanceDashboard` },
     { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/provider/earningsAnalitics` },
   ];
 

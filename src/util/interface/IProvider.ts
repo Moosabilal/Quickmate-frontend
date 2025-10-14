@@ -217,3 +217,38 @@ export interface EarningsAnalyticsData {
   };
   breakdown: EarningsBreakdownItem[];
 }
+
+export interface IReview {
+    name: string;
+    time: string;
+    rating: number;
+    comment: string;
+    avatar: string;
+}
+
+export interface IRatingDistribution {
+    stars: number;
+    percentage: number;
+}
+
+export interface IMonthlyTrend {
+    month: string;
+    value: number;
+}
+
+export interface IServiceBreakdown {
+    serviceName: string;
+    completionRate: number;
+}
+
+export interface IProviderPerformance {
+    providerName: string;
+    totalBookings: number;
+    completedBookings: number;
+    avgRating: number;
+    completionRate: string;
+    reviews: IReview[];
+    ratingDistribution: IRatingDistribution[];
+    starRatingTrend: IMonthlyTrend[];
+    serviceBreakdown: IServiceBreakdown[];
+}

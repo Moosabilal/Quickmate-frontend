@@ -110,28 +110,6 @@ const ProviderProfile: React.FC = () => {
         };
     };
 
-    // const handleConnectCalendar = async () => {
-    //     try {
-    //         const response = await providerService.googleAuth()
-    //         window.location.href = response.url;
-    //     } catch (error) {
-    //         console.error('Error connecting to Google Calendar:', error);
-    //         toast.error('Could not connect to Google Calendar. Please try again.');
-    //     }
-    // }
-
-
-    // useEffect(() => {
-    //     const params = new URLSearchParams(location.search);
-
-    //     if (params.get("calendar") === "success") {
-    //         toast.success("Google Calendar connected successfully!");
-    //         const newParams = new URLSearchParams(location.search);
-    //         newParams.delete("calendar");
-    //         window.history.replaceState({}, '', `${location.pathname}?${newParams.toString()}`);
-    //         fetchProvider()
-    //     }
-    // }, [location]);
 
     const fetchProvider = async () => {
         try {

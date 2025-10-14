@@ -1,4 +1,4 @@
-import axiosInstance from "../API/axiosInstance"
+import axiosInstance from "../lib/axiosInstance"
 
 const SERVICE_URL = `/services`
 

@@ -1,5 +1,5 @@
 import qs from "qs";
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import { FilterParams } from "../util/interface/IProvider";
 const PROVIDER_URL = `/provider`;
 
@@ -162,6 +162,16 @@ export const providerService = {
             return response.data;
         } catch (error) {
             console.error('Error fetching earnings analytics:', error);
+            throw error;
+        }
+    },
+
+    getProviderPerformance: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/performance`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching provider performance:', error);
             throw error;
         }
     },

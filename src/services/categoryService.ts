@@ -1,4 +1,4 @@
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import {ICategoryResponse} from "../util/interface/ICategory"; 
 
 const CATEGORIES_PATH = '/categories';

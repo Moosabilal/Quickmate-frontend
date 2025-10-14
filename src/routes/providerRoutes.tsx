@@ -5,6 +5,7 @@ const Chat_Room = lazy(() => import('../components/ChatRoom'))
 const RegistrationOTPVerification = lazy(() => import('../components/OtpVerification'))
 const ProviderDashboard = lazy(() => import ('../pages/provider/Dashboard'))
 const EarningsAnalytics = lazy(() => import ('../pages/provider/Earnings'))
+const PerformanceDashboard = lazy(() => import ('../pages/provider/PerformanceDashboard'))
 
 import { LayoutRoute } from './LayoutRoute';
 import ProviderSidebarLayout from '../layouts/ProviderSidebarLayout';
@@ -30,7 +31,8 @@ const providerRoutes = [
                 { path: '/provider/providerService/edit/:serviceId', element: <ServiceManagementPage /> },
                 { path: '/provider/providerBookingManagement', element: <ProviderBookingManagementPage /> },
                 // { path: '/provider/providerBookingManagement/providerLiveChat', element: <Chat_Room /> },
-                { path: '/provider/earningsAnalitics', element: <EarningsAnalytics />}
+                { path: '/provider/earningsAnalitics', element: <EarningsAnalytics /> },
+                { path: '/provider/performanceDashboard', element: <PerformanceDashboard /> }
 
             ],
         },

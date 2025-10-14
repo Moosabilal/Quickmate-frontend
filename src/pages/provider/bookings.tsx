@@ -59,7 +59,7 @@ const ProviderBookingManagementPage: React.FC = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true)
-        const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string)
+        const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string, searchTerm)
         setBookings(response)
       } catch (error: any) {
         toast.error(error.message || 'Oops something went wrong')

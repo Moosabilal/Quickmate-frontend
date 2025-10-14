@@ -1,5 +1,6 @@
 import axios from "axios";
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
+import { IReviewAdminFilters } from "../util/interface/IReview";
 
 const REVIEW_URL = `/review`;
 
@@ -10,6 +11,24 @@ export const reviewService = {
             return response.data
         } catch (error) {
             console.error('Error adding review:', error);
+            throw error;
+        }
+    },
+
+    getReviewsForAdmin: async (filters: IReviewAdminFilters = {}) => {
+        try {
+            const params = new URLSearchParams();
+
+            if (filters.page) params.append('page', String(filters.page));
+            if (filters.limit) params.append('limit', String(filters.limit));
+            if (filters.search) params.append('search', filters.search);
+            if (filters.rating) params.append('rating', String(filters.rating));
+            if (filters.sort) params.append('sort', filters.sort);
+
+            const response = await axiosInstance.get(`${REVIEW_URL}/reviews`, { params });
+            return response.data; // This will include { data: reviews[], pagination: {...} }
+        } catch (error) {
+            console.error('Error fetching reviews for admin:', error);
             throw error;
         }
     }

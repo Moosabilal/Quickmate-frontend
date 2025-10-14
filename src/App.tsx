@@ -13,7 +13,6 @@ import { useGlobalSocket } from './hooks/useGlobalSocket';
 const App = () => {
   const dispatch = useAppDispatch();
   
-  // Set up global socket listeners for incoming calls
   useGlobalSocket();
 
   useEffect(() => {

@@ -1,17 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, FolderTree, Wallet } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, FolderTree, Wallet, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
 
   const navigationItems = [
-    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/admin' },
-    { icon: <Users className="w-5 h-5" />, label: 'Users', path: '/admin/users' },
-    { icon: <Briefcase className="w-5 h-5" />, label: 'Providers', path: '/admin/providers' },
-    { icon: <FolderTree className="w-5 h-5" />, label: 'Category Management', path: '/admin/categories' },
-    { icon: <FolderTree className="w-5 h-5" />, label: 'Subscription Plans', path: '/admin/subscriptionPlan' },
-    { icon: <FolderTree className="w-5 h-5" />, label: 'Bookings', path: '/admin/bookings' },
+      { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/admin' },
+  { icon: <Users className="w-5 h-5" />, label: 'Users', path: '/admin/users' },
+  { icon: <UserCog className="w-5 h-5" />, label: 'Providers', path: '/admin/providers' },
+  { icon: <LayoutGrid className="w-5 h-5" />, label: 'Category Management', path: '/admin/categories' },
+  { icon: <CreditCard className="w-5 h-5" />, label: 'Subscription Plans', path: '/admin/subscriptionPlan' },
+  { icon: <CalendarCheck className="w-5 h-5" />, label: 'Bookings', path: '/admin/bookings' },
+  { icon: <MessageSquareQuote className="w-5 h-5" />, label: 'Review Moderation', path: '/admin/reviewModerationPage' },
+  { icon: <BarChart className="w-5 h-5" />, label: 'Analytics', path: '/admin/analyticsDashboard' },
+
     // { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 

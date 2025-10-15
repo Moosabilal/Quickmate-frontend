@@ -65,13 +65,10 @@ const Sidebar = () => {
         <div className="text-center mb-8">
           <div className="relative inline-block">
             <img
-              src={getCloudinaryUrl(user.profilePicture || '')}
+              src={user.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png'}
               alt={user.name || 'User'}
               className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover"
             />
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 text-white" />
-            </div>
           </div>
           <h3 className="font-semibold text-slate-800 mt-4">
             {user.name?.split(' ')[0] || 'User'}

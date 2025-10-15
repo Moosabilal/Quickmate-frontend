@@ -8,6 +8,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { toast } from 'react-toastify';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
+import { Eye, EyeOff } from "lucide-react";
 
 interface ValidationErrors {
     email?: string;
@@ -26,6 +27,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [touched, setTouched] = useState<FormTouched>({ email: false, password: false });
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
@@ -88,8 +90,8 @@ const Login = () => {
 
         try {
             const { user } = await authService.login(email.trim(), password);
-            dispatch(login({ user}));
-            if(user.role === "ServiceProvider"){
+            dispatch(login({ user }));
+            if (user.role === "ServiceProvider") {
                 const providerData = await providerService.getProvider()
                 dispatch(updateProviderProfile({ provider: providerData }))
             }
@@ -147,21 +149,44 @@ const Login = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >
                             Password <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onBlur={() => handleBlur('password')}
-                            className={getInputClasses('password')}
-                            placeholder="••••••••"
-                            aria-invalid={!!(touched.password && validationErrors.password)}
-                        />
+
+                        {/* 👁️ Password input with toggle */}
+                        <div className="relative">
+                            <input
+                                id="password"
+                                type={showPassword ? "text" : "password"} // dynamic type
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onBlur={() => handleBlur("password")}
+                                className={`${getInputClasses("password")} pr-10`} // padding for the icon
+                                placeholder="••••••••"
+                                aria-invalid={!!(touched.password && validationErrors.password)}
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </button>
+                        </div>
+
                         {touched.password && validationErrors.password && (
-                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.password}</p>
+                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                                {validationErrors.password}
+                            </p>
                         )}
                     </div>
 
@@ -188,24 +213,24 @@ const Login = () => {
                             'Login to QuickMate'
                         )}
                     </button>
-                    <div className="w-full flex justify-center">    
-                    <GoogleLogin 
-                        onSuccess={async (credentialResponse) => {
-                            const idToken = credentialResponse.credential;
-                            if (!idToken) return toast.error('No ID token received from Google');
+                    <div className="w-full flex justify-center">
+                        <GoogleLogin
+                            onSuccess={async (credentialResponse) => {
+                                const idToken = credentialResponse.credential;
+                                if (!idToken) return toast.error('No ID token received from Google');
 
-                            try {
-                                const res = await authService.googleAuthLogin(idToken);
-                                dispatch(login({ user: res.data.user}));
-                                toast.success(`Welcome, ${res.data.user.name}`);
-                                navigate('/');
-                            } catch (error: any) {
-                                console.error(error);
-                                toast.error('Google login failed. Try again.');
-                            }
-                        }}
-                        onError={() => toast.error('Google login failed')}
-                    />
+                                try {
+                                    const res = await authService.googleAuthLogin(idToken);
+                                    dispatch(login({ user: res.data.user }));
+                                    toast.success(`Welcome, ${res.data.user.name}`);
+                                    navigate('/');
+                                } catch (error: any) {
+                                    console.error(error);
+                                    toast.error('Google login failed. Try again.');
+                                }
+                            }}
+                            onError={() => toast.error('Google login failed')}
+                        />
                     </div>
                 </form>
 

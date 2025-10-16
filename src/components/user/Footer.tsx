@@ -53,7 +53,7 @@ const Footer = () => {
                                     <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl opacity-20 blur"></div>
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-bold text-white">QuickMaker</h3>
+                                    <h3 className="text-2xl font-bold text-white">QuickMate</h3>
                                     <p className="text-gray-400 text-sm">Professional Services Platform</p>
                                 </div>
                             </div>
@@ -167,7 +167,7 @@ const Footer = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                             <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                                <span>&copy; {currentYear} QuickMaker. All rights reserved.</span>
+                                <span>&copy; {currentYear} QuickMate. All rights reserved.</span>
                                 <span className="hidden md:inline">|</span>
                                 <span className="flex items-center space-x-1">
                                     <span>Made with</span>

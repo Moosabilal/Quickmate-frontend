@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryFormCombinedData, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify'
 
@@ -50,7 +50,7 @@ const CategoryForm: React.FC = () => {
                 setIsDataLoading(true);
                 setError(null);
                 try {
-                    const response: ICategoryResponse = await categoryService.getCategoryById(currentEntityId);
+                    const response: ICategoryFormCombinedData = await categoryService.getCategoryForEditAndShow(currentEntityId);
 
                     setFormData({
                         name: response.name,

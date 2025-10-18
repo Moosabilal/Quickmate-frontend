@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryDetailsPageData, ICategoryFormCombinedData } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 
@@ -9,7 +9,7 @@ const CategoryDetailsPage: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
     const navigate = useNavigate();
 
-    const [categoryDetails, setCategoryDetails] = useState<ICategoryResponse | null>(null);
+    const [pageData, setPageData] = useState<ICategoryDetailsPageData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +25,8 @@ const CategoryDetailsPage: React.FC = () => {
             setError(null);
             try {
                 const response = await categoryService.getCategoryById(categoryId);
-                setCategoryDetails(response);
+                console.log('the response', response)
+                setPageData(response);
             } catch (err) {
                 setError("Failed to load category details. Please try again.");
             } finally {
@@ -34,7 +35,7 @@ const CategoryDetailsPage: React.FC = () => {
         };
 
         fetchCategoryDetails();
-    }, []);
+    }, [categoryId]);
 
     const handleEditSubCategory = (subcategoryId: string) => {
         const parentId = categoryId
@@ -44,16 +45,19 @@ const CategoryDetailsPage: React.FC = () => {
     const handleToggleSubCategoryStatus = async (subcategoryId: string, currentStatus: boolean) => {
         try {
 
+            console.log('the data readhing here')
+            console.log('subcategoryId:', subcategoryId, 'currentStatus:', currentStatus);
+
             const formData = new FormData();
             formData.append('status', String(!currentStatus));
 
-            const subCategoryToUpdate = categoryDetails?.subCategories?.find(c => c._id === subcategoryId)
+            const subCategoryToUpdate = pageData?.subCategories?.find(c => c.id === subcategoryId)
             if (subCategoryToUpdate) {
                 formData.append('name', subCategoryToUpdate.name);
                 formData.append('description', subCategoryToUpdate.description || '');
                 formData.append('parentId', subCategoryToUpdate?.parentId ?? '')
-                if (subCategoryToUpdate.icon) {
-                    formData.append('icon', subCategoryToUpdate.icon);
+                if (subCategoryToUpdate.iconUrl) {
+                    formData.append('icon', subCategoryToUpdate.iconUrl);
                 } else {
                     formData.append('icon', 'null');
                 }
@@ -67,17 +71,26 @@ const CategoryDetailsPage: React.FC = () => {
                 return;
             }
 
+            console.log('FormData entries for status toggle:');
+            for (const pair of formData.entries()) {
+                console.log(`${pair[0]}: ${pair[1]}`);
+            }
+
             await categoryService.updateCategory(subcategoryId, formData);
 
-            if (categoryDetails && categoryDetails.subCategories) {
-                setCategoryDetails(prevDetails => {
-                    if (!prevDetails) return null;
-                    const updatedSubCategories = (prevDetails.subCategories ?? []).map(sub => {
-                        return sub._id === subcategoryId ? { ...sub, status: !currentStatus } : sub
-                    });
-                    return { ...prevDetails, subCategories: updatedSubCategories };
+            setPageData(prevData => {
+                if (!prevData) return null;
+
+                const updatedSubCategories = prevData.subCategories.map(sub => {
+                    if (sub.id === subcategoryId) {
+                        return { ...sub, status: !currentStatus, commissionStatus: !currentStatus };
+                    }
+                    return sub;
                 });
-            }
+
+                return { ...prevData, subCategories: updatedSubCategories };
+            });
+            toast.success(`'${subCategoryToUpdate.name}' status updated.`);
         } catch (err) {
             toast.error(`Failed to toggle subcategory status:, ${err}`);
             if (err instanceof Error) {
@@ -90,11 +103,17 @@ const CategoryDetailsPage: React.FC = () => {
 
     const handleToggleCommissionStatus = async (subcategoryId: string, currentCommissionStatus: boolean) => {
         try {
-            const subCategoryToUpdate = categoryDetails?.subCategories?.find(c => c._id === subcategoryId)
+            const subCategoryToUpdate = pageData?.subCategories?.find(c => c.id === subcategoryId)
             if (!subCategoryToUpdate) {
                 console.warn(`subCategory with ID ${subcategoryId} not found for commission status toggle.`);
                 setError("subCategory not found for commission status update.");
                 setIsLoading(false);
+                return;
+            }
+
+            const isActivating = !currentCommissionStatus;
+            if (isActivating && !subCategoryToUpdate.status) {
+                toast.info(`Activate the ${subCategoryToUpdate.name} category to enable its commission rule.`);
                 return;
             }
 
@@ -105,23 +124,25 @@ const CategoryDetailsPage: React.FC = () => {
             formData.append('parentId', subCategoryToUpdate.parentId ?? '')
             formData.append('name', subCategoryToUpdate.name);
             formData.append('description', subCategoryToUpdate.description || '');
-            if (subCategoryToUpdate.icon) {
-                formData.append('icon', subCategoryToUpdate.icon);
+            if (subCategoryToUpdate.iconUrl) {
+                formData.append('icon', subCategoryToUpdate.iconUrl);
             } else {
                 formData.append('icon', 'null');
             }
 
             await categoryService.updateCategory(subcategoryId, formData);
 
-            if (categoryDetails && categoryDetails.subCategories) {
-                setCategoryDetails(prevDetails => {
-                    if (!prevDetails) return null;
-                    const updatedSubCategories = (prevDetails.subCategories ?? []).map(sub => {
-                        return sub._id === subcategoryId ? { ...sub, commissionStatus: !currentCommissionStatus } : sub
-                    });
-                    return { ...prevDetails, subCategories: updatedSubCategories };
+            setPageData(prevData => {
+                if (!prevData) return null;
+                const updatedSubCategories = prevData.subCategories.map(sub => {
+                    if (sub.id === subcategoryId) {
+                        return { ...sub, commissionStatus: !currentCommissionStatus };
+                    }
+                    return sub;
                 });
-            }
+                return { ...prevData, subCategories: updatedSubCategories };
+            });
+            toast.success(`Commission for '${subCategoryToUpdate.name}' updated.`);
         } catch (err: any) {
             console.error("Error toggling commission status:", err);
             setError(err.message || "Failed to toggle commission status.");
@@ -156,7 +177,7 @@ const CategoryDetailsPage: React.FC = () => {
         );
     }
 
-    if (!categoryDetails) {
+    if (!pageData) {
         return (
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                 <div className="flex-1 flex flex-col items-center justify-center">
@@ -172,7 +193,8 @@ const CategoryDetailsPage: React.FC = () => {
         );
     }
 
-    const { name, description, iconUrl, status, commissionStatus, commissionType, commissionValue, subCategories } = categoryDetails;
+    const { categoryDetails, subCategories } = pageData;
+    const { name, description, iconUrl, status, commissionStatus, commissionType, commissionValue } = categoryDetails;
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -258,7 +280,7 @@ const CategoryDetailsPage: React.FC = () => {
                                         </thead>
                                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             {subCategories.map((sub) => (
-                                                <tr key={sub._id}>
+                                                <tr key={sub.id}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {sub.iconUrl ? (
                                                             <img src={getCloudinaryUrl(sub.iconUrl)} alt={`${sub.name} icon`} className="w-12 h-12 object-cover rounded-md" />
@@ -283,13 +305,13 @@ const CategoryDetailsPage: React.FC = () => {
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div className="flex space-x-3">
                                                             <button
-                                                                onClick={() => handleEditSubCategory(sub._id)}
+                                                                onClick={() => handleEditSubCategory(sub.id || '')}
                                                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                                                             >
                                                                 Edit
                                                             </button>
                                                             <button
-                                                                onClick={() => handleToggleSubCategoryStatus(sub._id, sub.status ?? false)}
+                                                                onClick={() => handleToggleSubCategoryStatus(sub.id || '', sub.status ?? false)}
                                                                 className={`${sub.status
                                                                     ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                                                                     : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
@@ -326,7 +348,7 @@ const CategoryDetailsPage: React.FC = () => {
                                         </thead>
                                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             {subCategories.map((category) => (
-                                                <tr key={category._id}>
+                                                <tr key={category.id}>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                                         {category.commissionType !== undefined && category.commissionType !== null && category.commissionType === "Percentage"
@@ -351,7 +373,7 @@ const CategoryDetailsPage: React.FC = () => {
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
 
                                                         <button
-                                                            onClick={() => handleToggleCommissionStatus(category._id, category.commissionStatus ?? false)}
+                                                            onClick={() => handleToggleCommissionStatus(category.id!, category.commissionStatus ?? false)}
                                                             className={`${category.commissionStatus
                                                                 ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                                                                 : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'

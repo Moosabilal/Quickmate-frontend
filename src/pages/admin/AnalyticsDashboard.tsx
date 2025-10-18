@@ -61,7 +61,6 @@ const AnalyticsDashboard: React.FC = () => {
     };
     fetchData();
   }, []); // Empty dependency array ensures this runs only once
-  console.log('the data are',setAnalyticsData)
 
   // --- UI for Loading and Error States ---
   if (isLoading) {

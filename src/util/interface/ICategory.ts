@@ -26,6 +26,7 @@ export interface ICategory extends Document {
 }
 
 export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
+    categoryDetails(categoryDetails: any): unknown;
     _id: string;
     parentId?: string | null; 
     createdAt: string; 
@@ -53,16 +54,21 @@ export interface ICommissionRuleResponse extends Omit<ICommissionRuleInput, 'cat
 }
 
 export interface ICategoryFormCombinedData {
-    _id?: string; 
+    id?: string; 
     name: string;
     description: string;
     iconUrl?: string | null; 
     status: boolean; 
-    parentid?: string | null; 
+    parentId?: string | null; 
 
     commissionType: CommissionTypes; 
     commissionValue: number | '';
     commissionStatus: boolean; 
+}
+
+export interface ICategoryDetailsPageData {
+    categoryDetails: ICategoryFormCombinedData;
+    subCategories: ICategoryFormCombinedData[];
 }
 
 export interface ISubcategoryFormFetchData {
@@ -85,4 +91,13 @@ export interface ICategoryData {
     id: string;
     name: string;
     parentId?: string;
+}
+
+export interface ISubCategory {
+    _id: string;
+    name: string;
+    description: string;
+    iconUrl: string | null;
+    status: boolean;
+    parentId: string | null;
 }

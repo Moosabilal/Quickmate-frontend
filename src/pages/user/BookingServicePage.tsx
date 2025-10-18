@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryResponse } from '../../util/interface/ICategory';
+import { ICategoryFormCombinedData, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
 interface Service {
@@ -22,7 +22,7 @@ const IMAGES = {
 
 const Booking_servicePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [services, setServices] = useState<ICategoryResponse[]>()
+  const [services, setServices] = useState<ICategoryFormCombinedData[]>()
   const [categoryName, setCategoryName] = useState<string>('')
 
   const navigate = useNavigate()
@@ -32,8 +32,9 @@ const Booking_servicePage: React.FC = () => {
   useEffect(() => {
     const fetchServices = async () => {
         const response = await categoryService.getCategoryById(categoryId || '')
+        
         setServices(response.subCategories)
-        setCategoryName(response.name)
+        setCategoryName(response.categoryDetails.name)
     }
     fetchServices()
   },[categoryId])
@@ -80,10 +81,10 @@ const Booking_servicePage: React.FC = () => {
           <div className="grid grid-cols-1 gap-6 md:gap-8">
             {filteredServices.length > 0 ? (
               filteredServices.map((service) => (
-                <div key={service._id} className="relative flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 group border border-gray-100">
+                <div key={service.id} className="relative flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 group border border-gray-100">
                   <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 rounded-md overflow-hidden mr-4 sm:mr-6">
                     <img
-                      src={getCloudinaryUrl(service.iconUrl)}
+                      src={getCloudinaryUrl(service.iconUrl || '')}
                       alt={service.name}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                     />
@@ -102,7 +103,7 @@ const Booking_servicePage: React.FC = () => {
                   </div>
 
                   <div className="flex-shrink-0 ml-4 sm:ml-6">
-                    <button onClick={()=>navigate(`/service-detailsPage/${service._id}`)}
+                    <button onClick={()=>navigate(`/service-detailsPage/${service.id}`)}
                      className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200 text-sm sm:text-base">
                       View Details & Book
                     </button>

@@ -1,23 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ICategoryResponse } from '../../util/interface/ICategory';
+import { ICategoryFormCombinedData } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Award, CalendarClockIcon, IndianRupee, Calendar, X, Clock, CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Star, MapPin, Award, IndianRupee, Calendar, CalendarIcon } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
-import { FilterParams, IBackendProvider } from '../../util/interface/IProvider';
+import { IBackendProvider } from '../../util/interface/IProvider';
 import { toast } from 'react-toastify';
 import { bookingService } from '../../services/bookingService';
-import { IProvider } from '../../util/interface/IProvider';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { PaymentMethod, paymentVerificationRequest } from '../../util/interface/IPayment';
 import { IAddress } from '../../util/interface/IAddress';
-import { providerService } from '../../services/providerService';
 import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
-import { all } from 'axios';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 import { CalendarModal } from '../../components/user/CalendarModal'
 
@@ -27,7 +24,7 @@ declare var Razorpay: any;
 const ServiceDetailsPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth)
   const { serviceId } = useParams<{ serviceId: string }>();
-  const [serviceDetails, setServiceDetails] = useState<ICategoryResponse | null>(null);
+  const [serviceDetails, setServiceDetails] = useState<ICategoryFormCombinedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [providerPopup, setProviderPopup] = useState(false);
@@ -50,7 +47,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
-  // const [allProviders, setAllProviders] = useState<IBackendProvider[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -61,28 +57,11 @@ const ServiceDetailsPage: React.FC = () => {
     { value: PaymentMethod.WALLET, label: "Wallet" },
   ]
 
-  // const providersLocations = Array.from(new Set(allProviders.map(provider => provider.serviceLocation)));
-  // const providerTimes = Array.from(new Set(allProviders.map(provider => provider.availability).flat()));
-
   const handleSlotSelection = (date: string, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
     setSelectedProvider(null)
   };
-
-  // const getProvider = async (filterParams: FilterParams = {}) => {
-  //   try {
-  //     if (selectedAddress) {
-  //       filterParams.radius = radius;
-  //       filterParams.locationCoords = selectedAddress.locationCoords
-  //     }
-
-  //     const providers = await providerService.getserviceProvider(serviceId!, filterParams);
-  //     setAllProviders(providers);
-  //   } catch (error: any) {
-  //     toast.error(error?.response?.data?.message || 'Failed to fetch providers');
-  //   }
-  // };
 
   const fetchWallet = async () => {
     try {
@@ -95,13 +74,6 @@ const ServiceDetailsPage: React.FC = () => {
     }
   }
 
-  // useEffect(() => {
-  //   if (serviceId) {
-  //     getProvider();
-  //   }
-
-  // }, []);
-
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -109,7 +81,8 @@ const ServiceDetailsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await categoryService.getCategoryById(serviceId || '');
+        const response = await categoryService.getCategoryForEditAndShow(serviceId || '');
+        console.log('the rsponse ins the frontend', response)
         setServiceDetails(response);
       } catch (err) {
         console.error('Failed to fetch service details:', err);
@@ -420,11 +393,16 @@ const ServiceDetailsPage: React.FC = () => {
                 </h3>
                 <button
                   type="button"
-                  disabled={!selectedAddress}
+                  disabled={!selectedAddress || !selectedTime}
                   onClick={() => setProviderPopup(true)}
-                  className={`w-full px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow text-sm focus:outline-none flex items-center justify-center ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  title={!selectedAddress ? "Please select your location first" : ""}
+                  className="w-full px-4 py-2 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow text-sm focus:outline-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
+                  title={
+    !selectedAddress
+      ? "Please select an address first"
+      : !selectedTime
+      ? "Please select a time slot"
+      : ""
+  }
                 >
                   {selectedProvider
                     ? `Selected: ${selectedProvider.fullName}`
@@ -452,26 +430,6 @@ const ServiceDetailsPage: React.FC = () => {
                   </div>
                 )}
               </div>
-
-              {/* <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <CalendarClockIcon className="w-4 h-4 mr-2" />
-                  Select Date & Time
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setDateTimePopup(true)}
-                  className={`w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none flex items-center justify-center
-                    ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  disabled={!selectedAddress}
-                  title={!selectedAddress ? "Please select your location first" : ""}
-                >
-                  {selectedDate && selectedTime
-                    ? `${selectedDate} at ${selectedTime}`
-                    : "Choose Date & Time"}
-                </button>
-              </div> */}
 
               {selectedAddress && selectedProvider &&
                 <>

@@ -50,6 +50,7 @@ const ServiceManagementPage: React.FC = () => {
     };
 
     const handleEditService = (service: IAddAndEditServiceForm) => {
+        console.log('the serrcie', service)
         setEditingService(service);
     };
 
@@ -57,6 +58,7 @@ const ServiceManagementPage: React.FC = () => {
         if (serviceId) {
             const getService = async () => {
                 const response = await serviceService.getServiceById(serviceId)
+                console.log('the response', response)
                 handleEditService(response)
             }
             getService()
@@ -67,7 +69,9 @@ const ServiceManagementPage: React.FC = () => {
 
     useEffect(() => {
         if (editingService) {
-            setFormData({
+const [hour = '00', minute = '00'] = editingService.duration?.split(':') || [];
+        setSelectedHour(hour);
+        setSelectedMinute(minute);            setFormData({
                 title: editingService.title,
                 description: editingService.description,
                 experience: editingService.experience,
@@ -365,48 +369,57 @@ const ServiceManagementPage: React.FC = () => {
                         </div>
 
                         {formData.priceUnit === 'PerService' && (
-                            <div className="mt-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Duration
-                                </label>
-                                <div className="flex gap-4 items-center">
-                                    <select
-                                        value={selectedHour}
-                                        onChange={(e) => {
-                                            const hour = e.target.value;
-                                            setSelectedHour(hour);
-                                            handleDurationChange(hour, selectedMinute);
-                                        }}
-                                        className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                    >
-                                        <option value="0">0 Hours</option>
-                                        {[...Array(12).keys()].map((hour) => (
-                                            <option key={hour + 1} value={hour + 1}>
-                                                {hour + 1} Hour{hour + 1 > 1 ? 's' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+    <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+            Duration
+        </label>
+        <div className="flex gap-4 items-center">
+            {/* Hour Selector */}
+            <select
+                value={selectedHour}
+                onChange={(e) => {
+                    const hour = e.target.value;
+                    setSelectedHour(hour);
+                    handleDurationChange(hour, selectedMinute);
+                }}
+                className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+                <option value="00">0 Hours</option>
+                {[...Array(12).keys()].map((hour) => {
+                    const paddedHour = (hour + 1).toString().padStart(2, '0');
+                    return (
+                        <option key={paddedHour} value={paddedHour}>
+                            {hour + 1} Hour{hour + 1 > 1 ? 's' : ''}
+                        </option>
+                    );
+                })}
+            </select>
 
-                                    <span className="font-bold text-lg">:</span>
+            <span className="font-bold text-lg">:</span>
 
-                                    <select
-                                        value={selectedMinute}
-                                        onChange={(e) => {
-                                            const minute = e.target.value;
-                                            setSelectedMinute(minute);
-                                            handleDurationChange(selectedHour, minute);
-                                        }}
-                                        className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                    >
-                                        {[0, 15, 30, 45].map((min) => (
-                                            <option key={min} value={min}>
-                                                {min} Minutes
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        )}
+            {/* Minute Selector */}
+            <select
+                value={selectedMinute}
+                onChange={(e) => {
+                    const minute = e.target.value;
+                    setSelectedMinute(minute);
+                    handleDurationChange(selectedHour, minute);
+                }}
+                className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+                {[0, 15, 30, 45].map((min) => {
+                    const paddedMin = min.toString().padStart(2, '0');
+                    return (
+                        <option key={paddedMin} value={paddedMin}>
+                            {min} Minutes
+                        </option>
+                    );
+                })}
+            </select>
+        </div>
+    </div>
+)}
+
 
 
                         <div>

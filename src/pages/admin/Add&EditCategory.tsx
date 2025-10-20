@@ -1,19 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryFormCombinedData, ICategoryResponse } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryFormCombinedData, ICategoryFormData, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify'
-
-interface ICategoryFormData {
-    name: string;
-    description: string;
-    status: boolean;
-    commissionType: CommissionTypes;
-    commissionValue: number | '';
-    commissionStatus: boolean;
-    icon: File | string | null;
-}
 
 const CategoryForm: React.FC = () => {
     const navigate = useNavigate();

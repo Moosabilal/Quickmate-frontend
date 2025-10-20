@@ -101,3 +101,18 @@ export interface ISubCategory {
     status: boolean;
     parentId: string | null;
 }
+
+export interface ICategoryFormData {
+    name: string;
+    description: string;
+    status: boolean;
+    commissionType: CommissionTypes;
+    commissionValue: number | '';
+    commissionStatus: boolean;
+    icon: File | string | null;
+}
+
+export interface CategoryTableDisplay extends ICategoryResponse {
+    subCategoriesCount?: number | undefined;
+    commissionRule?: ICommissionRuleResponse | null;
+}

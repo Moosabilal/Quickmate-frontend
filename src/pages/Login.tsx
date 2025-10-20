@@ -9,16 +9,7 @@ import { toast } from 'react-toastify';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
 import { Eye, EyeOff } from "lucide-react";
-
-interface ValidationErrors {
-    email?: string;
-    password?: string;
-}
-
-interface FormTouched {
-    email: boolean;
-    password: boolean;
-}
+import { FormTouched, ValidationErrors } from '../util/interface/IUser';
 
 const Login = () => {
     const [email, setEmail] = useState('');

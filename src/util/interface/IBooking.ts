@@ -146,3 +146,16 @@ export interface CalendarModalProps {
   radius?: number;
   onSlotSelect: (date: string, time: string) => void;
 }
+
+
+export interface DateTimePopupProps {
+  dateTimePopup: boolean;
+  setDateTimePopup: (value: boolean) => void;
+  selectedDate: string;
+  setSelectedDate: (value: string) => void;
+  selectedTime: string;
+  setSelectedTime: (value: string) => void;
+  timeSlots?: string[];
+  handleDateTimeConfirm: (date: string, time: string) => void;
+  providersTimings?: { day: string; startTime: string; endTime: string }[];
+}

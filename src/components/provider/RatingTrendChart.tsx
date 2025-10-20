@@ -1,15 +1,5 @@
-// src/components/provider/RatingTrendChart.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
-
-interface IMonthlyTrend {
-    month: string;
-    value: number;
-}
-
-interface RatingTrendChartProps {
-    data: IMonthlyTrend[];
-}
+import { RatingTrendChartProps } from '../../util/interface/IProvider';
 
 export const RatingTrendChart: React.FC<RatingTrendChartProps> = ({ data }) => {
     const [tooltip, setTooltip] = useState<{ x: number; y: number; month: string; value: number } | null>(null);
@@ -32,14 +22,11 @@ export const RatingTrendChart: React.FC<RatingTrendChartProps> = ({ data }) => {
         return { x, y, ...trend };
     });
 
-    // --- NEW, STABLE CURVE ALGORITHM ---
     const pathD = points.reduce((acc, point, i, arr) => {
         if (i === 0) {
             return `M ${point.x},${point.y}`;
         }
         const prevPoint = arr[i - 1];
-        // Use control points that create a smooth S-curve between points
-        // This prevents the line from dipping down or overshooting
         const cp1x = (prevPoint.x + point.x) / 2;
         const cp1y = prevPoint.y;
         const cp2x = (prevPoint.x + point.x) / 2;

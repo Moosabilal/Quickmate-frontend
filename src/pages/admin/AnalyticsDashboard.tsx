@@ -1,37 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 import { adminService } from '../../services/adminService'; // Adjust this import path
+import { AnalyticsData } from '../../util/interface/IAdmin';
 
-// --- TypeScript Interfaces to match the API response ---
-interface ChartDataPoint {
-  name: string;
-  value: number;
-}
-interface MonthlyTrendPoint {
-  month: string;
-  value: number;
-}
-interface DailyPatternPoint {
-  day: string;
-  value: number;
-}
-interface ProviderData {
-  name: string;
-  earnings: number;
-}
-interface KpiData {
-  totalBookings: number;
-  activeUsers: number;
-  revenue: number;
-  avgRating: number;
-}
-interface AnalyticsData {
-  topServiceCategories: ChartDataPoint[];
-  bookingTrends: MonthlyTrendPoint[];
-  weeklyPattern: DailyPatternPoint[];
-  topProviders: ProviderData[];
-  kpi: KpiData;
-}
+// --- TypeScript Interfaces to match the API response --
 
 const AnalyticsDashboard: React.FC = () => {
   // --- State for dynamic data, loading, and errors ---

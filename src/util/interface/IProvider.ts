@@ -1,4 +1,5 @@
 import { BookingStatus } from "./IBooking";
+import { ICategoryResponse, ICommissionRuleResponse } from "./ICategory";
 
 export enum ProviderStatus {
   Active = 'Approved',
@@ -251,4 +252,47 @@ export interface IProviderPerformance {
     ratingDistribution: IRatingDistribution[];
     starRatingTrend: IMonthlyTrend[];
     serviceBreakdown: IServiceBreakdown[];
+}
+
+export interface ProviderState  {
+    provider: Partial<IProviderProfile>
+}
+
+export interface IEditedProviderProfile extends Partial<IProviderProfile> {
+    profilePhotoFile?: File;
+    aadhaarIdProofFile?: File;
+}
+
+export interface FormData {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    serviceArea: string | null;
+    serviceLocation: { lat: number; lng: number } | null;
+    availability: Availability[];
+    aadhaarIdProof: File | null;
+    profilePhoto: File | null;
+    agreeTerms: boolean;
+}
+
+export interface ProviderPopupProps {
+  setSelectedProvider: (provider: IBackendProvider | null) => void;
+  providerPopup: boolean;
+  selectedProvider: IBackendProvider | null;
+  setProviderPopup: (open: boolean) => void;
+  serviceId: string;
+  selectedDate: string | null;
+  selectedTime: string | null;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+}
+
+export interface IMonthlyTrend {
+    month: string;
+    value: number;
+}
+
+export interface RatingTrendChartProps {
+    data: IMonthlyTrend[];
 }

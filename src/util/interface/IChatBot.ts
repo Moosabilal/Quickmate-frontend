@@ -27,3 +27,13 @@ export interface QuickAction {
     label: string;
     action: string;
 }
+
+export interface ChatbotIconProps {
+    className?: string;
+}
+
+export interface ChatFormProps {
+    chatHistory: ChatbotMessage[];
+    setChatHistory: React.Dispatch<React.SetStateAction<ChatbotMessage[]>>;
+    generateBotResponse: (history: ChatbotMessage[]) => Promise<void>;
+}

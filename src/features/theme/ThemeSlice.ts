@@ -1,8 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface ThemeState {
-  currentTheme: 'light' | 'dark';
-}
+import { ThemeState } from '../../util/interface/ITheme';
 
 const initialState: ThemeState = {
   currentTheme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',

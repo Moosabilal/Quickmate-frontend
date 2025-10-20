@@ -4,22 +4,6 @@ import { categoryService } from '../../services/categoryService';
 import { ICategoryFormCombinedData, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 
-interface Service {
-  id: string;
-  name: string;
-  price: number;
-  priceUnit: string; 
-  description: string;
-  imageUrl: string;
-}
-
-const IMAGES = {
-  floorCleaning: '/images/floor-cleaning.png',
-  deepCleaning: '/images/deep-cleaning.png',
-  moveOutCleaning: '/images/move-out-cleaning.png',
-  objectCleaning: '/images/object-cleaning.png',
-};
-
 const Booking_servicePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState<ICategoryFormCombinedData[]>()

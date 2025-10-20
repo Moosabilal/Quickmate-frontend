@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
+import { IEditedProviderProfile, IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -71,11 +71,6 @@ const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) =
 const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-interface IEditedProviderProfile extends Partial<IProviderProfile> {
-    profilePhotoFile?: File;
-    aadhaarIdProofFile?: File;
-}
 
 const ProviderProfile: React.FC = () => {
     const { provider } = useAppSelector((state) => state.provider);

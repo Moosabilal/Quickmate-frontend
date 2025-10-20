@@ -1,10 +1,6 @@
-import { ChatbotMessage } from '../../util/interface/IChatBot';
+import { ChatFormProps } from '../../util/interface/IChatBot';
 
-export interface ChatFormProps {
-    chatHistory: ChatbotMessage[];
-    setChatHistory: React.Dispatch<React.SetStateAction<ChatbotMessage[]>>;
-    generateBotResponse: (history: ChatbotMessage[]) => Promise<void>;
-}
+
 
 import React, { useState, useCallback, KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';

@@ -62,3 +62,45 @@ export type StatusStyle = {
     icon: JSX.Element;
 };
 
+export interface AuthState {
+    user: IUser | null;
+    isAuthenticated: boolean;
+}
+
+export interface ValidationErrors {
+    email?: string;
+    password?: string;
+}
+
+export interface FormTouched {
+    email: boolean;
+    password: boolean;
+}
+
+export interface ValidationErrorsForReset {
+  newPassword?: string;
+  confirmNewPassword?: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  phone: string;
+  bookings: number;
+}
+
+export interface RegistrationValidationErrors {
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+export interface RegistrationFormTouched {
+    name: boolean;
+    email: boolean;
+    password: boolean;
+    confirmPassword: boolean;
+}

@@ -1,20 +1,6 @@
 import React from 'react';
 import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, LogOutIcon, CreditCard } from 'lucide-react';
-import { DeleteConfirmationTypes } from '../util/interface/IDeleteModelType';
-
-interface DeleteConfirmationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  itemType: DeleteConfirmationTypes;
-  itemName?: string;
-  itemDetails?: string;
-  isLoading?: boolean;
-  customMessage?: string;
-  additionalInfo?: string;
-  confirmTextProp?: string;
-  titleProp?: string;
-}
+import { DeleteConfirmationModalProps, DeleteConfirmationTypes } from '../util/interface/IDeleteModelType';
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isOpen,

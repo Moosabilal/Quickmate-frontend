@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CategoryTableDisplay, CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import Pagination from '../../components/admin/Pagination';
 import { toast } from 'react-toastify';
-
-interface CategoryTableDisplay extends ICategoryResponse {
-    subCategoriesCount?: number | undefined;
-    commissionRule?: ICommissionRuleResponse | null;
-}
 
 const categories_per_page = 4;
 

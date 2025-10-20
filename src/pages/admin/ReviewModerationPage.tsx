@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Star, Search, ChevronDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import { reviewService } from '../../services/reviewService'; // Adjust the import path for your review service
-import { IReviewAdminFilters } from '../../util/interface/IReview';
+import { IReviewAdminFilters, ReviewData } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';
 
 // =================================================================================
@@ -9,14 +9,7 @@ import Pagination from '../../components/admin/Pagination';
 // =================================================================================
 
 // --- Type Definition for Review Data from API ---
-interface ReviewData {
-    id: string;
-    user: { name: string; };
-    provider: { name: string; };
-    reviewContent: string;
-    rating: number;
-    date: string;
-}
+
 
 // A helper hook for debouncing input
 const useDebounce = (value: string, delay: number) => {

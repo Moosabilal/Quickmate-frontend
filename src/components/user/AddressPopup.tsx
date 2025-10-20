@@ -2,25 +2,11 @@ import { MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
-import { IAddress } from "../../util/interface/IAddress";
+import { AddressPopupProps, IAddress } from "../../util/interface/IAddress";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
 import { findProviderRange } from "../../util/findProviderRange";
 import { bookingService } from "../../services/bookingService";
-
-interface AddressPopupProps {
-  addressPopup: boolean;
-  setAddressPopup: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedAddress: IAddress | null;
-  handleAddressConfirm: (address: IAddress, radius: number) => void;
-  setShowAddAddress: React.Dispatch<React.SetStateAction<boolean>>;
-  showAddAddress: boolean;
-  newAddress: IAddress;
-  setNewAddress: React.Dispatch<React.SetStateAction<any>>;
-  handleAddAddress: (address: IAddress) => void;
-  serviceId: string;
-}
-
 
 const AddressPopup: React.FC<AddressPopupProps> = ({
   addressPopup,

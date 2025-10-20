@@ -1,23 +1,12 @@
 import { Award, Star, X, DollarSign, MapPin, Phone, Clock, Mail, Calendar, Filter, IndianRupee } from 'lucide-react';
-import { IBackendProvider } from '../../util/interface/IProvider';
+import { IBackendProvider, ProviderPopupProps } from '../../util/interface/IProvider';
 import { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { FilterParams } from '../../util/interface/IProvider';
 
-interface ProviderPopupProps {
-  setSelectedProvider: (provider: IBackendProvider | null) => void;
-  providerPopup: boolean;
-  selectedProvider: IBackendProvider | null;
-  setProviderPopup: (open: boolean) => void;
-  serviceId: string;
-  selectedDate: string | null;
-  selectedTime: string | null;
-  latitude?: number;
-  longitude?: number;
-  radiusKm?: number;
-}
+
 
 const ProviderPopup = ({
   setSelectedProvider,

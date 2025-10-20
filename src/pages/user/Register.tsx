@@ -7,20 +7,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { login } from '../../features/auth/authSlice';
 import { toast } from 'react-toastify';
 import { GoogleLogin } from '@react-oauth/google';
-
-interface ValidationErrors {
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-}
-
-interface FormTouched {
-    name: boolean;
-    email: boolean;
-    password: boolean;
-    confirmPassword: boolean;
-}
+import { RegistrationFormTouched, RegistrationValidationErrors } from '../../util/interface/IUser';
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -29,8 +16,8 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-    const [touched, setTouched] = useState<FormTouched>({
+    const [validationErrors, setValidationErrors] = useState<RegistrationValidationErrors>({});
+    const [touched, setTouched] = useState<RegistrationFormTouched>({
         name: false,
         email: false,
         password: false,
@@ -107,7 +94,7 @@ const Register = () => {
         return undefined;
     };
 
-    const validateAllFields = (): ValidationErrors => {
+    const validateAllFields = (): RegistrationValidationErrors => {
         return {
             name: validateName(name),
             email: validateEmail(email),
@@ -116,7 +103,7 @@ const Register = () => {
         };
     };
 
-    const handleBlur = (field: keyof FormTouched) => {
+    const handleBlur = (field: keyof RegistrationFormTouched) => {
         setTouched(prev => ({ ...prev, [field]: true }));
 
         const errors = { ...validationErrors };
@@ -217,7 +204,7 @@ const Register = () => {
         }
     };
 
-    const getInputClasses = (field: keyof ValidationErrors) => {
+    const getInputClasses = (field: keyof RegistrationValidationErrors) => {
         const baseClasses = "mt-1 w-full p-3 border rounded-lg transition duration-200 focus:outline-none focus:ring-2";
         const hasError = touched[field] && validationErrors[field];
 

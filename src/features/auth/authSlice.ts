@@ -1,11 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IUser } from '../../util/interface/IUser';
+import { AuthState, IUser } from '../../util/interface/IUser';
 
-
-interface AuthState {
-    user: IUser | null;
-    isAuthenticated: boolean;
-}
 
 const getUserNameFromLocalStorage = (): string | null => {
     return localStorage.getItem('userName');

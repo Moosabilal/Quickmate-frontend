@@ -8,3 +8,16 @@ export interface IAddress {
     zip: string;
     locationCoords?: string;
 }
+
+export interface AddressPopupProps {
+  addressPopup: boolean;
+  setAddressPopup: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedAddress: IAddress | null;
+  handleAddressConfirm: (address: IAddress, radius: number) => void;
+  setShowAddAddress: React.Dispatch<React.SetStateAction<boolean>>;
+  showAddAddress: boolean;
+  newAddress: IAddress;
+  setNewAddress: React.Dispatch<React.SetStateAction<any>>;
+  handleAddAddress: (address: IAddress) => void;
+  serviceId: string;
+}

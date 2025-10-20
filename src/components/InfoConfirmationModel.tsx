@@ -1,17 +1,6 @@
 import React from "react";
 import { X, Info, CheckCircle, AlertTriangle } from "lucide-react";
-
-export type InfoModalType = "INFO" | "SUCCESS" | "WARNING";
-
-interface InfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  type?: InfoModalType;
-  title?: string;
-  message: string;
-  additionalInfo?: string;
-  confirmText?: string;
-}
+import { InfoModalProps } from "../util/interface/IDeleteModelType";
 
 const InfoModal: React.FC<InfoModalProps> = ({
   isOpen,

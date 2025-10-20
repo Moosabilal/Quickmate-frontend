@@ -8,15 +8,9 @@ import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { useNavigate } from 'react-router-dom';
+import { User } from '../../util/interface/IUser';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  isVerified: boolean;
-  phone: string;
-  bookings: number;
-}
+
 
 const USERS_PER_PAGE = 6;
 

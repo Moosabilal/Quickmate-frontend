@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CategoryTableDisplay, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
@@ -12,26 +12,11 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { MapPin } from 'lucide-react';
-import { Availability } from '../../util/interface/IProvider';
+import { FormData } from '../../util/interface/IProvider';
 
 
 
-interface FormData {
-    fullName: string;
-    phoneNumber: string;
-    email: string;
-    serviceArea: string | null;
-    serviceLocation: { lat: number; lng: number } | null;
-    availability: Availability[];
-    aadhaarIdProof: File | null;
-    profilePhoto: File | null;
-    agreeTerms: boolean;
-}
 
-interface CategoryTableDisplay extends ICategoryResponse {
-    subCategoriesCount?: number | undefined;
-    commissionRule?: ICommissionRuleResponse | null;
-}
 
 export const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
     useMapEvents({

@@ -40,6 +40,7 @@ const ProviderBookingManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [providerEarnings, setProviderEarnings] = useState(0);
 
   const { provider } = useAppSelector((state) => state.provider);
   const { user } = useAppSelector((state) => state.auth)
@@ -59,8 +60,10 @@ const ProviderBookingManagementPage: React.FC = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true)
-        const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string)
-        setBookings(response)
+        const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string, searchTerm)
+        console.log('the resonspise', response)
+        setBookings(response.bookings)
+        setProviderEarnings(response.earnings)
       } catch (error: any) {
         toast.error(error.message || 'Oops something went wrong')
       } finally {
@@ -186,7 +189,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                     <div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl">
                       <div className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
                         <IndianRupee className="h-3.5 w-3.5" />
-                        {bookings.filter(b => b.status === BookingStatus.COMPLETED).reduce((sum, b) => sum + b.payment, 0)}
+                        {providerEarnings}
                       </div>
 
                       <div className="text-xs text-green-500">Total Earnings</div>
@@ -334,7 +337,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
-                            {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
+                            {/* {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
                               // <><button
                               //   onClick={() => window.open(`tel:${booking.customerPhone}`)}
                               //   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
@@ -355,7 +358,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 />
                               </button>
                               // </>
-                            }
+                            } */}
                           </div>
                         </div>
 

@@ -130,7 +130,7 @@ const BookingLogsPage: React.FC = () => {
                             </div>
                             <FilterDropdown 
                                 label="Booking Status"
-                                options={['Pending', 'Completed', 'Cancelled']}
+                                options={['Pending', 'In-Progress', 'Completed', 'Cancelled']}
                                 value={filters.bookingStatus}
                                 onChange={(e) => handleFilterChange('bookingStatus', e.target.value)}
                             />

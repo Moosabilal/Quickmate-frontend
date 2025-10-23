@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CategoryTableDisplay, CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
 import Pagination from '../../components/admin/Pagination';
-
-interface CategoryTableDisplay extends ICategoryResponse {
-    subCategoriesCount?: number | undefined;
-    commissionRule?: ICommissionRuleResponse | null;
-}
+import { toast } from 'react-toastify';
 
 const categories_per_page = 4;
 
@@ -29,7 +25,7 @@ const CategoryCommissionManagement = () => {
         commissionDeductionsToProviders: '₹5,000',
         commissionDeductionsToProvidersChange: '-2%',
     };
-    const [showDeductions, setShowDeductions] = useState(true); 
+    const [showDeductions, setShowDeductions] = useState(true);
 
 
     useEffect(() => {
@@ -42,7 +38,7 @@ const CategoryCommissionManagement = () => {
             } catch (err: any) {
                 setError(err.message || "Failed to load data.");
             } finally {
-                setIsLoading(false); 
+                setIsLoading(false);
             }
         };
 
@@ -67,7 +63,7 @@ const CategoryCommissionManagement = () => {
                 } else {
                     formData.append('icon', 'null');
                 }
-                formData.append("commissionType", categoryToUpdate.commissionType || CommissionTypes.NONE )
+                formData.append("commissionType", categoryToUpdate.commissionType || CommissionTypes.NONE)
                 formData.append("commissionValue", categoryToUpdate.commissionValue?.toString() || '')
                 formData.append("commissionStatus", String(categoryToUpdate.commissionStatus))
             } else {
@@ -80,9 +76,12 @@ const CategoryCommissionManagement = () => {
 
             setCategories(prevCategories =>
                 prevCategories.map(cat =>
-                    cat._id === categoryId ? { ...cat, status: !currentStatus } : cat
+                    cat._id === categoryId 
+                        ? { ...cat, status: !currentStatus, commissionStatus: !currentStatus } 
+                        : cat
                 )
             );
+            console.log('the categories ', categories)
         } catch (err: any) {
             console.error("Error toggling category status:", err);
             setError(err.message || "Failed to toggle category status.");
@@ -99,11 +98,17 @@ const CategoryCommissionManagement = () => {
                 return;
             }
 
+            const isActivating = !currentCommissionStatus;
+            if (isActivating && !categoryToUpdate.status) {
+                toast.info(`Activate the ${categoryToUpdate.name} category to enable its commission rule.`);
+                return;
+            }
+
             const formData = new FormData();
             formData.append('commissionStatus', String(!currentCommissionStatus));
             formData.append('commissionType', categoryToUpdate.commissionType ?? "")
             formData.append('commissionValue', categoryToUpdate.commissionValue?.toString() ?? "")
-            formData.append('name', categoryToUpdate.name); 
+            formData.append('name', categoryToUpdate.name);
             formData.append('description', categoryToUpdate.description || '');
             if (categoryToUpdate.icon) {
                 formData.append('icon', categoryToUpdate.icon);
@@ -191,11 +196,10 @@ const CategoryCommissionManagement = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{category.subCategoriesCount ?? 0} Subcategories</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        category.status
+                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.status
                                                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                                                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {category.status ? 'Active' : 'Inactive'}
                                                 </span>
@@ -210,11 +214,10 @@ const CategoryCommissionManagement = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleCategoryStatus(category._id, category.status ?? false)}
-                                                        className={`${
-                                                            category.status
+                                                        className={`${category.status
                                                                 ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                                                                 : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {category.status ? 'Deactivate' : 'Activate'}
                                                     </button>
@@ -240,14 +243,16 @@ const CategoryCommissionManagement = () => {
                         <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Showing {currentCategories.length} of {categories.length} categories
+                                    Showing {currentCategories.length} of {categories.length} categories
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                <Pagination 
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={setCurrentPage}
-                                />
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        total={categories.length}
+                                        limit={categories_per_page}
+                                        onPageChange={setCurrentPage}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -283,24 +288,22 @@ const CategoryCommissionManagement = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        category.commissionStatus
+                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.commissionStatus
                                                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                                                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {category.commissionStatus ? 'Active' : 'Inactive'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                
+
                                                 <button
                                                     onClick={() => handleToggleCommissionStatus(category._id, category.commissionStatus ?? false)}
-                                                    className={`${
-                                                        category.commissionStatus
+                                                    className={`${category.commissionStatus
                                                             ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                                                             : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {category.commissionStatus ? 'Deactivate' : 'Activate'}
                                                 </button>
@@ -313,12 +316,12 @@ const CategoryCommissionManagement = () => {
                         <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Showing {currentCategories.length} of {categories.length} categories
+                                    Showing {currentCategories.length} of {categories.length} categories
                                 </div>
                             </div>
                         </div>
                     </section>
-                    
+
 
                     <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                         <h2 className="text-2xl font-semibold mb-6">Earnings Summary</h2>

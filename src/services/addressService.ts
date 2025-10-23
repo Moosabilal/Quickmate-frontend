@@ -1,4 +1,4 @@
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import { IAddress } from "../util/interface/IAddress";
 const ADDRESS_URL = `/address`
 

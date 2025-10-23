@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
+import { IEditedProviderProfile, IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
@@ -72,15 +72,11 @@ const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-interface IEditedProviderProfile extends Partial<IProviderProfile> {
-    profilePhotoFile?: File;
-    aadhaarIdProofFile?: File;
-}
-
 const ProviderProfile: React.FC = () => {
     const { provider } = useAppSelector((state) => state.provider);
     const { user } = useAppSelector((state) => state.auth)
 
+    console.log('the user', user)
     const [providerDetails, setProviderDetails] = useState<Partial<IProviderProfile>>({});
     const [editedDetails, setEditedDetails] = useState<IEditedProviderProfile>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,39 +105,17 @@ const ProviderProfile: React.FC = () => {
         };
     };
 
-    const handleConnectCalendar = async () => {
-        try {
-            const response = await providerService.googleAuth()
-            window.location.href = response.url;
-        } catch (error) {
-            console.error('Error connecting to Google Calendar:', error);
-            toast.error('Could not connect to Google Calendar. Please try again.');
-        }
-    }
 
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-
-        if (params.get("calendar") === "success") {
-            toast.success("Google Calendar connected successfully!");
-            const newParams = new URLSearchParams(location.search);
-            newParams.delete("calendar");
-            window.history.replaceState({}, '', `${location.pathname}?${newParams.toString()}`);
-            fetchProvider()
-        }
-    }, [location]);
-
-    const fetchProvider = async () => {
-        try {
-            const providerData = await providerService.getProvider()
-            setProviderDetails(providerData)
-            dispatch(updateProviderProfile({ provider: providerData }))
-        } catch (error) {
-            console.log('the error in fetching provider', error)
-            throw error
-        }
-    }
+    // const fetchProvider = async () => {
+    //     try {
+    //         const providerData = await providerService.getProvider()
+    //         setProviderDetails(providerData)
+    //         dispatch(updateProviderProfile({ provider: providerData }))
+    //     } catch (error) {
+    //         console.log('the error in fetching provider', error)
+    //         throw error
+    //     }
+    // }
 
 
 
@@ -319,28 +293,6 @@ const ProviderProfile: React.FC = () => {
         }));
     };
 
-    const handleDayToggle = (day: string) => {
-        const current = editedDetails.availability || [];
-        const exists = current.find(a => a.day === day);
-
-        let updated;
-        if (exists) {
-            updated = current.filter(a => a.day !== day);
-        } else {
-            updated = [...current, { day, startTime: "", endTime: "" }];
-        }
-
-        setEditedDetails(prev => ({ ...prev, availability: updated }));
-    };
-
-    const handleTimeChange = (day: string, field: "startTime" | "endTime", value: string) => {
-        const updated = (editedDetails.availability || []).map(a =>
-            a.day === day ? { ...a, [field]: value } : a
-        );
-
-        setEditedDetails(prev => ({ ...prev, availability: updated }));
-    };
-
 
     const getCurrentLocation = () => {
         if (formData.serviceLocation) {
@@ -499,77 +451,6 @@ const ProviderProfile: React.FC = () => {
                                 </section>
 
                                 <section>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                                        <Clock className="w-6 h-6 mr-3 text-blue-600" />
-                                        Availability
-                                    </h2>
-
-                                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 space-y-4">
-                                        {isEditing ? (
-                                            <div className="space-y-4">
-                                                {daysOfWeek.map(day => {
-                                                    const dayAvailability = editedDetails.availability?.find(a => a.day === day);
-                                                    const isSelected = !!dayAvailability;
-
-                                                    return (
-                                                        <div key={day} className="flex items-center gap-4">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDayToggle(day)}
-                                                                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors 
-                                                                    ${isSelected
-                                                                        ? 'bg-blue-600 text-white'
-                                                                        : 'bg-white text-blue-600 border border-blue-300'}
-                                                                    `}
-                                                            >
-                                                                {day}
-                                                            </button>
-
-                                                            {isSelected && (
-                                                                <div className="flex items-center gap-3">
-                                                                    <div>
-                                                                        <label className="text-xs pr-2 text-blue-500">Start</label>
-                                                                        <input
-                                                                            type="time"
-                                                                            value={dayAvailability.startTime}
-                                                                            onChange={(e) => handleTimeChange(day, "startTime", e.target.value)}
-                                                                            className="p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        />
-                                                                    </div>
-                                                                    <span className="text-blue-600">to</span>
-                                                                    <div>
-                                                                        <label className="text-xs pr-2 text-blue-500">End</label>
-                                                                        <input
-                                                                            type="time"
-                                                                            value={dayAvailability.endTime}
-                                                                            onChange={(e) => handleTimeChange(day, "endTime", e.target.value)}
-                                                                            className="p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                {providerDetails?.availability?.length ? (
-                                                    providerDetails.availability.map((slot: any) => (
-                                                        <p key={slot._id} className="text-md text-blue-700">
-                                                            <strong>{slot.day}</strong>: {slot.startTime} to {slot.endTime}
-                                                        </p>
-                                                    ))
-                                                ) : (
-                                                    <p className="text-blue-500">No availability set</p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </section>
-
-
-                                <section>
                                     <h2 className="text-2xl font-bold text-slate-800 mb-6">Profile Photo</h2>
                                     <div className="flex items-start space-x-6 p-6 bg-slate-50 rounded-xl">
                                         <div className="relative">
@@ -720,15 +601,15 @@ const ProviderProfile: React.FC = () => {
                 </div>
             )}
 
-            {(!user?.googleCalendar?.tokens || Object.values(user?.googleCalendar?.tokens).length === 0) && (
+            {/* {(!user?.googleCalendar?.tokens || Object.values(user?.googleCalendar?.tokens).length === 0) && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full relative">
-                        {/* <button
+                        <button
                             onClick={handleCloseCalendarModal}
                             className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
                         >
                             <X className="w-6 h-6" />
-                        </button> */}
+                        </button>
 
                         <h2 className="text-xl font-bold text-slate-800 mb-3">Google Calendar Sync</h2>
                         <p className="text-slate-600 mb-6">
@@ -736,14 +617,14 @@ const ProviderProfile: React.FC = () => {
                         </p>
 
                         <div className="flex justify-end space-x-3">
-                            {/* <button
+                            <button
                                 onClick={handleCloseCalendarModal}
                                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg"
                             >
                                 Cancel
-                            </button> */}
+                            </button>
                             <button
-                                onClick={handleConnectCalendar}
+                                // onClick={handleConnectCalendar}
                                 className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
                             >
                                 Connect Now
@@ -751,7 +632,7 @@ const ProviderProfile: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
 
             {isMapOpen && (

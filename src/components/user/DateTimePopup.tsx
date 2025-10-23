@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X, Calendar, Clock } from "lucide-react";
-import { toast } from "react-toastify";
+import { DateTimePopupProps } from "../../util/interface/IBooking";
 
 const convert12ToMinutes = (time12: string) => {
   if (!time12) return null;
@@ -18,17 +18,6 @@ const convert24ToMinutes = (time24: string) => {
   return hours * 60 + minutes;
 };
 
-interface DateTimePopupProps {
-  dateTimePopup: boolean;
-  setDateTimePopup: (value: boolean) => void;
-  selectedDate: string;
-  setSelectedDate: (value: string) => void;
-  selectedTime: string;
-  setSelectedTime: (value: string) => void;
-  timeSlots?: string[];
-  handleDateTimeConfirm: (date: string, time: string) => void;
-  providersTimings?: { day: string; startTime: string; endTime: string }[];
-}
 
 const DateTimePopup: React.FC<DateTimePopupProps> = ({
   dateTimePopup,

@@ -115,7 +115,7 @@ const Header = () => {
                                         className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
                                     >
                                         <img
-                                            src={getCloudinaryUrl(user?.profilePicture || '')}
+                                            src={user?.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png'}
                                             alt="User Avatar"
                                             className="w-10 h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-blue-500 transition-all duration-300"
                                         />

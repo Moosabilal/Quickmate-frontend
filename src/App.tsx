@@ -7,9 +7,13 @@ import { useAppDispatch } from './hooks/useAppDispatch';
 import { updateProfile } from './features/auth/authSlice';
 import { providerService } from './services/providerService';
 import { updateProviderProfile } from './features/provider/providerSlice';
+import { useGlobalSocket } from './hooks/useGlobalSocket';
+
 
 const App = () => {
   const dispatch = useAppDispatch();
+  
+  useGlobalSocket();
 
   useEffect(() => {
     const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];

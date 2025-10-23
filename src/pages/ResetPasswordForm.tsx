@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-
-interface ValidationErrors {
-  newPassword?: string;
-  confirmNewPassword?: string;
-}
+import { ValidationErrorsForReset } from '../util/interface/IUser';
 
 const validatePassword = (password: string): string | undefined => {
   if (!password) return 'Password is required';
@@ -34,7 +30,7 @@ const ResetPasswordForm: React.FC = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<ValidationErrorsForReset>({});
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,7 +51,7 @@ const ResetPasswordForm: React.FC = () => {
     const value = e.target.value;
     setNewPassword(value);
     setErrors((prev) => {
-      const updatedErrors: ValidationErrors = {
+      const updatedErrors: ValidationErrorsForReset = {
         ...prev,
         newPassword: validatePassword(value),
       };

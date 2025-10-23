@@ -1,12 +1,7 @@
 import React from 'react';
+import { PaginationProps2 } from '../../util/interface/IPagination';
 
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: React.FC<PaginationProps2> = ({ currentPage, totalPages, onPageChange }) => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       onPageChange(page);

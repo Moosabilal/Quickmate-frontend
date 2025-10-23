@@ -1,11 +1,6 @@
-
-export interface ChatbotIconProps {
-    className?: string;
-}
-
-
 import React from 'react';
 import { Bot } from 'lucide-react';
+import { ChatbotIconProps } from '../../util/interface/IChatBot';
 
 const ChatbotIcon: React.FC<ChatbotIconProps> = ({ className = "" }) => {
     return (

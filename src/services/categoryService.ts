@@ -1,5 +1,5 @@
-import axiosInstance from "../API/axiosInstance";
-import {ICategoryResponse} from "../util/interface/ICategory"; 
+import axiosInstance from "../lib/axiosInstance";
+import {ICategoryDetailsPageData, ICategoryFormCombinedData, ICategoryResponse} from "../util/interface/ICategory"; 
 
 const CATEGORIES_PATH = '/categories';
 const CATEGORIES_TOP_LEVEL_DETAILS_PATH = '/categories/top-level-details';
@@ -9,6 +9,7 @@ export const categoryService = {
 
     async createCategory(formData: FormData): Promise<ICategoryResponse> {
         try {
+            
             const response = await axiosInstance.post(CATEGORIES_PATH, formData);
             return response.data.category || response.data;
         } catch (error) {
@@ -18,12 +19,33 @@ export const categoryService = {
     },
 
 
-    async getCategoryById(id: string): Promise<ICategoryResponse> {
+    async getCategoryById(id: string): Promise<ICategoryDetailsPageData> {
         try {
             const response = await axiosInstance.get(`${CATEGORIES_PATH}/${id}`);
             return response.data;
         } catch (error: any) {
             console.error(`Error fetching category/subcategory with ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    async getCategoryForBooking(id: string): Promise<ICategoryDetailsPageData> {
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/categoryForBooking${id}`);
+            return response.data;
+        } catch (error: any) {
+            console.error(`Error fetching category/subcategory with ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    getCategoryForEditAndShow: async (categoryId: string): Promise<ICategoryFormCombinedData> => {
+        try {
+            // Note the new '/edit/' path in the URL
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/edit/${categoryId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching category for edit:', error);
             throw error;
         }
     },
@@ -51,27 +73,6 @@ export const categoryService = {
         }
     },
 
-
-    async getAllTopLevelCategoriesWithDetails(): Promise<ICategoryResponse[]> {
-        try {
-            const response = await axiosInstance.get(CATEGORIES_TOP_LEVEL_DETAILS_PATH);
-            return response.data.categories || response.data; 
-        } catch (error: any) {
-            console.error("Error fetching top-level categories with details:", error);
-            throw error;
-        }
-    },
-
-
-    async deleteCategory(id: string): Promise<ICategoryResponse> {
-        try {
-            const response = await axiosInstance.delete(`${CATEGORIES_PATH}/${id}`);
-            return response.data;
-        } catch (error: any) {
-            console.error(`Error deleting category/subcategory with ID ${id}:`, error);
-            throw error;
-        }
-    },
 
     async getAllSubCategories({page, limit, search}:{page: number, limit: number, search: string}){
         try {

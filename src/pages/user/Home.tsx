@@ -317,35 +317,41 @@ const Home: React.FC = () => {
 
             <main className="pt-20">
                 <section
-                    className="relative bg-contain bg-no-repeat bg-center h-[500px] md:h-[600px] flex items-center justify-center text-white"
-                    style={{ backgroundImage: "url('/landing_heroSection.png')", backgroundSize: '1300px 620px' }}
-                >
-                    <div className="absolute inset-0 bg-black opacity-50"></div>
-                    <div className="relative z-10 text-center px-4">
-                        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
-                            Find local services for <span className="text-emerald-300">almost anything</span>
-                        </h1>
-                        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
-                            Connect with trusted professionals for your everyday needs.
-                        </p>
-                        <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="What service are you looking for?"
-                                className="p-3 rounded-lg w-full sm:w-80 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 outline-none"
-                                aria-label="Search for services"
-                            />
-                            <button 
-                                type="submit"
-                                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                            >
-                                Search
-                            </button>
-                        </form>
-                    </div>
-                </section>
+    className="relative bg-cover bg-no-repeat bg-center h-[500px] md:h-[650px] lg:h-screen flex items-center justify-center text-white"
+    style={{ backgroundImage: "url('/landingPageImage.png')" }}
+>
+    {/* Overlay for better text readability */}
+    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+
+    <div className="relative z-10 text-center px-4 sm:px-6">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
+            Find local services for <span className="text-emerald-300">almost anything</span>
+        </h1>
+        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
+            Connect with trusted professionals for your everyday needs.
+        </p>
+
+        <form 
+            onSubmit={handleSearchSubmit} 
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto"
+        >
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="What service are you looking for?"
+                className="p-3 rounded-lg w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 outline-none transition-shadow"
+                aria-label="Search for services"
+            />
+            <button 
+                type="submit"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 whitespace-nowrap"
+            >
+                Search
+            </button>
+        </form>
+    </div>
+</section>
 
                 <section className="container mx-auto px-4 py-12 md:py-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">

@@ -13,6 +13,8 @@ const AdminUsersPage = lazy(() => import('../pages/admin/UserList'));
 const AdminSubscriptionPlans = lazy(() => import('../pages/admin/SubscriptionPlan'));
 const UserDetailsPage = lazy(() => import('../pages/admin/UsersDetails'))
 const Bookings = lazy(() => import('../pages/admin/Bookings'))
+const ReviewModerationPage = lazy(() => import('../pages/admin/ReviewModerationPage'));
+const AnalyticsDashboard = lazy(() => import('../pages/admin/AnalyticsDashboard'))
 
 
 import AdminLayout from '../layouts/AdminLayout';
@@ -34,6 +36,8 @@ const adminRoutes = [
       { path: '/admin/subscriptionPlan', element: <AdminSubscriptionPlans /> },
       { path: '/admin/users/userDetails/:userId', element: <UserDetailsPage /> },
       { path: '/admin/bookings', element: <Bookings /> },
+      { path: '/admin/reviewModerationPage', element: <ReviewModerationPage /> },
+      { path: '/admin/analyticsDashboard', element: <AnalyticsDashboard /> },
       ],
     },
   ]),

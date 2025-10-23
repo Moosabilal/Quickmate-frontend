@@ -1,4 +1,4 @@
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import { BookingStatus, IAdminBookingFilters, IBookingRequest } from "../util/interface/IBooking";
 import { paymentVerificationRequest } from "../util/interface/IPayment";
 const BOOKING_URL = `/bookings`;
@@ -49,9 +49,9 @@ export const bookingService = {
     }
   },
 
-  getBookingFor_Prov_mngmnt: async (id: string) => {
+  getBookingFor_Prov_mngmnt: async (id: string, searchTerm: string) => {
     try {
-      const response = await axiosInstance.get(`${BOOKING_URL}/getBookingFor_Prov_mngmnt/${id}`)
+      const response = await axiosInstance.get(`${BOOKING_URL}/getBookingFor_Prov_mngmnt/${id}`, { params: { search: searchTerm } })
       return response.data
     } catch (error) {
       console.log('Error in getting getBookingFor_Prov_mngmnt', error)
@@ -61,6 +61,7 @@ export const bookingService = {
 
   getAllPreviousChat: async (joiningId: string) => {
     try {
+      console.log('Joining ID:', joiningId); // Debug log to check the joiningId value
       const response = await axiosInstance.get(`${BOOKING_URL}/getAllPreviousChats/${joiningId}`)
       return response.data
     } catch (error) {
@@ -111,5 +112,11 @@ export const bookingService = {
     }
   },
 
+  findProviderRange: async (serviceId: string, lat: number, lng: number, radius: number) => {
+    const response = await axiosInstance.get(`${BOOKING_URL}/findProviderRange`, {
+      params: { serviceId, lat, lng, radius },
+    });
+    return response.data;
+  },
 
 }

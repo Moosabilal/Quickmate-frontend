@@ -1,4 +1,5 @@
 import { BookingStatus } from "./IBooking";
+import { ICategoryResponse, ICommissionRuleResponse } from "./ICategory";
 
 export enum ProviderStatus {
   Active = 'Approved',
@@ -58,7 +59,6 @@ export interface IProviderProfile {
   experience: number
   profilePhoto: string;
   status: string;
-  availability: Availability[];
   subscription?: {
     planId?: string;
     startDate: Date;
@@ -188,11 +188,140 @@ export interface IDashboardStatus {
 }
 
 export type FilterParams = {
-  area?: string;
-  experience?: number;
-  day?: string;
-  time?: string;
-  price?: number;
-  radius?: number;
-  locationCoords?: string;
+  experience: number;
+  price: number;
+  radius: number;
+  latitude: number;
+  longitude: number;
+  date: string | null
+  time: string | null
+  
 };
+
+export interface EarningsBreakdownItem {
+  date: string; 
+  service: string;
+  client: string;
+  amount: number;
+  status: string;
+}
+
+export interface EarningsAnalyticsData {
+  totalEarnings: number;
+  earningsChangePercentage: number;
+  totalClients: number;
+  newClients: number;
+  topService: {
+    name: string;
+    earnings: number;
+  };
+  breakdown: EarningsBreakdownItem[];
+}
+
+export interface IReview {
+    name: string;
+    time: string;
+    rating: number;
+    comment: string;
+    avatar: string;
+}
+
+export interface IRatingDistribution {
+    stars: number;
+    percentage: number;
+}
+
+export interface IMonthlyTrend {
+    month: string;
+    value: number;
+}
+
+export interface IServiceBreakdown {
+    serviceName: string;
+    completionRate: number;
+}
+
+export interface IProviderPerformance {
+    providerName: string;
+    totalBookings: number;
+    completedBookings: number;
+    avgRating: number;
+    completionRate: string;
+    reviews: IReview[];
+    ratingDistribution: IRatingDistribution[];
+    starRatingTrend: IMonthlyTrend[];
+    serviceBreakdown: IServiceBreakdown[];
+}
+
+export interface ProviderState  {
+    provider: Partial<IProviderProfile>
+}
+
+export interface IEditedProviderProfile extends Partial<IProviderProfile> {
+    profilePhotoFile?: File;
+    aadhaarIdProofFile?: File;
+}
+
+export interface FormData {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    serviceArea: string | null;
+    serviceLocation: { lat: number; lng: number } | null;
+    aadhaarIdProof: File | null;
+    profilePhoto: File | null;
+    agreeTerms: boolean;
+}
+
+export interface ProviderPopupProps {
+  setSelectedProvider: (provider: IBackendProvider | null) => void;
+  providerPopup: boolean;
+  selectedProvider: IBackendProvider | null;
+  setProviderPopup: (open: boolean) => void;
+  serviceId: string;
+  selectedDate: string | null;
+  selectedTime: string | null;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+}
+
+export interface IMonthlyTrend {
+    month: string;
+    value: number;
+}
+
+export interface RatingTrendChartProps {
+    data: IMonthlyTrend[];
+}
+
+export interface TimeSlot {
+    start: string;
+    end: string;
+}
+
+export interface DaySchedule {
+    day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+    active: boolean;
+    slots: TimeSlot[];
+}
+
+export interface DateOverride {
+    date: string; // YYYY-MM-DD format
+    isUnavailable: boolean;
+    busySlots: TimeSlot[];
+    reason?: string; // <-- ADD THIS
+}
+
+export interface EditDateModalProps {
+    date: Date;
+    onClose: () => void;
+    onSave: (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => void;
+    initialOverride?: DateOverride;
+}
+
+export interface LeavePeriod {
+    from: string; // YYYY-MM-DD
+    to: string;   // YYYY-MM-DD
+    reason?: string; // Optional reason (e.g., "Vacation")
+}

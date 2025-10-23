@@ -1,5 +1,5 @@
 import qs from "qs";
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import { FilterParams } from "../util/interface/IProvider";
 const PROVIDER_URL = `/provider`;
 
@@ -79,7 +79,7 @@ export const providerService = {
         return response.data
     },
 
-    getserviceProvider: async (serviceId: string, filters: FilterParams) => {
+    getserviceProvider: async (serviceId: string, filters: Partial<FilterParams>) => {
         const response = await axiosInstance.get(`${PROVIDER_URL}/getFilteredServiceProvider`, { params: { serviceId, ...filters } })
         return response.data
     },
@@ -105,29 +105,18 @@ export const providerService = {
         }
     },
 
-    googleAuth: async () => {
-        try {
-            const response = await axiosInstance.get(`${PROVIDER_URL}/google/auth`)
-            console.log('the response in porvideer service', response)
-            return response.data
-        } catch (error) {
-            console.log('the erorr in googleAuth', error)
-            throw error
-        }
-    },
-
-    getProviderAvailability: async (providerIds: string[], timeMin: string, timeMax: string) => {
+    getProviderAvailability: async (latitude: number, longitude: number, serviceId: string, radius: number, timeMin: string, timeMax: string) => {
         try {
             const params = {
-                providerIds,
+                latitude,
+                longitude,
+                serviceId,
+                radius,
                 timeMin,
                 timeMax  
             };
 
-            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, {
-                params,
-                paramsSerializer: params => qs.stringify(params, { arrayFormat: "repeat" })
-            });
+            const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, { params });
 
             return response.data;
         } catch (error) {
@@ -152,7 +141,29 @@ export const providerService = {
             console.error('Error fetching providers by location:', error);
             throw error;
         }
-    }
+    },
+
+    getEarningsAnalytics: async (period: 'week' | 'month') => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/earnings`, {
+                params: { period }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching earnings analytics:', error);
+            throw error;
+        }
+    },
+
+    getProviderPerformance: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/performance`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching provider performance:', error);
+            throw error;
+        }
+    },
 
 
 }

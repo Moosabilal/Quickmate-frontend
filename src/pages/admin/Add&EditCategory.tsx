@@ -1,19 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryResponse } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryFormCombinedData, ICategoryFormData, ICategoryResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify'
-
-interface ICategoryFormData {
-    name: string;
-    description: string;
-    status: boolean;
-    commissionType: CommissionTypes;
-    commissionValue: number | '';
-    commissionStatus: boolean;
-    icon: File | string | null;
-}
 
 const CategoryForm: React.FC = () => {
     const navigate = useNavigate();
@@ -50,7 +40,7 @@ const CategoryForm: React.FC = () => {
                 setIsDataLoading(true);
                 setError(null);
                 try {
-                    const response: ICategoryResponse = await categoryService.getCategoryById(currentEntityId);
+                    const response: ICategoryFormCombinedData = await categoryService.getCategoryForEditAndShow(currentEntityId);
 
                     setFormData({
                         name: response.name,

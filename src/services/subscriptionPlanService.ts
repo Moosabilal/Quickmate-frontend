@@ -1,4 +1,4 @@
-import axiosInstance from "../API/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 import { IPlan } from "../util/interface/ISubscriptionPlan";
 
 

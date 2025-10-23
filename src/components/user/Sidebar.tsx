@@ -30,7 +30,7 @@ const Sidebar = () => {
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
     { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/profile/wallet' },
-    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/profile/chatListPage' },
+    { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/chat' },
     // { name: 'Booking Assistant', icon: <MdOutlineSupportAgent className="w-5 h-5" />, path: '/profile/assistant' },
     // { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
     // { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },
@@ -65,13 +65,10 @@ const Sidebar = () => {
         <div className="text-center mb-8">
           <div className="relative inline-block">
             <img
-              src={getCloudinaryUrl(user.profilePicture || '')}
+              src={user.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png'}
               alt={user.name || 'User'}
               className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover"
             />
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 text-white" />
-            </div>
           </div>
           <h3 className="font-semibold text-slate-800 mt-4">
             {user.name?.split(' ')[0] || 'User'}

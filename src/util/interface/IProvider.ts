@@ -59,7 +59,6 @@ export interface IProviderProfile {
   experience: number
   profilePhoto: string;
   status: string;
-  availability: Availability[];
   subscription?: {
     planId?: string;
     startDate: Date;
@@ -269,7 +268,6 @@ export interface FormData {
     email: string;
     serviceArea: string | null;
     serviceLocation: { lat: number; lng: number } | null;
-    availability: Availability[];
     aadhaarIdProof: File | null;
     profilePhoto: File | null;
     agreeTerms: boolean;
@@ -295,4 +293,35 @@ export interface IMonthlyTrend {
 
 export interface RatingTrendChartProps {
     data: IMonthlyTrend[];
+}
+
+export interface TimeSlot {
+    start: string;
+    end: string;
+}
+
+export interface DaySchedule {
+    day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+    active: boolean;
+    slots: TimeSlot[];
+}
+
+export interface DateOverride {
+    date: string; // YYYY-MM-DD format
+    isUnavailable: boolean;
+    busySlots: TimeSlot[];
+    reason?: string; // <-- ADD THIS
+}
+
+export interface EditDateModalProps {
+    date: Date;
+    onClose: () => void;
+    onSave: (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => void;
+    initialOverride?: DateOverride;
+}
+
+export interface LeavePeriod {
+    from: string; // YYYY-MM-DD
+    to: string;   // YYYY-MM-DD
+    reason?: string; // Optional reason (e.g., "Vacation")
 }

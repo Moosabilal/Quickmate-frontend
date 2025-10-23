@@ -12,9 +12,10 @@ const commonRoutes = [
     children: [
       { index: true, element: <ChatPlaceholder /> },
       { path: ':joiningId', element: <Chat_Room /> },
-      { path: ':joiningId/call', element: <VideoCallPage /> },
+      
     ],
   },
+  { path: '/chat/:joiningId/call', element: <VideoCallPage /> },
   // You can add other common routes like a 404 page here in the future
 ];
 

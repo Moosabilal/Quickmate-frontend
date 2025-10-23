@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { CategoryTableDisplay, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
-import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { toast } from 'react-toastify';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { useAppSelector } from '../../hooks/useAppSelector';
-import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { MapPin } from 'lucide-react';
 import { FormData } from '../../util/interface/IProvider';
 
@@ -34,7 +30,6 @@ const ProviderRegistration: React.FC = () => {
         email: '',
         serviceArea: '',
         serviceLocation: null,
-        availability: [],
         aadhaarIdProof: null,
         profilePhoto: null,
         agreeTerms: false,
@@ -54,31 +49,6 @@ const ProviderRegistration: React.FC = () => {
     const dayOptions = [
         'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
     ];
-
-    const handleDayToggle = (day: string, checked: boolean) => {
-        setFormData(prev => {
-            let updated = [...prev.availability];
-            if (checked) {
-                updated.push({ day, startTime: '', endTime: '' });
-            } else {
-                updated = updated.filter(av => av.day !== day);
-            }
-            return { ...prev, availability: updated };
-        });
-    };
-
-    const handleTimeChange = (day: string, field: 'startTime' | 'endTime', value: string) => {
-        setFormData(prev => {
-            const updated = prev.availability.map(av =>
-                av.day === day ? { ...av, [field]: value } : av
-            );
-            return { ...prev, availability: updated };
-        });
-    };
-
-
-
-
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type } = e.target;
@@ -138,18 +108,6 @@ const ProviderRegistration: React.FC = () => {
         if (!formData.serviceLocation) {
             newErrors.serviceLocation = 'Service location is required.';
         }
-
-        if (formData.availability.length === 0) {
-            newErrors.availability = 'Select at least one available day.';
-        } else {
-            for (const { day, startTime, endTime } of formData.availability) {
-                if (!startTime) newErrors[`${day}-startTime`] = `${day} start time required`;
-                if (!endTime) newErrors[`${day}-endTime`] = `${day} end time required`;
-                if (startTime && endTime && startTime >= endTime) {
-                    newErrors[`${day}-endTime`] = `${day} end time must be after start time`;
-                }
-            }
-        }
         if (!formData.aadhaarIdProof) newErrors.aadhaarIdProof = 'Aadhaar/ID Proof is required.';
         if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the Terms & Conditions.';
 
@@ -177,8 +135,6 @@ const ProviderRegistration: React.FC = () => {
             const { lat, lng } = formData.serviceLocation;
             data.append('serviceLocation', `${lat},${lng}`);
         }
-
-        data.append('availability', JSON.stringify(formData.availability));
 
         if (formData.aadhaarIdProof) data.append('aadhaarIdProof', formData.aadhaarIdProof);
         if (formData.profilePhoto) data.append('profilePhoto', formData.profilePhoto);
@@ -359,54 +315,7 @@ const ProviderRegistration: React.FC = () => {
                             </div>
 
                         </div>
-
-                        <hr className="my-8 border-gray-200" />
-
-                        {/* Available Days */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-semibold mb-2">Available Days & Times</label>
-                            <div className="space-y-4">
-                                {dayOptions.map(day => {
-                                    const existing = formData.availability.find(av => av.day === day);
-                                    const checked = Boolean(existing);
-                                    return (
-                                        <div key={day} className="border p-4 rounded-lg">
-                                            <label className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={checked}
-                                                    onChange={(e) => handleDayToggle(day, e.target.checked)}
-                                                />
-                                                <span>{day}</span>
-                                            </label>
-                                            {checked && (
-                                                <div className="flex gap-4 mt-3">
-                                                    <div className="w-40">
-                                                        <input
-                                                            type="time"
-                                                            value={existing?.startTime || ''}
-                                                            onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                                                            className={`w-full px-3 py-2 border ${errors[`${day}-startTime`] ? 'border-red-500' : 'border-gray-200'} rounded-lg`}
-                                                        />
-                                                        {errors[`${day}-startTime`] && <p className="text-red-500 text-xs">{errors[`${day}-startTime`]}</p>}
-                                                    </div>
-                                                    <div className="w-40">
-                                                        <input
-                                                            type="time"
-                                                            value={existing?.endTime || ''}
-                                                            onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                                                            className={`w-full px-3 py-2 border ${errors[`${day}-endTime`] ? 'border-red-500' : 'border-gray-200'} rounded-lg`}
-                                                        />
-                                                        {errors[`${day}-endTime`] && <p className="text-red-500 text-xs">{errors[`${day}-endTime`]}</p>}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            {errors.availability && <p className="text-red-500 text-xs mt-2">{errors.availability}</p>}
-                        </div>
+        
 
                         <hr className="my-8 border-gray-200" />
 

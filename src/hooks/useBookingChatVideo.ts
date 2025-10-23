@@ -24,6 +24,29 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const remoteStreamRef = useRef<MaybeStream>(null);
     const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
 
+    const cleanupCall = useCallback(() => {
+        console.log("Running call cleanup...");
+        
+        iceCandidateQueueRef.current = [];
+        setIsAudioMuted(false);
+        setIsVideoOff(false);
+
+        // This now uses the 'localStream' from state, which is always up-to-date
+        if (localStream) {
+            localStream.getTracks().forEach((track) => track.stop());
+        }
+        setLocalStream(null);
+
+        if (pcRef.current) {
+            pcRef.current.getSenders().forEach((sender) => sender.track?.stop());
+            pcRef.current.close();
+            pcRef.current = null;
+        }
+
+        setRemoteStream(null);
+    // Add 'localStream' to the dependency array
+    }, [localStream]);
+
     const rtcConfig: RTCConfiguration = {
         iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
@@ -63,7 +86,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             iceCandidateQueueRef.current.forEach((candidate) => {
                 pcRef.current!
                     .addIceCandidate(candidate)
-                    .then(() => {})
+                    .then(() => { })
                     .catch((e) => console.error("Error adding queued ICE:", e));
             });
             iceCandidateQueueRef.current = [];
@@ -141,28 +164,19 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
 
         const hangupHandler = (payload: any) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
+
+            cleanupCall();
+
             setIncomingCall(null);
-            try {
-                const blockKey = `offerBlockUntil:${joiningId}`;
-                localStorage.setItem(blockKey, String(Date.now() + 5000));
-            } catch {}
-            endCall();
+            setCallStatus("ended");
         };
 
         const callRejectedHandler = (payload: any) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
+            cleanupCall();
             setIncomingCall(null);
             setCallStatus("ended");
-            if (pcRef.current) {
-                pcRef.current.getSenders().forEach((s) => s.track?.stop());
-                pcRef.current.close();
-                pcRef.current = null;
-            }
-            localStreamRef.current?.getTracks().forEach((t) => t.stop());
-            localStreamRef.current = null;
-            setLocalStream(null);
-            remoteStreamRef.current = null;
-            setRemoteStream(null);
+
         };
 
         socket.on("receiveBookingMessage", chatHandler);
@@ -180,7 +194,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             socket.off("webrtc:hangup", hangupHandler);
             socket.off("webrtc:call-rejected", callRejectedHandler);
         };
-    }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall]);
+    }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall, cleanupCall]);
 
     const sendMessage = useCallback(
         (text: string) => {
@@ -290,30 +304,15 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     }, [joiningId, currentUserId, setIncomingCall]);
 
     const endCall = useCallback(() => {
-        iceCandidateQueueRef.current = [];
-        setIsAudioMuted(false);
-        setIsVideoOff(false);
-
         if (callStatus !== "idle") {
             socket.emit("webrtc:hangup", { joiningId, fromUserId: currentUserId });
         }
 
-        if (pcRef.current) {
-            pcRef.current.getSenders().forEach((s) => s.track?.stop());
-            pcRef.current.close();
-            pcRef.current = null;
-        }
-
-        localStreamRef.current?.getTracks().forEach((t) => t.stop());
-        localStreamRef.current = null;
-        setLocalStream(null);
-
-        remoteStreamRef.current = null;
-        setRemoteStream(null);
+        cleanupCall();
 
         setIncomingCall(null);
         setCallStatus("idle");
-    }, [joiningId, currentUserId, callStatus, setIncomingCall]);
+    }, [joiningId, currentUserId, callStatus, setIncomingCall, cleanupCall]);
 
     useEffect(() => {
         const { incomingCall } = useCallStore.getState();

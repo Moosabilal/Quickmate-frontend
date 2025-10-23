@@ -25,7 +25,6 @@ import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
 import BookingConfirmation from '../pages/user/bookingConfirmation';
-import ChatProvidersPage from '../pages/user/ChatProviders';
 
 
 const userRoutes = [
@@ -59,8 +58,6 @@ const userRoutes = [
         { path: '/profile', element: <ProfileSettings /> },
         { path: '/provider-registration', element: <ProviderRegistration /> },
         { path: '/profile/booking-history', element: <BookingHistory /> },
-        // { path: '/profile/chatListPage', element: <ChatProvidersPage /> },
-        // { path: '/profile/chatListPage/live-chat', element: <Chat_Room /> },
         { path: '/profile/booking-history/bookingDetails/:id', element: <BookingDetails /> },
         { path: '/profile/currentPassword', element: <CurrentPassword /> },
         { path: '/profile/reset-password/:token', element: <ResetPasswordForm /> },

@@ -22,15 +22,3 @@ export interface DeleteConfirmationModalProps {
   confirmTextProp?: string;
   titleProp?: string;
 }
-
-export type InfoModalType = "INFO" | "SUCCESS" | "WARNING";
-
-export interface InfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  type?: InfoModalType;
-  title?: string;
-  message: string;
-  additionalInfo?: string;
-  confirmText?: string;
-}

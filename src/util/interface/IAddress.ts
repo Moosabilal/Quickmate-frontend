@@ -19,5 +19,5 @@ export interface AddressPopupProps {
   newAddress: IAddress;
   setNewAddress: React.Dispatch<React.SetStateAction<any>>;
   handleAddAddress: (address: IAddress) => void;
-  serviceId: string;
+  serviceId?: string;
 }

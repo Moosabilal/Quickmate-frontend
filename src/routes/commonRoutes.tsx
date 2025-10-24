@@ -16,7 +16,6 @@ const commonRoutes = [
     ],
   },
   { path: '/chat/:joiningId/call', element: <VideoCallPage /> },
-  // You can add other common routes like a 404 page here in the future
 ];
 
 export default commonRoutes;

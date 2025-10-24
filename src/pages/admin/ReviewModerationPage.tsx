@@ -1,17 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Star, Search, ChevronDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
-import { reviewService } from '../../services/reviewService'; // Adjust the import path for your review service
+import { reviewService } from '../../services/reviewService';
 import { IReviewAdminFilters, ReviewData } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';
 
-// =================================================================================
-// ## 📊 Main Page Component ##
-// =================================================================================
-
-// --- Type Definition for Review Data from API ---
-
-
-// A helper hook for debouncing input
 const useDebounce = (value: string, delay: number) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
     useEffect(() => {
@@ -26,28 +18,23 @@ const useDebounce = (value: string, delay: number) => {
 };
 
 const ReviewModerationPage: React.FC = () => {
-    // --- State for Data, Loading, and Errors ---
     const [reviews, setReviews] = useState<ReviewData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // --- State for Filters and Pagination ---
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRating, setSelectedRating] = useState('All');
     const [selectedDate, setSelectedDate] = useState('Newest');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
-    // --- Debounce the search term to prevent API calls on every keystroke ---
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-    // --- State for Dropdown Visibility ---
     const [isRatingOpen, setIsRatingOpen] = useState(false);
     const [isDateOpen, setIsDateOpen] = useState(false);
 
     const ratingOptions = ['All', '5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'];
     const dateOptions = ['Newest', 'Oldest'];
 
-    // --- Data Fetching Logic ---
     const fetchReviews = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -85,12 +72,10 @@ const ReviewModerationPage: React.FC = () => {
         }
     }, [pagination.page, debouncedSearchTerm, selectedRating, selectedDate]);
 
-    // --- useEffect to trigger fetch when filters or page change ---
     useEffect(() => {
         fetchReviews();
     }, [fetchReviews]);
 
-    // Reset page to 1 when filters change
     useEffect(() => {
         setPagination(prev => ({ ...prev, page: 1 }));
     }, [debouncedSearchTerm, selectedRating, selectedDate]);
@@ -143,7 +128,6 @@ const ReviewModerationPage: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    {/* Table Headers */}
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">User</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Provider</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[250px]">Review</th>
@@ -180,7 +164,6 @@ const ReviewModerationPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                    {/* --- Pagination Component --- */}
                     {!isLoading && reviews.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-200">
                             <Pagination

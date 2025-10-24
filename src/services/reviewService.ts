@@ -26,7 +26,7 @@ export const reviewService = {
             if (filters.sort) params.append('sort', filters.sort);
 
             const response = await axiosInstance.get(`${REVIEW_URL}/reviews`, { params });
-            return response.data; // This will include { data: reviews[], pagination: {...} }
+            return response.data;
         } catch (error) {
             console.error('Error fetching reviews for admin:', error);
             throw error;

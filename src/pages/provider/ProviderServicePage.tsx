@@ -243,7 +243,6 @@ const ProviderServicesPage: React.FC = () => {
                             </button>}
                         </div>
 
-                        {/* Services Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {services && services.length > 0 ? (
                                 services.map((service) => (
@@ -380,7 +379,6 @@ const ProviderServicesPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Provider Delete Confirmation Modal */}
             <DeleteConfirmationModal
                 isOpen={showDeleteModal}
                 onClose={handleDeleteCancel}

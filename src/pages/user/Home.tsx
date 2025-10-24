@@ -320,7 +320,6 @@ const Home: React.FC = () => {
     className="relative bg-cover bg-no-repeat bg-center h-[500px] md:h-[650px] lg:h-screen flex items-center justify-center text-white"
     style={{ backgroundImage: "url('/landingPageImage.png')" }}
 >
-    {/* Overlay for better text readability */}
     <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
     <div className="relative z-10 text-center px-4 sm:px-6">
@@ -570,14 +569,11 @@ const Home: React.FC = () => {
                     </Link>
                 </section>
 
-                {/* Chatbot Section - Fixed for Mobile */}
                 <div className={`fixed ${isMobile && showChatbot ? 'inset-0' : 'bottom-6 right-6'} z-50 ${showChatbot && isMobile ? 'chatbot-mobile-fullscreen' : ''}`}>
-                    {/* Mobile Full-Screen Backdrop */}
                     {showChatbot && isMobile && (
                         <div className="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm" />
                     )}
 
-                    {/* Chatbot Button */}
                     <button
                         onClick={toggleChatbot}
                         className={`${isMobile && showChatbot ? 'hidden' : 'block'} w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group ${
@@ -600,7 +596,6 @@ const Home: React.FC = () => {
                         )}
                     </button>
 
-                    {/* Chatbot Container */}
                     <div className={`${isMobile && showChatbot 
                         ? 'fixed inset-4 flex flex-col z-10' 
                         : `absolute ${isMobile ? 'bottom-16 right-0' : 'bottom-16 right-0'} w-80 sm:w-96 max-w-[calc(100vw-3rem)]`
@@ -610,7 +605,6 @@ const Home: React.FC = () => {
                         <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden backdrop-blur-sm ${
                             isMobile && showChatbot ? 'h-full flex flex-col' : ''
                         }`}>
-                            {/* Header */}
                             <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex items-center justify-between flex-shrink-0">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -653,10 +647,8 @@ const Home: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Chat Content */}
                             {!isMinimized && (
                                 <>
-                                    {/* Messages Container */}
                                     <div 
                                         ref={chatBodyRef}
                                         className={`${isMobile && showChatbot ? 'flex-1' : 'h-80 sm:h-96'} overflow-y-auto p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent`}
@@ -664,7 +656,6 @@ const Home: React.FC = () => {
                                         aria-label="Chat messages"
                                         aria-live="polite"
                                     >
-                                        {/* Welcome Message */}
                                         <div className="flex gap-3 mb-4 animate-fadeInUp">
                                             <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
                                                 <Bot className="w-4 h-4 text-white" />
@@ -677,13 +668,11 @@ const Home: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Chat Messages */}
                                         {chatHistory.map((chat, index) => (
                                             <ChatMessage key={chat.id || `message-${index}`} chat={chat} />
                                         ))}
                                     </div>
 
-                                    {/* Input Section */}
                                     <div className="p-4  border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
                                         <ChatForm 
                                             chatHistory={chatHistory} 
@@ -691,7 +680,6 @@ const Home: React.FC = () => {
                                             generateBotResponse={generateBotResponse} 
                                         />
                                         
-                                        {/* Quick Actions */}
                                         <div className="flex flex-wrap gap-2 mt-3">
                                             {defaultQuickActions.map((action) => (
                                                 <button
@@ -705,7 +693,6 @@ const Home: React.FC = () => {
                                             ))}
                                         </div>
                                         
-                                        {/* Powered by AI */}
                                         <div className="text-center mt-2">
                                             <span className="text-xs text-gray-400">Powered by AI</span>
                                         </div>

@@ -8,9 +8,7 @@ import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { toast } from 'react-toastify';
 import { MapPin } from 'lucide-react';
-import { FormData } from '../../util/interface/IProvider';
-
-
+import { IProviderFormState } from '../../util/interface/IProvider';
 
 
 
@@ -24,7 +22,7 @@ export const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: nu
 };
 
 const ProviderRegistration: React.FC = () => {
-    const [formData, setFormData] = useState<FormData>({
+    const [formData, setFormData] = useState<IProviderFormState>({
         fullName: '',
         phoneNumber: '',
         email: '',
@@ -74,7 +72,7 @@ const ProviderRegistration: React.FC = () => {
         setErrors(prev => ({ ...prev, [id]: undefined }));
     };
 
-    const handleFileChange = (field: keyof FormData, event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (field: keyof IProviderFormState, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         setFormData(prev => ({ ...prev, [field]: file }));
         setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -84,7 +82,7 @@ const ProviderRegistration: React.FC = () => {
         event.preventDefault();
     };
 
-    const handleDrop = (field: keyof FormData, event: React.DragEvent<HTMLDivElement>) => {
+    const handleDrop = (field: keyof IProviderFormState, event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const file = event.dataTransfer.files ? event.dataTransfer.files[0] : null;
         setFormData(prev => ({ ...prev, [field]: file }));
@@ -174,7 +172,7 @@ const ProviderRegistration: React.FC = () => {
         fetchAddress();
     }, [formData.serviceLocation]);
 
-    const renderInputField = (label: string, id: keyof FormData, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
+    const renderInputField = (label: string, id: keyof IProviderFormState, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
         <div className="mb-6">
             <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
                 {label}
@@ -206,7 +204,7 @@ const ProviderRegistration: React.FC = () => {
     );
 
 
-    const renderFileUploadField = (label: string, subLabel: string, id: keyof FormData, fileRef: React.RefObject<HTMLInputElement | null>, optional?: boolean) => (
+    const renderFileUploadField = (label: string, subLabel: string, id: keyof IProviderFormState, fileRef: React.RefObject<HTMLInputElement | null>, optional?: boolean) => (
         <div className="mb-6">
             <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
                 {label} {optional && <span className="text-gray-400 text-xs">(Optional)</span>}

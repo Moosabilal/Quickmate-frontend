@@ -1,6 +1,6 @@
 import qs from "qs";
 import axiosInstance from "../lib/axiosInstance";
-import { FilterParams } from "../util/interface/IProvider";
+import { FilterParams, IAvailabilityUpdateData } from "../util/interface/IProvider";
 const PROVIDER_URL = `/provider`;
 
 export const providerService = {
@@ -164,6 +164,26 @@ export const providerService = {
             throw error;
         }
     },
+
+    getAvailability: async () => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/availability`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching availability:', error);
+            throw error;
+        }
+    },
+
+    updateAvailability: async (data: IAvailabilityUpdateData) => {
+        try {
+            const response = await axiosInstance.put(`${PROVIDER_URL}/availability`, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating availability:', error);
+            throw error;
+        }
+    }
 
 
 }

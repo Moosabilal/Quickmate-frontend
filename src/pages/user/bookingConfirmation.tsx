@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Calendar, MapPin, Phone, User, CreditCard, Clock, Package, FileText, Loader2 } from 'lucide-react';
-import { IBookingConfirmationPage } from '../../util/interface/IBooking';
+import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -31,7 +31,7 @@ const BookingConfirmation: React.FC = () => {
     }
   }, [bookingId]);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       weekday: 'long',
@@ -41,7 +41,7 @@ const BookingConfirmation: React.FC = () => {
     }).format(date);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: BookingStatus) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -56,7 +56,7 @@ const BookingConfirmation: React.FC = () => {
     }
   };
 
-  const getPaymentStatusColor = (status) => {
+  const getPaymentStatusColor = (status: string) => {
     return status?.toLowerCase() === 'paid' 
       ? 'text-green-600 bg-green-50' 
       : 'text-red-600 bg-red-50';

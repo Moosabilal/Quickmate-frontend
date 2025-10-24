@@ -71,7 +71,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
   
-          const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
+          const withinRange = await bookingService.findProviderRange(serviceId!, lat, lng, radius);
   
           if (!withinRange) {
             setError("No service provider found at your location. Please select a different address.");
@@ -97,7 +97,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             locationCoords: `${lat},${lng}`,
           };
           
-          // Step 3: If everything is successful, save the address
           const response = await addressService.createAddress(newAddress);
           handleAddressConfirm(response, radius);
   
@@ -111,7 +110,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       (error) => {
         console.error("Geolocation error:", error);
         toast.error("Unable to retrieve your location. Please check your browser's location permissions.");
-        setLoading(false); // Also handle loading state here
+        setLoading(false);
       }
     );
   };
@@ -126,7 +125,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
       try {
-        const withinRange = await bookingService.findProviderRange(serviceId, userLat, userLng, radius)
+        const withinRange = await bookingService.findProviderRange(serviceId!, userLat, userLng, radius)
 
         if (withinRange) {
           handleAddressConfirm(address, radius);

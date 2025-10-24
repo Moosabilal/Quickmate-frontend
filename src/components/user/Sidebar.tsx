@@ -76,7 +76,6 @@ const Sidebar = () => {
           <p className="text-sm text-slate-500">Customer</p>
         </div>
 
-        {/* Navigation */}
         <nav className="space-y-2">
           {navItems.map((item) => (
             <Link

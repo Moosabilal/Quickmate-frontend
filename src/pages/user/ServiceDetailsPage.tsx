@@ -24,6 +24,7 @@ declare var Razorpay: any;
 const ServiceDetailsPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth)
   const { serviceId } = useParams<{ serviceId: string }>();
+
   const [serviceDetails, setServiceDetails] = useState<ICategoryFormCombinedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,8 @@ const ServiceDetailsPage: React.FC = () => {
     setSelectedDate(date);
     setSelectedTime(time);
     setSelectedProvider(null)
+    setShowCalendar(false);
+    setProviderPopup(true);
   };
 
   const fetchWallet = async () => {
@@ -386,50 +389,55 @@ const ServiceDetailsPage: React.FC = () => {
               )}
 
 
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <Award className="w-4 h-4 mr-2" />
-                  Select Service Provider
-                </h3>
-                <button
-                  type="button"
-                  disabled={!selectedAddress || !selectedTime}
-                  onClick={() => setProviderPopup(true)}
-                  className="w-full px-4 py-2 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow text-sm focus:outline-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
-                  title={
-    !selectedAddress
-      ? "Please select an address first"
-      : !selectedTime
-      ? "Please select a time slot"
-      : ""
-  }
-                >
-                  {selectedProvider
-                    ? `Selected: ${selectedProvider.fullName}`
-                    : "Choose Provider"}
-                </button>
-
-                {selectedProvider && (
-                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={getCloudinaryUrl(selectedProvider.profilePhoto)}
-                        alt={selectedProvider.fullName}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">{selectedProvider.fullName}</p>
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                          <span>
-                            {selectedProvider.rating} • ₹{selectedProvider.price}
-                          </span>
+              {selectedTime && (
+                <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
+                  <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
+                    <Award className="w-4 h-4 mr-2" />
+                    Service Provider
+                  </h3>
+                  
+                  {selectedProvider ? (
+                    <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={getCloudinaryUrl(selectedProvider.profilePhoto)}
+                            alt={selectedProvider.fullName}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">{selectedProvider.fullName}</p>
+                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              <span>
+                                {selectedProvider.rating} • ₹{selectedProvider.price}
+                              </span>
+                            </div>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => setProviderPopup(true)} 
+                          className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                        >
+                          Change
+                        </button>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500 mb-2">Please select a provider to continue.</p>
+                      <button
+                        type="button"
+                        onClick={() => setProviderPopup(true)}
+                        className="w-full px-4 py-2 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow text-sm focus:outline-none"
+                      >
+                        Choose Provider
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {selectedAddress && selectedProvider &&
                 <>
@@ -529,9 +537,9 @@ const ServiceDetailsPage: React.FC = () => {
         radius={radius}
         onSlotSelect={handleSlotSelection}
       />
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} 
+      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''}
         selectedDate={selectedDate}
-        selectedTime={selectedTime} 
+        selectedTime={selectedTime}
         latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0}
         longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
         radiusKm={radius}

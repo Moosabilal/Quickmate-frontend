@@ -22,6 +22,17 @@ const ProviderPopup = ({
 }: ProviderPopupProps) => {
   if (!providerPopup) return null;
 
+  console.log('the dat',setSelectedProvider,
+  providerPopup,
+  selectedProvider,
+  setProviderPopup,
+  serviceId,
+  selectedDate,
+  selectedTime,
+  latitude,
+  longitude,
+  radiusKm)
+
   console.log('the selected time', selectedTime)
 
   const initialFilters: FilterParams = {

@@ -98,7 +98,6 @@
 
 
 
-// src/pages/provider/ProviderAvailabilityPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { WeeklyAvailability } from '../../components/provider/WeeklyAvailability';
@@ -108,7 +107,6 @@ import { providerService } from '../../services/providerService';
 import { toast } from 'react-toastify';
 
 const ProviderAvailabilityPage: React.FC = () => {
-    // --- State ---
     const [weeklySchedule, setWeeklySchedule] = useState<DaySchedule[]>([]);
     const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
     const [leavePeriods, setLeavePeriods] = useState<LeavePeriod[]>([]);
@@ -117,7 +115,6 @@ const ProviderAvailabilityPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // --- Fetch data from backend ---
     useEffect(() => {
         const fetchAvailability = async () => {
             try {
@@ -138,7 +135,6 @@ const ProviderAvailabilityPage: React.FC = () => {
         fetchAvailability();
     }, []);
 
-    // --- Save updates to backend ---
     const handleSaveChanges = async () => {
         setIsSaving(true);
         try {
@@ -155,7 +151,6 @@ const ProviderAvailabilityPage: React.FC = () => {
         }
     };
 
-    // --- Loading State ---
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -164,7 +159,6 @@ const ProviderAvailabilityPage: React.FC = () => {
         );
     }
 
-    // --- Error State ---
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-screen text-red-500">
@@ -173,11 +167,9 @@ const ProviderAvailabilityPage: React.FC = () => {
         );
     }
 
-    // --- Main UI ---
     return (
         <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
-                {/* --- Header --- */}
                 <div className="mb-8">
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                         Manage Availability
@@ -187,9 +179,7 @@ const ProviderAvailabilityPage: React.FC = () => {
                     </p>
                 </div>
 
-                {/* --- Main Grid --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    {/* Weekly Schedule Section */}
                     <div className="lg:col-span-3">
                         <WeeklyAvailability
                             schedule={weeklySchedule}
@@ -197,7 +187,6 @@ const ProviderAvailabilityPage: React.FC = () => {
                         />
                     </div>
 
-                    {/* Date Overrides Section */}
                     <div className="lg:col-span-2">
                         <DateOverrides
                             overrides={dateOverrides}
@@ -208,7 +197,6 @@ const ProviderAvailabilityPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* --- Save Button --- */}
                 <div className="mt-8 flex justify-end">
                     <button
                         onClick={handleSaveChanges}

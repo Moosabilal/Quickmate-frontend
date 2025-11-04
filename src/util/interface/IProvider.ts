@@ -85,7 +85,7 @@ export interface IBackendProvider {
   serviceArea: string;
   serviceLocation: string;
   experience: number;
-  availability: Availability[];
+  availability: IAvailabilityUpdateData;
   status: string;
   earnings: number;
   price: number;

@@ -69,4 +69,5 @@ const userRoutes = [
   ]),
 ];
 
-export default userRoutes.flat();
+const flattenedUserRoutes = userRoutes.flat();
+export default flattenedUserRoutes

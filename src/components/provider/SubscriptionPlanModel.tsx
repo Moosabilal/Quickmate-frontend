@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { subscriptionPlanService } from "../../services/subscriptionPlanService";
-import { toast } from "react-toastify";
 import { X } from "lucide-react";
 import { ISubscriptionPlan, SubscriptionPlansModalProps } from "../../util/interface/ISubscriptionPlan";
 
@@ -14,9 +12,23 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-    if (subscriptionPlans) {
-      setPlans(subscriptionPlans);
+  useEffect(() => {
+    setLoading(true);
+    try {
+      if (subscriptionPlans && Array.isArray(subscriptionPlans)) {
+        setPlans(subscriptionPlans);
+        setError(null);
+      } else {
+        setError("Invalid subscription plan data.");
+      }
+    } catch (err) {
+      if(err instanceof Error){
+        setError(err.message);
+      } else {
+        setError("Failed to load subscription plans.");
+      }
+    } finally {
+      setLoading(false);
     }
   }, [subscriptionPlans]);
 
@@ -83,7 +95,7 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {plans.map((plan, index) => (
+              {plans.map((plan) => (
                 <div
                   key={plan._id}
                   className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 transition-all duration-300 ${plan.recommended

@@ -1,18 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import axios from "axios";
-import { toast } from 'react-toastify';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Plus,
   Minus,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ArrowUpRight,
   ArrowDownLeft,
   Calendar,
   Filter,
-  X,
-  IndianRupee
 } from 'lucide-react';
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
@@ -32,17 +25,17 @@ const Wallet: React.FC = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [filters, setFilters] = useState<WalletFilter>({});
   const [totalPages, setTotalPages] = useState(1);
-  
+
 
   const applyFilters = (newFilters: Partial<WalletFilter>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const fetchWallet = async (filters: WalletFilter = {}) => {
+  const fetchWallet = useCallback(async (filters: WalletFilter = {}) => {
     if (activeTab === TransactionStatus.ALL) filters.status = "";
     else filters.status = activeTab;
 
-    filters.page = currentPage
+    filters.page = currentPage;
     filters.limit = TRANSACTION_PER_PAGE;
 
     const query = new URLSearchParams(
@@ -52,17 +45,15 @@ const Wallet: React.FC = () => {
       }, {} as Record<string, string>)
     ).toString();
 
-
     const res = await walletService.getWallet(query);
-    setTotalPages(res.data.totalPages)
+    setTotalPages(res.data.totalPages);
     setBalance(res.data.wallet.balance);
     setTransactions(res.data.transactions);
-  };
+  }, [activeTab, currentPage]);
 
   useEffect(() => {
     fetchWallet(filters);
-  }, [filters, activeTab, currentPage]);
-
+  }, [filters, fetchWallet]);
   const getTransactionIcon = (type: string, amount: number) => {
     const baseClasses = "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center";
     if (amount >= 0 && type === 'credit') {
@@ -127,18 +118,18 @@ const Wallet: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg">
-              { Object.values(TransactionStatus).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as TransactionStatus)}
-                    className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors text-center ${activeTab === tab
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
+              {Object.values(TransactionStatus).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as TransactionStatus)}
+                  className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors text-center ${activeTab === tab
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">

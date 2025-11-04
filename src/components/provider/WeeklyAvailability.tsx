@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { PlusCircle, X } from 'lucide-react';
-import { DaySchedule, TimeSlot } from '../../util/interface/IProvider';
+import { DaySchedule } from '../../util/interface/IProvider';
 
 interface WeeklyAvailabilityProps {
     schedule: DaySchedule[];

@@ -1,14 +1,9 @@
-import { MdDelete, MdEdit, MdHome, MdWork, MdClose } from 'react-icons/md';
+import { MdDelete, MdEdit, MdHome, MdWork } from 'react-icons/md';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import React, { useEffect, useState } from 'react';
 import { authService } from '../../services/authService';
-import { useRef } from 'react';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { updateProfile } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
 import { IAddress } from '../../util/interface/IAddress';
@@ -31,7 +26,6 @@ const ProfileSetting: React.FC = () => {
 
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
     const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
     const [addressPopup, setAddressPopup] = useState(false);
 
@@ -39,7 +33,6 @@ const ProfileSetting: React.FC = () => {
     const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
     const [addressList, setAddressList] = useState<IAddress[]>([]);
     const [isEditingAddress, setIsEditingAddress] = useState(false);
-    const [editAddressId, setEditAddressId] = useState<string | null>(null);
     const [currentAddress, setCurrentAddress] = useState<IAddress>({
         id: '',
         label: '',
@@ -54,9 +47,6 @@ const ProfileSetting: React.FC = () => {
 
 
     const navigate = useNavigate();
-
-    const nameRef = useRef<HTMLInputElement>(null);
-    const emailRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -85,7 +75,7 @@ const ProfileSetting: React.FC = () => {
             } else if (typeof editingProfilePicture === 'string' && editingProfilePicture) {
                 formData.append('profilePicture', editingProfilePicture);
             }
-            const updatedData = await authService.updateProfile(formData);
+            await authService.updateProfile(formData);
 
             setName(editingName);
             setEmail(editingEmail);
@@ -94,7 +84,12 @@ const ProfileSetting: React.FC = () => {
             toast.success('profile Updated Successfully')
             setIsEditing(false);
         } catch (error) {
-            toast.error('Failed to save profile. Please try again.');
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
+
         }
     };
 
@@ -125,7 +120,6 @@ const ProfileSetting: React.FC = () => {
 
                 setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
                 setIsEditingAddress(false);
-                setEditAddressId(null);
                 setAddressPopup(false);
 
             } catch (error) {
@@ -149,7 +143,6 @@ const ProfileSetting: React.FC = () => {
             setCurrentAddress(addressToEdit);
             setIsEditingAddress(true);
             setShowAddressModal(true)
-            setEditAddressId(id);
             setAddressPopup(true);
         }
     };

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { ICategoryFormCombinedData, ICategoryResponse } from '../../util/interface/ICategory';
+import { ICategoryFormCombinedData } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { toast } from 'react-toastify';
 
 const Booking_servicePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,6 +17,10 @@ const Booking_servicePage: React.FC = () => {
   useEffect(() => {
     const fetchServices = async () => {
         const response = await categoryService.getCategoryById(categoryId || '')
+        if(!response) {
+          toast.error('Failed to fetch services for the selected category.')
+          return
+        };
         
         setServices(response.subCategories)
         setCategoryName(response.categoryDetails.name)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, TrendingUp, TrendingDown, Filter, CheckCircle, BarChart2, Briefcase } from 'lucide-react';
+import { Star, CheckCircle, BarChart2, Briefcase } from 'lucide-react';
 import { providerService } from '../../services/providerService';
 import { RatingTrendChart } from '../../components/provider/RatingTrendChart'; 
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -41,7 +41,6 @@ const PerformanceDashboard = () => {
         );
     };
     
-    const IMAGE_BASE_URL = 'https://res.cloudinary.com/your-cloud-name/image/upload/';
     const serviceColors = ['from-blue-500 to-cyan-500', 'from-purple-500 to-pink-500', 'from-amber-500 to-orange-500', 'from-green-500 to-emerald-500'];
     
     if (isLoading) {

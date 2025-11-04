@@ -178,7 +178,11 @@ export default function AdminSubscriptionPlans() {
       setPlans(plans.filter((p) => p.id !== deletePlanId));
       toast.success("Plan deleted successfully!");
     } catch (err) {
-      toast.error("Failed to delete plan");
+      if(err instanceof Error){
+        toast.error(err.message || "Failed to delete plan");
+      }else{
+        toast.error(String(err) || "Failed to delete plan");
+      }
     } finally {
       setOpenDeleteModel(false)
     }

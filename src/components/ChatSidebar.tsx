@@ -20,7 +20,6 @@ const ChatSidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const { user } = useAppSelector((state) => state.auth);
-  const currentProvider = useAppSelector((state) => state.provider.provider);
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -29,7 +28,11 @@ const ChatSidebar: React.FC = () => {
         const response = await providerService.getProviderForChatPage();
         setProviders(response);
       } catch (error) {
-        toast.error('Failed to load chats');
+        if(error instanceof Error){
+          toast.error(error.message);
+        } else {
+          toast.error('Failed to load chats');
+        }
       } finally {
         setLoading(false);
       }

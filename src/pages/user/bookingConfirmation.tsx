@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle, Calendar, MapPin, Phone, User, CreditCard, Clock, Package, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle, Calendar, MapPin, Phone, User, CreditCard, Clock, FileText, Loader2 } from 'lucide-react';
 import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -20,7 +20,11 @@ const BookingConfirmation: React.FC = () => {
         const response = await bookingService.getBookingById(bookingId!);
         setBooking(response);
       } catch (err) {
-        setError('Failed to load booking details');
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
       } finally {
         setLoading(false);
       }

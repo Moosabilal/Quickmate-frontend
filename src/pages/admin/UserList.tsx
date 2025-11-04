@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, UserCheck, UserX, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, CheckCircle, XCircle } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { updateProfile } from '../../features/auth/authSlice';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -9,6 +9,7 @@ import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../util/interface/IUser';
+import { toast } from 'react-toastify';
 
 
 
@@ -24,11 +25,9 @@ const AdminUsersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0)
-  const [error, setError] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
 
-  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -43,9 +42,8 @@ const AdminUsersPage = () => {
         setUsers(response.users);
         setTotalPages(response.totalPages)
         setTotalUsers(response.total)
-        setError("")
       } catch (error) {
-        setError(`${error}`)
+        toast.error(`${error}`)
         console.error('Failed to fetch users:', error);
       }
     };
@@ -222,7 +220,6 @@ const AdminUsersPage = () => {
         itemType={DeleteConfirmationTypes.PROFILE}
         itemName={userToBlock?.name || ''}
         itemDetails={userToBlock ? `${userToBlock.email}` : ''}
-        isLoading={isDeleting}
         customMessage="Are you sure you want to block this User?."
         additionalInfo="This action will prevent the user from logging into their account and accessing their bookings."
         titleProp={userToBlock?.isVerified ? 'Block User' : 'Unblock User'}

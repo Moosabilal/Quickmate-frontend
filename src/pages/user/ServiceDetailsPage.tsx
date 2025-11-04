@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ICategoryFormCombinedData } from '../../util/interface/ICategory';
@@ -72,7 +72,11 @@ const ServiceDetailsPage: React.FC = () => {
       console.log('the res', res.data.wallet.balance)
       setWalletBalance(res.data.wallet.balance)
     } catch (error) {
-      toast.error('Failed to fetch wallet balance')
+      if(error instanceof Error){
+        toast.error(error.message)
+      } else {
+        toast.error('Failed to fetch wallet balance')
+      }
       setWalletBalance(0)
     }
   }
@@ -106,7 +110,11 @@ const ServiceDetailsPage: React.FC = () => {
       try {
         await addressService.createAddress(newAddressObj)
       } catch (error) {
-        toast.error('Something went wrong! Please try again later')
+        if(error instanceof Error){
+          toast.error(error.message)
+        } else {
+          toast.error('Something went wrong! Please try again later')
+        }
       }
       setSelectedAddress(newAddressObj);
       setShowAddAddress(false);

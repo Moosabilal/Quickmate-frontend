@@ -1,21 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
-    Home,
-    Calendar,
-    Settings,
     Star,
-    DollarSign,
-    User,
-    Bell,
     Plus,
     Edit3,
     Trash2,
-    Award,
-    Eye,
-    X,
-    Download,
-    ExternalLink,
     IndianRupee
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -25,8 +13,6 @@ import { serviceService } from '../../services/serviceService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
-import { Provider } from 'react-redux';
-import { SubscriptionStatus } from '../../util/interface/IProvider';
 import SubscriptionPlansModal from '../../components/provider/SubscriptionPlanModel';
 import { ISubscriptionPlan } from '../../util/interface/ISubscriptionPlan';
 import { subscriptionPlanService } from '../../services/subscriptionPlanService';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryDetailsPageData, ICategoryFormCombinedData } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryDetailsPageData } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 
@@ -28,7 +28,11 @@ const CategoryDetailsPage: React.FC = () => {
                 console.log('the response', response)
                 setPageData(response);
             } catch (err) {
-                setError("Failed to load category details. Please try again.");
+                if(err instanceof Error){
+                    setError(err.message || "Failed to load category details.");
+                } else {
+                    setError(String(err) || "Failed to load category details.");
+                }
             } finally {
                 setIsLoading(false);
             }

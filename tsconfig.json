@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "lib": ["DOM", "ES2020"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",

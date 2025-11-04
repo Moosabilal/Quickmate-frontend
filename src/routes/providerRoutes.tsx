@@ -35,4 +35,6 @@ const providerRoutes = [
     ]),
 ];
 
-export default providerRoutes.flat();
+const flattenedProviderRoutes = providerRoutes.flat();
+export default flattenedProviderRoutes
+;

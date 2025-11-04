@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { IBackendProvider } from "../../util/interface/IProvider";
+import React, { useEffect, useMemo, useState } from "react";
 import { providerService } from "../../services/providerService";
 import { toast } from "react-toastify";
 import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
-import { bookingService } from "../../services/bookingService";
 import { IApiProviderAvailability, CalendarModalProps } from "../../util/interface/IBooking";
 
 
@@ -154,14 +152,14 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Select an Available Slot</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+          <button type="button" aria-label="'close" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
         </div>
         <div className="flex flex-col md:flex-row p-4 gap-4 overflow-y-auto">
           <div className="flex-grow md:w-2/3 border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
-              <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-100"><ChevronLeft /></button>
+              <button type="button" aria-label="'close" onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-100"><ChevronLeft /></button>
               <h3 className="font-semibold text-lg">{currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
-              <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-100"><ChevronRight /></button>
+              <button type="button" aria-label="'close" onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-100"><ChevronRight /></button>
             </div>
             <div className="grid grid-cols-7 text-center text-sm text-gray-500 mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day}>{day}</div>)}

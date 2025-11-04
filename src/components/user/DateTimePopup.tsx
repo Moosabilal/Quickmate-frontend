@@ -30,9 +30,9 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
   handleDateTimeConfirm,
   providersTimings,
 }) => {
-  if (!dateTimePopup) return null;
-
   const [info, setInfo] = useState<string | null>(null);
+
+  if (!dateTimePopup) return null;
 
   const handleConfirm = () => {
     const selectedDay = new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long" });
@@ -45,9 +45,9 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
 
     const selectedMinutes = convert12ToMinutes(selectedTime);
     if (selectedMinutes === null) {
-    setInfo("Please select a valid time");
-    return;
-  }
+      setInfo("Please select a valid time");
+      return;
+    }
     const startMinutes = convert24ToMinutes(providerDay.startTime);
     const endMinutes = convert24ToMinutes(providerDay.endTime);
 
@@ -64,6 +64,7 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white flex justify-between items-center">
           <h3 className="text-xl font-bold">Select Date & Time</h3>
           <button
+          type="button" aria-label="'close"
             onClick={() => setDateTimePopup(false)}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
@@ -73,11 +74,12 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
         <div className="p-6 space-y-6">
           {info && <div className="bg-red-100 text-red-700 p-3 rounded-md">{info}</div>}
           <div>
-            <label className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <label htmlFor="date-input" className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <Calendar className="w-5 h-5" />
               Select Date
             </label>
             <input
+              id="date-input"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -86,11 +88,12 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
             />
           </div>
           <div>
-            <label className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <label htmlFor="time-input" className="block text-base font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <Clock className="w-5 h-5" />
               Select Time
             </label>
             <select
+              id="time-input"
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200"
@@ -106,11 +109,10 @@ const DateTimePopup: React.FC<DateTimePopupProps> = ({
           <button
             onClick={handleConfirm}
             disabled={!selectedDate || !selectedTime}
-            className={`w-full py-3 rounded-xl text-white font-medium transition duration-200 ${
-              selectedDate && selectedTime
+            className={`w-full py-3 rounded-xl text-white font-medium transition duration-200 ${selectedDate && selectedTime
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-gray-400 cursor-not-allowed"
-            }`}
+              }`}
           >
             Confirm Selection
           </button>

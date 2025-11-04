@@ -1,53 +1,58 @@
 import axiosInstance from "../lib/axiosInstance";
+import { handleAxiosError } from "../util/interface/helperFunction/handleError";
 import { IAddress } from "../util/interface/IAddress";
-const ADDRESS_URL = `/address`
+
+const ADDRESS_URL = `/address`;
 
 export const addressService = {
-    async createAddress(addressData: IAddress) {
-        try {
-            const response = await axiosInstance.post(`${ADDRESS_URL}/createAddress`, addressData)
-            return response.data
-        } catch (error) {
-            throw error
-        }
-    },
+  createAddress: async (addressData: IAddress) => {
+    try {
+      const response = await axiosInstance.post(`${ADDRESS_URL}/createAddress`, addressData);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to create address.");
+    }
+  },
 
-    async updateAddress(id: string, addressData: IAddress) {
-        try {
-            const response = await axiosInstance.put(`${ADDRESS_URL}/updateAddress/${id}`, addressData)
-            return response.data
-        } catch (error) {
-            throw error
-        }
-    },
+  updateAddress: async (id: string, addressData: IAddress) => {
+    try {
+      const response = await axiosInstance.put(`${ADDRESS_URL}/updateAddress/${id}`, addressData);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to update address.");
+    }
+  },
 
-    async getAddress() {
-        try {
-            const response = await axiosInstance.get(`${ADDRESS_URL}`)
-            return response.data
-        } catch (error) {
-            throw error
-        }
-    },
+  getAddress: async () => {
+    try {
+      const response = await axiosInstance.get(`${ADDRESS_URL}`);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch addresses.");
+    }
+  },
 
-    async deleteAddress(id: string) {
-        try {
-            const response = await axiosInstance.delete(`${ADDRESS_URL}/deleteAddress/${id}`)
-            return response.data
+  deleteAddress: async (id: string) => {
+    try {
+      const response = await axiosInstance.delete(`${ADDRESS_URL}/deleteAddress/${id}`);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to delete address.");
+    }
+  },
 
-        } catch (error) {
-            throw error
-        }
-    },
+  getLocationByPincode: async (street: string, city: string, state: string, pincode: string) => {
+    try {
+      const searchQuery = encodeURIComponent(`${pincode}, ${state}, India`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}`);
 
-    getLocationByPincode: async (street: string, city: string, state: string, pincode: string) => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch location from OpenStreetMap.");
+      }
 
-        try {
-            const searchQuery = encodeURIComponent(`${pincode}, ${state}, India`);
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}`);
-            return await response.json();
-        } catch (err) {
-            console.error('Failed to fetch getLocationByPincode:', err);
-        }
-    },
-}
+      return await response.json();
+    } catch (error) {
+      handleAxiosError(error, "An unexpected error occurred while getting the location.");
+    }
+  },
+};

@@ -1,4 +1,3 @@
-import { createBrowserRouter } from 'react-router-dom';
 import React, { lazy } from 'react'; 
 import CategoryDetailsPage from '../pages/admin/CategoryDetailsPage';
 import AdminProvidersPage from '../pages/admin/ProviderList';
@@ -43,4 +42,5 @@ const adminRoutes = [
   ]),
 ];
 
-export default adminRoutes.flat();
+const flattenedAdminRoutes = adminRoutes.flat();
+export default flattenedAdminRoutes;

@@ -1,5 +1,5 @@
+import React from "react";
 import { BookingStatus } from "./IBooking";
-import { ICategoryResponse, ICommissionRuleResponse } from "./ICategory";
 
 export enum ProviderStatus {
   Active = 'Approved',
@@ -284,11 +284,6 @@ export interface ProviderPopupProps {
   latitude?: number;
   longitude?: number;
   radiusKm?: number;
-}
-
-export interface IMonthlyTrend {
-    month: string;
-    value: number;
 }
 
 export interface RatingTrendChartProps {

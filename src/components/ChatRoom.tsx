@@ -54,7 +54,7 @@ const ChatRoom: React.FC = () => {
         style={{ backgroundImage: "url('https://i.redd.it/qwd83nc4xxf41.jpg')" }}
       >
         <BookingChatVideo 
-          currentUserId={user?.id!} 
+          currentUserId={user?.id || ''} 
           joiningId={joiningId}
           mode="chat" 
           name={name}

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CommissionTypes, ICategoryFormCombinedData, ICategoryFormData, ICategoryResponse } from '../../util/interface/ICategory';
+import { CommissionTypes, ICategoryFormCombinedData, ICategoryFormData } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify'
 
@@ -184,7 +184,7 @@ const CategoryForm: React.FC = () => {
 
         try {
             if (isEditMode && currentEntityId) {
-                const response = await categoryService.updateCategory(currentEntityId, data);
+                await categoryService.updateCategory(currentEntityId, data);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
             } else {
                 const response = await categoryService.createCategory(data);

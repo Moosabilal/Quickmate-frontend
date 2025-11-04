@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import ProfileSetting from './ProfileSetting';

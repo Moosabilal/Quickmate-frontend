@@ -7,7 +7,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useLocation } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Bell, Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
@@ -48,7 +48,7 @@ const Header = () => {
         if (isAuthenticated) {
             fetchUser();
         }
-    }, []);
+    }, [isAuthenticated, dispatch]);
 
     const handleLogout = async () => {
         await authService.logout()

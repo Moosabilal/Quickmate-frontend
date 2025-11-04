@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2, User, Send } from 'lucide-react';
+import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2 } from 'lucide-react';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import type { ICategoryResponse } from '../../util/interface/ICategory';
 import type { IFeaturedProviders } from '../../util/interface/IProvider';
-import ChatbotIcon from '../../components/user/ChatbotIcon';
 import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';

@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useMatch, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   MdOutlineSettings,
   MdHistory,
   MdOutlineAccountBalanceWallet,
   MdOutlineChat,
-  MdOutlineSupportAgent,
-  MdOutlineCalendarMonth,
-  MdOutlineNotificationsNone,
   MdOutlineMiscellaneousServices,
   MdLogout,
 } from 'react-icons/md';
-import { CheckCircle } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
@@ -42,11 +38,13 @@ const Sidebar = () => {
     path: `/provider/providerDashboard`,
   };
 
-  const isActive = (path: string) => {
+  const location = useLocation();
+
+  const isActive = (path: string): boolean => {
     if (path === "/profile") {
-      return !!useMatch("/profile");
+      return location.pathname === path;
     }
-    return !!useMatch(`${path}/*`);
+    return location.pathname.startsWith(path);
   };
 
 

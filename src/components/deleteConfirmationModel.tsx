@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, LogOutIcon, CreditCard } from 'lucide-react';
+import { X, AlertTriangle, Trash2, Shield, Star, Calendar, FileText, User, LogOut, CreditCard } from 'lucide-react';
 import { DeleteConfirmationModalProps, DeleteConfirmationTypes } from '../util/interface/IDeleteModelType';
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({

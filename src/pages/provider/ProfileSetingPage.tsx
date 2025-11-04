@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save, Upload } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save } from 'lucide-react';
 import { providerService } from '../../services/providerService';
 import { IEditedProviderProfile, IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -9,9 +9,7 @@ import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Link, useLocation } from 'react-router-dom';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { updateProviderProfile } from '../../features/provider/providerSlice';
+import { Link } from 'react-router-dom';
 
 let DefaultIcon = L.divIcon({
     html: `<svg width="25" height="41" viewBox="0 0 25 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -70,7 +68,6 @@ const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) =
 
 const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const ProviderProfile: React.FC = () => {
     const { provider } = useAppSelector((state) => state.provider);
@@ -91,10 +88,6 @@ const ProviderProfile: React.FC = () => {
     const [formData, setFormData] = useState({
         serviceLocation: null as { lat: number; lng: number } | null
     });
-
-    const location = useLocation();
-    const dispatch = useAppDispatch()
-
 
     const parseLocationString = (locationString: string) => {
         if (!locationString) return null;

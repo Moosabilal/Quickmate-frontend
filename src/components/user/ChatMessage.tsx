@@ -1,5 +1,4 @@
 import { ChatMessageProps } from '../../util/interface/IChatBot';
-import ChatbotIcon from './ChatbotIcon';
 
 import React from 'react';
 import { Bot, User } from 'lucide-react';

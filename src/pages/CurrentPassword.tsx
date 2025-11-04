@@ -10,8 +10,6 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { authService } from '../services/authService';
-import { useSelector } from 'react-redux';
-import { useAppSelector } from '../hooks/useAppSelector';
 import { toast } from 'react-toastify';
 
 const CurrentPasswordPage = () => {
@@ -26,7 +24,7 @@ const CurrentPasswordPage = () => {
 
     const navigate = useNavigate();
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCurrentPassword(e.target.value);
         if (error) {
             setError('');
@@ -37,7 +35,7 @@ const CurrentPasswordPage = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (!currentPassword.trim()) {
@@ -54,7 +52,11 @@ const CurrentPasswordPage = () => {
             setMessage(response.message);
             toast.info(response.message)
         } catch (error) {
-            setError('Incorrect password. Please try again.');
+            if(error instanceof Error){
+                setError(error.message);
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

@@ -5,20 +5,10 @@ import {
   Clock,
   MapPin,
   Star,
-  Phone,
-  MessageCircle,
-  Download,
-  Share2,
   CheckCircle2,
   AlertCircle,
   XCircle,
-  User,
-  CreditCard,
-  FileText,
-  MapIcon,
   Shield,
-  Award,
-  IndianRupee
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
@@ -27,7 +17,6 @@ import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
-import { providerService } from '../../services/providerService';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { reviewService } from '../../services/reviewService';
 
@@ -102,7 +91,11 @@ const BookingDetails: React.FC = () => {
       toast.success('Booking date and time updated successfully');
       setBooking((prev) => prev ? { ...prev, date, time } : prev);
     } catch (error) {
-      toast.error('Failed to update booking date and time');
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to update booking date and time');
+      }
     }
 
     setDateTimePopup(false);

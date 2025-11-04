@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronUpIcon, ChevronDownIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { CategoryTableDisplay, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { providerService } from '../../services/providerService';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -33,7 +32,6 @@ const ProviderRegistration: React.FC = () => {
         agreeTerms: false,
     });
 
-    const [categories, setCategories] = useState<CategoryTableDisplay[]>([]);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [services, setServices] = useState<{ value: string; label: string }[]>([]);
@@ -44,16 +42,11 @@ const ProviderRegistration: React.FC = () => {
     const aadhaarIdProofRef = useRef<HTMLInputElement>(null);
     const profilePhotoRef = useRef<HTMLInputElement>(null);
 
-    const dayOptions = [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-    ];
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
 
         if (type === 'checkbox') {
-            const checkboxValue = (e.target as HTMLInputElement).value;
             if (id === 'agreeTerms') {
                 setFormData(prev => ({ ...prev, agreeTerms: checked }));
             }
@@ -146,7 +139,11 @@ const ProviderRegistration: React.FC = () => {
             navigate('/verify-otp', { state: { email: formData.email.trim(), role: "ServiceProvider" } });
 
         } catch (error) {
-            toast.error('Something went wrong. Please try again.');
+            if(error instanceof Error){
+                toast.error(error.message);
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
         } finally {
             setIsLoading(false)
         }

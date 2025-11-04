@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, FolderTree, Wallet, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();

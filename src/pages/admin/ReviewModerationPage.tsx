@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Star, Search, ChevronDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { ArrowLeft, Star, Search, ChevronDown } from 'lucide-react';
 import { reviewService } from '../../services/reviewService';
 import { IReviewAdminFilters, ReviewData } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';

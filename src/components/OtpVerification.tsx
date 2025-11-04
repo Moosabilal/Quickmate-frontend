@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
-import ThemeToggle from './ThemeToggle';
-import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { login, updateProfile } from '../features/auth/authSlice';
+import { updateProfile } from '../features/auth/authSlice';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
-import { BookingStatus, LocationState } from '../util/interface/IBooking';
+import { LocationState } from '../util/interface/IBooking';
 import { bookingService } from '../services/bookingService';
 
 let OTP_RESEND_TIMEOUT_SECONDS = 60;

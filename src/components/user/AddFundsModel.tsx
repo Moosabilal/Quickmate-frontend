@@ -74,7 +74,7 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
       <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Add Funds</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+          <button type="button" aria-label="close" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <label className="block text-sm font-medium text-gray-700 mb-2">Amount (INR)</label>

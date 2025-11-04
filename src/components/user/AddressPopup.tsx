@@ -3,9 +3,7 @@ import React, { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
 import { AddressPopupProps, IAddress } from "../../util/interface/IAddress";
-import { useAppSelector } from "../../hooks/useAppSelector";
 import { toast } from "react-toastify";
-import { findProviderRange } from "../../util/findProviderRange";
 import { bookingService } from "../../services/bookingService";
 
 const AddressPopup: React.FC<AddressPopupProps> = ({
@@ -64,24 +62,24 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     }
     setLoading(true);
     setError(null);
-  
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           let lat = position.coords.latitude;
           let lng = position.coords.longitude;
-          lat= 12.6619; 
-          lng= 74.8880;
-  
+          lat = 12.6619;
+          lng = 74.8880;
+
           const withinRange = await bookingService.findProviderRange(serviceId!, lat, lng, radius);
-  
+
           if (!withinRange) {
             setError("No service provider found at your location. Please select a different address.");
             return;
           }
-  
+
           const locationData = await providerService.getState(lat, lng);
-  
+
           const newAddress: IAddress = {
             label: "Current Location",
             street:
@@ -98,10 +96,10 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             zip: locationData?.address?.postcode || "",
             locationCoords: `${lat},${lng}`,
           };
-          
+
           const response = await addressService.createAddress(newAddress);
           handleAddressConfirm(response, radius);
-  
+
         } catch (err: any) {
           console.error("An error occurred while fetching current location:", err);
           setError(err.message || "Failed to process current location. Please try again.");
@@ -183,8 +181,12 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     try {
       const res = await addressService.getAddress()
       setMockAddresses(res)
-    } catch (error) {
-      toast.error('Failed to fetch Address! Please try again later')
+    } catch (err) {
+      if(err instanceof Error){
+        toast.error(err.message);
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
     }
 
   }
@@ -204,8 +206,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white flex justify-between items-center">
           <h3 className="text-xl font-bold">Select Address</h3>
           <button
-          type="button"
-          aria-label="close"
+            type="button"
+            aria-label="close"
             onClick={() => {
               setAddressPopup(false)
               setError('')
@@ -244,7 +246,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   aria-label="Search Radius Input"
                   onChange={(e) => setRadius(Number(e.target.value))}
                   className="w-16 px-2 py-1 border rounded-md text-center"
-                />  
+                />
               </div>}
               <div className="flex justify-between items-center">
                 <label className="block text-base font-semibold text-gray-700 flex items-center gap-2">

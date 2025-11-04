@@ -1,7 +1,9 @@
+import React from "react";
 import { StatCardProps } from "../../util/interface/IProvider";
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, prefix = '', suffix = '' }) => {
         const isPositive = change > 0;
+        console.log(isPositive)
 
         return (
             <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">

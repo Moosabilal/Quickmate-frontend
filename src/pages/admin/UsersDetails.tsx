@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-    User, Mail, Phone, Calendar, LogIn, Hash, CheckCircle,
-    XCircle, Clock, Briefcase, Ban, ShieldCheck, AlertTriangle, Loader2
+    Mail, Phone, Calendar, LogIn, Hash, CheckCircle,
+    XCircle, Clock, Ban, ShieldCheck, AlertTriangle, Loader2
 } from 'lucide-react';
 import { authService } from '../../services/authService'; 
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { IBookingDetailsForAdmin, IUserDetailsResponse } from '../../util/interface/IUser';
+import { IUserDetailsResponse } from '../../util/interface/IUser';
 import { RenderableStatus, StatusStyle } from '../../util/interface/IUser';
 import { BookingStatus } from '../../util/interface/IBooking';
 

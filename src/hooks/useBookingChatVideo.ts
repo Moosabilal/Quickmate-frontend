@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+/* eslint-env browser */
+
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
 import { ChatMessage, MaybeStream } from "../util/interface/IChatAndVideo";
@@ -22,11 +24,11 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const localStreamRef = useRef<MaybeStream>(null);
     const remoteStreamRef = useRef<MaybeStream>(null);
-    const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
+    const iceCandidateQueueRef = useRef<RTCIceCandidate[]>([]);
 
     const cleanupCall = useCallback(() => {
         console.log("Running call cleanup...");
-        
+
         iceCandidateQueueRef.current = [];
         setIsAudioMuted(false);
         setIsVideoOff(false);
@@ -45,12 +47,15 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         setRemoteStream(null);
     }, [localStream]);
 
-    const rtcConfig: RTCConfiguration = {
-        iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-        ],
-    };
+    const rtcConfig = useMemo<RTCConfiguration>(
+        () => ({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        }),
+        []
+    );
 
     const ensurePeerConnection = useCallback(() => {
         if (pcRef.current) {
@@ -77,7 +82,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
 
         pcRef.current = pc;
         return pc;
-    }, [currentUserId, joiningId]);
+    }, [currentUserId, joiningId, rtcConfig]);
 
     const processIceQueue = useCallback(() => {
         if (pcRef.current) {
@@ -239,6 +244,28 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         }
     }, [joiningId, currentUserId, ensurePeerConnection]);
 
+
+
+    const rejectCall = useCallback(() => {
+        const { incomingCall } = useCallStore.getState();
+        if (!incomingCall) return;
+
+        socket.emit("webrtc:call-rejected", {
+            joiningId,
+            fromUserId: currentUserId,
+            toUserId: incomingCall.fromUserId,
+        });
+
+        setIncomingCall(null);
+        setCallStatus("idle");
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((t) => t.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+        }
+    }, [joiningId, currentUserId, setIncomingCall]);
+
     const acceptCall = useCallback(async () => {
         const { incomingCall } = useCallStore.getState();
         if (!incomingCall) {
@@ -279,27 +306,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             console.error("Error in acceptCall:", error);
             rejectCall();
         }
-    }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall]);
-
-    const rejectCall = useCallback(() => {
-        const { incomingCall } = useCallStore.getState();
-        if (!incomingCall) return;
-
-        socket.emit("webrtc:call-rejected", {
-            joiningId,
-            fromUserId: currentUserId,
-            toUserId: incomingCall.fromUserId,
-        });
-
-        setIncomingCall(null);
-        setCallStatus("idle");
-
-        if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach((t) => t.stop());
-            localStreamRef.current = null;
-            setLocalStream(null);
-        }
-    }, [joiningId, currentUserId, setIncomingCall]);
+    }, [ensurePeerConnection, processIceQueue, joiningId, currentUserId, setIncomingCall, rejectCall]);
 
     const endCall = useCallback(() => {
         if (callStatus !== "idle") {

@@ -1,9 +1,7 @@
-import { Calendar, User, Settings, Star, DollarSign, IndianRupee, LayoutDashboard, Clock, MessageSquare } from 'lucide-react';
-import React, { useState } from 'react';
+import { Calendar, User, Settings, Star, IndianRupee, LayoutDashboard, Clock, MessageSquare } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Link, useLocation, useMatch } from 'react-router-dom';
-import { MdOutlineChat } from 'react-icons/md';
+import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
   const { provider } = useAppSelector((state) => state.provider);
@@ -24,9 +22,9 @@ const Sidebar = () => {
 
   const isActive = (path: string) => {
     if (path === "/provider") {
-      return !!useMatch("/provider");
+ return location.pathname === "/provider";
     }
-    return !!useMatch(`${path}/*`);
+ return location.pathname.startsWith(path);
   };
 
   return (

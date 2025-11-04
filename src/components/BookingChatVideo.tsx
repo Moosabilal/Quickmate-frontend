@@ -19,7 +19,7 @@ export default function BookingChatVideo({
   name?: string,
   incomingCall?: {
     joiningId: string;
-    offer: RTCSessionDescriptionInit;
+    offer: RTCSessionDescription;
     fromUserId: string;
     fromUserName?: string;
   },
@@ -28,7 +28,7 @@ export default function BookingChatVideo({
   const [input, setInput] = useState("");
   const navigate = useNavigate();
 
-  const { incomingCall: globalIncomingCall, setIncomingCall } = useCallStore();
+  const { incomingCall: _globalIncomingCall, setIncomingCall } = useCallStore();
 
   const {
     messages,
@@ -36,7 +36,6 @@ export default function BookingChatVideo({
     sendMessage,
     startCall,
     acceptCall,
-    rejectCall,
     endCall,
     localStream,
     remoteStream,
@@ -70,7 +69,7 @@ export default function BookingChatVideo({
         }
       }, 0);
     }
-  }, [incomingCall, mode, callStatus, setIncomingCall]);
+  }, [incomingCall, mode, callStatus, setIncomingCall, acceptCall]);
 
   useEffect(() => {
     if (mode === 'video' && callStatus === 'ended') {

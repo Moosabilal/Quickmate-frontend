@@ -4,7 +4,6 @@ import {
   MessageCircle,
   Star,
   MapPin,
-  Clock,
   Search,
   Filter,
   Users,
@@ -38,7 +37,11 @@ const ChatProvidersPage: React.FC = () => {
         const response = await providerService.getProviderForChatPage()
         setProviders(response)
       } catch (error) {
-        toast.error(`error`)
+        if (error instanceof Error) {
+          toast.error(error.message)
+        } else {
+          toast.error('Failed to load providers')
+        }
       } finally {
         setLoading(false);
       }

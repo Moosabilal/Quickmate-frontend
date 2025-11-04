@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
-import { CategoryTableDisplay, CommissionTypes, ICategoryResponse, ICommissionRuleResponse } from '../../util/interface/ICategory';
+import { CategoryTableDisplay, CommissionTypes } from '../../util/interface/ICategory';
 import Pagination from '../../components/admin/Pagination';
 import { toast } from 'react-toastify';
 
@@ -33,8 +33,8 @@ const CategoryCommissionManagement = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const fetchedCategories: CategoryTableDisplay[] = await categoryService.getAllCategories();
-                setCategories(fetchedCategories);
+                const fetchedCategories: CategoryTableDisplay[] | undefined = await categoryService.getAllCategories();
+                setCategories(fetchedCategories || []);
             } catch (err: any) {
                 setError(err.message || "Failed to load data.");
             } finally {

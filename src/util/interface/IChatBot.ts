@@ -1,3 +1,5 @@
+import React from "react";
+
 export interface ChatbotMessage {
     hideInChat?: boolean;
     role: 'user' | 'model';

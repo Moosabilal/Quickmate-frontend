@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, MapPin, Star, Filter, Search, Eye, Download, MoreHorizontal, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Search, Eye, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { BookingStatus, IBookingHistoryPage } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -8,14 +8,13 @@ import { useNavigate } from 'react-router-dom';
 const BookingHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BookingStatus>(BookingStatus.All);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBooking, setSelectedBooking] = useState(null);
   const [bookings, setBookings] = useState<IBookingHistoryPage[]>([])
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const getBooking = async () => {
-      const response = await bookingService.getallBookings()
+      const response = await bookingService.getAllBookings()
       setBookings(response)
     }
     getBooking()

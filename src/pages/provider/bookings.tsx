@@ -3,22 +3,13 @@ import {
   Calendar,
   Clock,
   MapPin,
-  MessageCircle,
-  Phone,
   CheckCircle,
   XCircle,
   AlertTriangle,
   User,
-  Star,
-  Filter,
   Search,
-  MoreHorizontal,
   Eye,
-  Edit,
-  Trash2,
   PlayCircle,
-  PauseCircle,
-  Book,
   IndianRupee
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -72,7 +63,7 @@ const ProviderBookingManagementPage: React.FC = () => {
     };
 
     fetchBookings();
-  }, [provider?.id]);
+  }, [provider?.id, searchTerm]);
 
   const filteredBookings = bookings.filter(booking => {
     const matchesTab = booking.status === activeTab;
@@ -591,7 +582,7 @@ const ProviderBookingManagementPage: React.FC = () => {
         onConfirm={handleConfirm}
         itemType={DeleteConfirmationTypes.BOOKING}
         itemName={selectedBooking.service || ''}
-        itemDetails={`Booking ID: #${selectedBooking.id.slice(-8).toUpperCase()}\nCustomer: ${selectedBooking.customerName}` || ''}
+        itemDetails={`Booking ID: #${selectedBooking.id.slice(-8).toUpperCase()}\nCustomer: ${selectedBooking.customerName}`}
         isLoading={isDeleting}
         customMessage="Are you sure you want to cancel this booking? This may impact your reliability score."
         additionalInfo="If you cancel now, you may miss out on this service."

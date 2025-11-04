@@ -1,5 +1,5 @@
 import { MapPin, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
 import { AddressPopupProps, IAddress } from "../../util/interface/IAddress";
@@ -68,10 +68,12 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+          let lat = position.coords.latitude;
+          let lng = position.coords.longitude;
+          lat= 12.6619; 
+          lng= 74.8880;
   
-          const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
+          const withinRange = await bookingService.findProviderRange(serviceId!, lat, lng, radius);
   
           if (!withinRange) {
             setError("No service provider found at your location. Please select a different address.");
@@ -97,7 +99,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             locationCoords: `${lat},${lng}`,
           };
           
-          // Step 3: If everything is successful, save the address
           const response = await addressService.createAddress(newAddress);
           handleAddressConfirm(response, radius);
   
@@ -111,10 +112,12 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       (error) => {
         console.error("Geolocation error:", error);
         toast.error("Unable to retrieve your location. Please check your browser's location permissions.");
-        setLoading(false); // Also handle loading state here
+        setLoading(false);
       }
     );
   };
+
+
 
 
   const handleAddressConfirmWithCheck = async (address: IAddress) => {
@@ -126,7 +129,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     } else {
       const [userLat, userLng] = address.locationCoords!.split(",").map(Number);
       try {
-        const withinRange = await bookingService.findProviderRange(serviceId, userLat, userLng, radius)
+        const withinRange = await bookingService.findProviderRange(serviceId!, userLat, userLng, radius)
 
         if (withinRange) {
           handleAddressConfirm(address, radius);
@@ -201,6 +204,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white flex justify-between items-center">
           <h3 className="text-xl font-bold">Select Address</h3>
           <button
+          type="button"
+          aria-label="close"
             onClick={() => {
               setAddressPopup(false)
               setError('')
@@ -225,6 +230,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   min={1}
                   max={25}
                   value={radius}
+                  title="Search Radius Slider"
+                  aria-label="Search Radius Slider"
                   onChange={(e) => setRadius(Number(e.target.value))}
                   className="flex-1 accent-indigo-600"
                 />
@@ -233,9 +240,11 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   min={1}
                   max={25}
                   value={radius}
+                  title="Search Radius Input"
+                  aria-label="Search Radius Input"
                   onChange={(e) => setRadius(Number(e.target.value))}
                   className="w-16 px-2 py-1 border rounded-md text-center"
-                />
+                />  
               </div>}
               <div className="flex justify-between items-center">
                 <label className="block text-base font-semibold text-gray-700 flex items-center gap-2">

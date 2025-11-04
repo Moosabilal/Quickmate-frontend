@@ -18,7 +18,6 @@ const ProviderSidebarLayout = () => {
                     <Outlet />
                 </main>
             </div>
-            {/* <Footer /> */}
     </>
   )
 }

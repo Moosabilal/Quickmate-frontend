@@ -31,7 +31,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         setIsAudioMuted(false);
         setIsVideoOff(false);
 
-        // This now uses the 'localStream' from state, which is always up-to-date
         if (localStream) {
             localStream.getTracks().forEach((track) => track.stop());
         }
@@ -44,7 +43,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         }
 
         setRemoteStream(null);
-    // Add 'localStream' to the dependency array
     }, [localStream]);
 
     const rtcConfig: RTCConfiguration = {

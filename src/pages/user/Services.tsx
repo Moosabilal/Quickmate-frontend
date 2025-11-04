@@ -6,7 +6,7 @@ import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 
 const ServicesPage: React.FC = () => {
-  const servicesPerPage = 6;
+  const servicesPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const [allServices, setAllServices] = useState<IserviceResponse[]>([]);
   const [totalPages, setTotalPages] = useState(0);

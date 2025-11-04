@@ -106,18 +106,6 @@ const ProviderProfile: React.FC = () => {
     };
 
 
-    // const fetchProvider = async () => {
-    //     try {
-    //         const providerData = await providerService.getProvider()
-    //         setProviderDetails(providerData)
-    //         dispatch(updateProviderProfile({ provider: providerData }))
-    //     } catch (error) {
-    //         console.log('the error in fetching provider', error)
-    //         throw error
-    //     }
-    // }
-
-
 
     useEffect(() => {
         if (provider && Object.keys(provider).length > 0) {
@@ -650,7 +638,6 @@ const ProviderProfile: React.FC = () => {
 
                         <div className="h-[calc(600px-73px)] w-full">
                             <MapContainer
-                                // Corrected center prop: use currentLocation if available, otherwise use mapCenter
                                 center={currentLocation ? [currentLocation.lat, currentLocation.lng] : mapCenter}
                                 zoom={currentLocation ? 10 : 5}
                                 className="h-full w-full rounded-b-lg"
@@ -663,7 +650,6 @@ const ProviderProfile: React.FC = () => {
                                     setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
                                     setIsMapOpen(false);
                                 }} />
-                                {/* Corrected Marker: only render if currentLocation is not null */}
                                 {currentLocation && (
                                     <Marker position={[currentLocation.lat, currentLocation.lng]} />
                                 )}

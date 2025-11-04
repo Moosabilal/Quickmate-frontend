@@ -14,7 +14,6 @@ const UserSidebarLayout = () => {
                     <Outlet />
                 </main>
             </div>
-            {/* <Footer /> */}
 
         </>
     )

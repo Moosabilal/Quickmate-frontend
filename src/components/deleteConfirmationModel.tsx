@@ -115,7 +115,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-auto transform transition-all">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-xl ${config.iconBg}`}>

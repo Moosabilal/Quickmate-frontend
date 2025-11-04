@@ -147,15 +147,14 @@ const Login = () => {
                             Password <span className="text-red-500">*</span>
                         </label>
 
-                        {/* 👁️ Password input with toggle */}
                         <div className="relative">
                             <input
                                 id="password"
-                                type={showPassword ? "text" : "password"} // dynamic type
+                                type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 onBlur={() => handleBlur("password")}
-                                className={`${getInputClasses("password")} pr-10`} // padding for the icon
+                                className={`${getInputClasses("password")} pr-10`} 
                                 placeholder="••••••••"
                                 aria-invalid={!!(touched.password && validationErrors.password)}
                             />

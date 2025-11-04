@@ -11,7 +11,7 @@ import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 
 
 
-const users_per_page = 2
+const USERS_PER_PAGE = 2
 
 
 const AdminProvidersPage: React.FC = () => {
@@ -37,7 +37,7 @@ const AdminProvidersPage: React.FC = () => {
           verification: verificationStatus !== 'All' ? verificationStatus : undefined,
           rating: ratingFilter !== 'All' ? ratingFilter : undefined,
           page: currentPage,
-          limit: users_per_page,
+          limit: USERS_PER_PAGE,
         });
         setProviders(response.data)
         setTotalProviders(response.total)
@@ -237,7 +237,14 @@ const AdminProvidersPage: React.FC = () => {
                   Showing {providers.length} of {totalProviders} users
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                  <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                // --- FIX: Add the missing props ---
+                total={totalProviders}
+                limit={USERS_PER_PAGE}
+              />
                 </div>
               </div>
             </div>

@@ -1,5 +1,3 @@
-// src/components/provider/DateOverrides.tsx
-
 import React, { useState } from 'react';
 import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
@@ -7,7 +5,6 @@ import { format, addDays } from 'date-fns';
 import { DateOverride, TimeSlot, LeavePeriod, EditDateModalProps } from '../../util/interface/IProvider';
 import { X, PlusCircle, Trash2, CalendarX2 } from 'lucide-react';
 
-// --- Helper: Generate time options in 30-min intervals ---
 const timeOptions = Array.from({ length: 48 }, (_, i) => {
     const hours = Math.floor(i / 2);
     const minutes = (i % 2) * 30;
@@ -29,9 +26,8 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
-    const [leaveReason, setLeaveReason] = useState(''); // ✅ New: reason for leave
+    const [leaveReason, setLeaveReason] = useState(''); 
 
-    // --- Handle single day selection ---
     const handleDayClickSingle = (day: Date) => {
         if (selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')) {
             setSelectedDate(null);
@@ -41,7 +37,6 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
         }
     };
 
-    // --- Save single-day override with reason ---
     const handleSaveOverride = (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => {
         const dateString = format(date, 'yyyy-MM-dd');
         const existingIndex = overrides.findIndex(o => o.date === dateString);
@@ -58,13 +53,11 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
         setSelectedDate(null);
     };
 
-    // --- Handle date range selection for leave ---
     const handleSelectRange = (range: DateRange | undefined) => {
         setSelectedRange(range);
         setSelectedDate(null);
     };
 
-    // --- Add new leave period with reason ---
     const handleAddLeavePeriod = () => {
         if (selectedRange?.from && selectedRange?.to) {
             const newPeriod: LeavePeriod = {
@@ -78,15 +71,12 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
         }
     };
 
-    // --- Remove leave period ---
     const handleRemoveLeavePeriod = (indexToRemove: number) => {
         setLeavePeriods(leavePeriods.filter((_, i) => i !== indexToRemove));
     };
 
-    // --- Generate modifiers for the calendar ---
     const overrideDates = overrides.map(o => new Date(o.date.replace(/-/g, '/')));
 
-    // Disable days within leave ranges
     const disabledDays = leavePeriods.flatMap(period => {
         const days = [];
         let current = new Date(period.from.replace(/-/g, '/'));
@@ -100,7 +90,6 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-200">
-            {/* --- Section 1: Single Day Adjustments --- */}
             <div className="p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Single Day Adjustments</h2>
                 <p className="text-sm text-gray-500 mb-6">
@@ -124,7 +113,6 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                 `}</style>
             </div>
 
-            {/* --- Section 2: Leave Periods --- */}
             <div className="p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Add Leave / Vacation</h2>
                 <p className="text-sm text-gray-500 mb-6">
@@ -168,7 +156,6 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                     }
                 />
 
-                {/* --- List of Current Leave Periods --- */}
                 {leavePeriods.length > 0 && (
                     <div className="mt-6 pt-6 border-t">
                         <h3 className="text-md font-semibold text-gray-800 mb-3">Current Leave Periods</h3>
@@ -201,7 +188,6 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                 )}
             </div>
 
-            {/* --- Modal for Editing Single-Day Overrides --- */}
             {selectedDate && (
                 <EditDateModal
                     date={selectedDate}
@@ -214,11 +200,10 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
     );
 };
 
-// --- EditDateModal Component (with reason support) ---
 const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, initialOverride }) => {
     const [isUnavailable, setIsUnavailable] = useState(initialOverride?.isUnavailable || false);
     const [busySlots, setBusySlots] = useState<TimeSlot[]>(initialOverride?.busySlots || []);
-    const [reason, setReason] = useState(initialOverride?.reason || ''); // ✅ New: reason for single day
+    const [reason, setReason] = useState(initialOverride?.reason || '');
 
     const handleAddSlot = () => setBusySlots([...busySlots, { start: '09:00', end: '10:00' }]);
     const handleRemoveSlot = (index: number) => setBusySlots(busySlots.filter((_, i) => i !== index));
@@ -257,7 +242,6 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
                         </label>
                     </div>
 
-                    {/* ✅ New: Reason input */}
                     <div>
                         <label htmlFor="reason-input" className="text-sm font-medium text-gray-700">Reason / Note (optional)</label>
                         <input

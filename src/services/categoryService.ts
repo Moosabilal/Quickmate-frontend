@@ -2,7 +2,6 @@ import axiosInstance from "../lib/axiosInstance";
 import {ICategoryDetailsPageData, ICategoryFormCombinedData, ICategoryResponse} from "../util/interface/ICategory"; 
 
 const CATEGORIES_PATH = '/categories';
-const CATEGORIES_TOP_LEVEL_DETAILS_PATH = '/categories/top-level-details';
 
 export const categoryService = {
 
@@ -41,7 +40,7 @@ export const categoryService = {
 
     getCategoryForEditAndShow: async (categoryId: string): Promise<ICategoryFormCombinedData> => {
         try {
-            // Note the new '/edit/' path in the URL
+
             const response = await axiosInstance.get(`${CATEGORIES_PATH}/edit/${categoryId}`);
             return response.data;
         } catch (error) {

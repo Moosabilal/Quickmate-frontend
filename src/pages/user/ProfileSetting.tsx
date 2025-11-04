@@ -179,7 +179,7 @@ const ProfileSetting: React.FC = () => {
 
     return (
         <>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">Account</h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 p-6 mb-8">Account</h1>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center md:items-start justify-between">
                 {isEditing ? (
                     <>

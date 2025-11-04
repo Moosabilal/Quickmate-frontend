@@ -1,4 +1,3 @@
-// src/components/provider/WeeklyAvailability.tsx
 
 import React from 'react';
 import { PlusCircle, X } from 'lucide-react';
@@ -9,7 +8,6 @@ interface WeeklyAvailabilityProps {
     setSchedule: React.Dispatch<React.SetStateAction<DaySchedule[]>>;
 }
 
-// Helper to generate time options for dropdowns
 const timeOptions = Array.from({ length: 48 }, (_, i) => {
     const hours = Math.floor(i / 2);
     const minutes = (i % 2) * 30;
@@ -23,7 +21,6 @@ export const WeeklyAvailability: React.FC<WeeklyAvailabilityProps> = ({ schedule
     const handleToggleDay = (day: string) => {
         setSchedule(prev => prev.map(d => {
             if (d.day === day) {
-                // If activating a day for the first time, add a default slot
                 const newSlots = !d.active && d.slots.length === 0
                     ? [{ start: '09:00', end: '17:00' }]
                     : d.slots;

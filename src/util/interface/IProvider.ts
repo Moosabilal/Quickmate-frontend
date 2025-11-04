@@ -85,7 +85,7 @@ export interface IBackendProvider {
   serviceArea: string;
   serviceLocation: string;
   experience: number;
-  availability: Availability[];
+  availability: IAvailabilityUpdateData;
   status: string;
   earnings: number;
   price: number;
@@ -262,7 +262,7 @@ export interface IEditedProviderProfile extends Partial<IProviderProfile> {
     aadhaarIdProofFile?: File;
 }
 
-export interface FormData {
+export interface IProviderFormState {
     fullName: string;
     phoneNumber: string;
     email: string;
@@ -307,10 +307,10 @@ export interface DaySchedule {
 }
 
 export interface DateOverride {
-    date: string; // YYYY-MM-DD format
+    date: string; 
     isUnavailable: boolean;
     busySlots: TimeSlot[];
-    reason?: string; // <-- ADD THIS
+    reason?: string;
 }
 
 export interface EditDateModalProps {
@@ -321,7 +321,13 @@ export interface EditDateModalProps {
 }
 
 export interface LeavePeriod {
-    from: string; // YYYY-MM-DD
-    to: string;   // YYYY-MM-DD
-    reason?: string; // Optional reason (e.g., "Vacation")
+    from: string; 
+    to: string;  
+    reason?: string; 
+}
+
+export interface IAvailabilityUpdateData {
+    weeklySchedule: DaySchedule[];
+    dateOverrides: DateOverride[];
+    leavePeriods: LeavePeriod[];
 }

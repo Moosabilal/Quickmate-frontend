@@ -374,7 +374,6 @@ const [hour = '00', minute = '00'] = editingService.duration?.split(':') || [];
             Duration
         </label>
         <div className="flex gap-4 items-center">
-            {/* Hour Selector */}
             <select
                 value={selectedHour}
                 onChange={(e) => {
@@ -397,7 +396,6 @@ const [hour = '00', minute = '00'] = editingService.duration?.split(':') || [];
 
             <span className="font-bold text-lg">:</span>
 
-            {/* Minute Selector */}
             <select
                 value={selectedMinute}
                 onChange={(e) => {

@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../../services/adminService'; // Adjust this import path
+import { adminService } from '../../services/adminService'; 
 import { AnalyticsData } from '../../util/interface/IAdmin';
 
-// --- TypeScript Interfaces to match the API response --
 
 const AnalyticsDashboard: React.FC = () => {
-  // --- State for dynamic data, loading, and errors ---
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Data fetching on component mount ---
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        // We use the getDashboardAnalytics function from your adminService
         const response = await adminService.getDashboardAnalytics();
         if (response.success && response.data) {
           setAnalyticsData(response.data);
@@ -31,9 +27,7 @@ const AnalyticsDashboard: React.FC = () => {
       }
     };
     fetchData();
-  }, []); // Empty dependency array ensures this runs only once
-
-  // --- UI for Loading and Error States ---
+  }, []); 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-600">Loading Analytics Dashboard...</div>;
   }
@@ -42,10 +36,8 @@ const AnalyticsDashboard: React.FC = () => {
     return <div className="flex items-center justify-center min-h-screen bg-gray-50 text-red-500">{error || "No analytics data is available."}</div>;
   }
 
-  // --- Destructure for easier access in JSX ---
   const { topServiceCategories, bookingTrends, weeklyPattern, topProviders, kpi } = analyticsData;
 
-  // --- Calculate max values for bar charts dynamically ---
   const maxProvider = Math.max(...topProviders.map(p => p.earnings), 0) || 1;
   const maxWeekly = Math.max(...weeklyPattern.map(d => d.value), 0) || 1;
   const maxBooking = Math.max(...bookingTrends.map(t => t.value), 0) || 1;
@@ -56,7 +48,6 @@ const AnalyticsDashboard: React.FC = () => {
 
   return (
     <div className="w-full bg-gray-50 min-h-screen p-4 sm:p-6">
-      {/* Page Title */}
       <div className="mb-4 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
         <p className="text-sm sm:text-base text-gray-600">
@@ -64,16 +55,14 @@ const AnalyticsDashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Dashboard Content */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-        {/* Top 5 Service Categories */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
               <h2 className="text-base sm:text-lg font-semibold text-gray-900">Top 5 Service Categories</h2>
               <div className="flex items-end gap-3 mt-2">
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">{topCategoryValue}%</p>
-                {/* Trend data for this specific metric is not available from the backend yet */}
+
               </div>
               <p className="text-xs sm:text-sm text-gray-500 mt-1">Of Top Bookings</p>
             </div>
@@ -93,7 +82,7 @@ const AnalyticsDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Booking Trends Over Time */}
+
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="mb-4 sm:mb-6">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">Booking Trends Over Time</h2>
@@ -116,7 +105,6 @@ const AnalyticsDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        {/* Booking Time Patterns */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="mb-4 sm:mb-6">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">Weekly Booking Pattern</h2>
@@ -133,7 +121,6 @@ const AnalyticsDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Top Providers by Earnings */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="mb-4 sm:mb-6">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">Top Providers by Earnings</h2>
@@ -157,7 +144,6 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Additional Stats Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-4 sm:mt-6">
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <h3 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Total Bookings</h3>

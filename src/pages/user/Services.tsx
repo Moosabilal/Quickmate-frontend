@@ -4,6 +4,7 @@ import { categoryService } from '../../services/categoryService';
 import { IserviceResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const ServicesPage: React.FC = () => {
   const servicesPerPage = 10;
@@ -13,6 +14,8 @@ const ServicesPage: React.FC = () => {
   const [totalServices, setTotalServices] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,7 +24,7 @@ const ServicesPage: React.FC = () => {
         const response = await categoryService.getAllSubCategories({
           page: currentPage,
           limit: servicesPerPage,
-          search: searchTerm,
+          search: debouncedSearchTerm,
         });
         setAllServices(response.allServices);
         setTotalPages(response.totalPages);
@@ -31,7 +34,7 @@ const ServicesPage: React.FC = () => {
       }
     };
     getServices();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, debouncedSearchTerm, servicesPerPage]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

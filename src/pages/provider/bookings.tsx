@@ -16,11 +16,12 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
-import { BookingStatus } from '../../util/interface/IBooking';
+import { BookingStatus, IBookingStatusCounts } from '../../util/interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { toast } from 'react-toastify';
 import { IProviderBookingManagement } from '../../util/interface/IBooking';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);
@@ -36,14 +37,25 @@ const ProviderBookingManagementPage: React.FC = () => {
   const { provider } = useAppSelector((state) => state.provider);
   const { user } = useAppSelector((state) => state.auth)
 
+  const debouncedSearch = useDebounce(searchTerm, 500)
+
   const navigate = useNavigate()
 
+  const [tabCounts, setTabCounts] = useState<IBookingStatusCounts>({
+    [BookingStatus.All]: 0,
+    [BookingStatus.PENDING]: 0,
+    [BookingStatus.CONFIRMED]: 0,
+    [BookingStatus.IN_PROGRESS]: 0,
+    [BookingStatus.COMPLETED]: 0,
+    [BookingStatus.CANCELLED]: 0,
+  });
+
   const tabs = [
-    { key: BookingStatus.PENDING, label: 'New Requests', count: bookings.filter(b => b.status === BookingStatus.PENDING).length },
-    { key: BookingStatus.CONFIRMED, label: 'Upcoming Jobs', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },
-    { key: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
-    { key: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
-    { key: BookingStatus.CANCELLED, label: 'Cancelled', count: bookings.filter(b => b.status === BookingStatus.CANCELLED).length }
+    { key: BookingStatus.PENDING, label: 'New Requests', count: tabCounts[BookingStatus.PENDING] },
+    { key: BookingStatus.CONFIRMED, label: 'Upcoming Jobs', count: tabCounts[BookingStatus.CONFIRMED] },
+    { key: BookingStatus.IN_PROGRESS, label: 'In Progress', count: tabCounts[BookingStatus.IN_PROGRESS] },
+    { key: BookingStatus.COMPLETED, label: 'Completed', count: tabCounts[BookingStatus.COMPLETED] },
+    { key: BookingStatus.CANCELLED, label: 'Cancelled', count: tabCounts[BookingStatus.CANCELLED] }
   ];
 
   useEffect(() => {
@@ -51,10 +63,15 @@ const ProviderBookingManagementPage: React.FC = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true)
-        const response = await bookingService.getBookingFor_Prov_mngmnt(provider.id as string, searchTerm)
+        const response = await bookingService.getBookingFor_Prov_mngmnt(
+          provider.id as string,
+          debouncedSearch ,
+          activeTab
+        );
         console.log('the resonspise', response)
         setBookings(response.bookings)
-        setProviderEarnings(response.earnings)
+        setProviderEarnings(response.earnings);
+        setTabCounts(response.counts);
       } catch (error: any) {
         toast.error(error.message || 'Oops something went wrong')
       } finally {
@@ -63,15 +80,8 @@ const ProviderBookingManagementPage: React.FC = () => {
     };
 
     fetchBookings();
-  }, [provider?.id, searchTerm]);
+  }, [provider.id, debouncedSearch, activeTab]);
 
-  const filteredBookings = bookings.filter(booking => {
-    const matchesTab = booking.status === activeTab;
-    const matchesSearch = booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.location.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -236,7 +246,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              ) : filteredBookings.length === 0 ? (
+              ) : bookings.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -248,7 +258,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredBookings.map((booking) => (
+                  {bookings.map((booking) => (
                     <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">

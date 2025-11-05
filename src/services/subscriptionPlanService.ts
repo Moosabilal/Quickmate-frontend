@@ -1,6 +1,6 @@
 import axiosInstance from "../lib/axiosInstance";
 import { IPlan } from "../util/interface/ISubscriptionPlan";
-import { handleAxiosError } from "../util/interface/helperFunction/handleError";
+import { handleAxiosError } from "../util/helperFunction/handleError";
 
 const SUBSCRIPTIONPLAN_URL = `/subscriptionPlan`;
 

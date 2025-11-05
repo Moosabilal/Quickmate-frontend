@@ -4,6 +4,7 @@ import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import Pagination from '../../components/user/Pagination';
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const ProvidersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,13 +15,16 @@ const ProvidersPage: React.FC = () => {
   const providersPerPage = 8;
   const navigate = useNavigate();
 
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+
   useEffect(() => {
     const getProviders = async () => {
       try {
         const providers = await providerService.getFeaturedProviders({
           page: currentPage,
           limit: providersPerPage,
-          search: searchTerm,
+          search: debouncedSearchTerm,
         });
         setProvidersData(providers.providers);
         setTotalPages(providers.totalPages);
@@ -30,7 +34,7 @@ const ProvidersPage: React.FC = () => {
       }
     };
     getProviders();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, debouncedSearchTerm, providersPerPage]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

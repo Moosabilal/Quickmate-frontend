@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useBookingChatVideo } from "../hooks/useBookingChatVideo";
-import { Mic, MicOff, Paperclip, Send, Smile, X, Phone, Video, VideoOff } from "lucide-react";
+import { Mic, MicOff, Paperclip, Send, Smile, X, Phone, Video, VideoOff, Download, FileText } from "lucide-react";
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import { useCallStore } from "../app/callStore";
+import { getCloudinaryDownloadUrl, getCloudinaryUrl } from "../util/cloudinary";
 
 export default function BookingChatVideo({
   currentUserId,
@@ -12,9 +13,9 @@ export default function BookingChatVideo({
   name,
   incomingCall,
   isInitiator = false
-}: { 
-  currentUserId: string, 
-  joiningId: string, 
+}: {
+  currentUserId: string,
+  joiningId: string,
   mode: 'chat' | 'video',
   name?: string,
   incomingCall?: {
@@ -34,20 +35,22 @@ export default function BookingChatVideo({
     messages,
     loadingHistory,
     sendMessage,
+    uploadAndSendFile,
     startCall,
     acceptCall,
     endCall,
     localStream,
     remoteStream,
     callStatus,
-    toggleAudio, 
-    toggleVideo, 
-    isAudioMuted, 
-    isVideoOff, 
+    toggleAudio,
+    toggleVideo,
+    isAudioMuted,
+    isVideoOff,
   } = useBookingChatVideo(currentUserId, joiningId);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -62,7 +65,7 @@ export default function BookingChatVideo({
     if (incomingCall && mode === 'video' && callStatus === 'idle') {
       setIncomingCall(incomingCall);
       setTimeout(() => {
-        try { 
+        try {
           acceptCall();
         } catch (e) {
           console.error('Auto-accept failed:', e);
@@ -70,6 +73,14 @@ export default function BookingChatVideo({
       }, 0);
     }
   }, [incomingCall, mode, callStatus, setIncomingCall, acceptCall]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadAndSendFile(file);
+    }
+    if (e.target) e.target.value = '';
+  };
 
   useEffect(() => {
     if (mode === 'video' && callStatus === 'ended') {
@@ -101,8 +112,8 @@ export default function BookingChatVideo({
     endCall();
     navigate(-1);
   };
-  
-  const getCallStatusText = () => { 
+
+  const getCallStatusText = () => {
     switch (callStatus) {
       case 'calling': return 'Calling...';
       case 'ringing': return 'Incoming call';
@@ -112,7 +123,7 @@ export default function BookingChatVideo({
     }
   };
 
-  const handleEmojiClick = (emoji: string) => { 
+  const handleEmojiClick = (emoji: string) => {
     setInput(prev => prev + emoji);
     inputRef.current?.focus();
   };
@@ -126,11 +137,55 @@ export default function BookingChatVideo({
           {loadingHistory && <div className="text-center text-sm text-gray-500">Loading chat history...</div>}
           {messages.map((m, i) => (
             <div key={m._id || i} className={`flex my-2 ${m.isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`relative max-w-xs lg:max-w-md px-3 py-2 rounded-lg shadow ${m.isCurrentUser ? 'bg-[#DCF8C6]' : 'bg-white'}`}>
-                <p className="text-gray-800 text-sm break-words">{m.text}</p>
-                <span className="text-xs text-gray-400 float-right ml-2 mt-1">
+
+              {/* --- 2. UPDATED: Wrapper div to handle different message paddings --- */}
+              <div
+                className={`relative max-w-xs lg:max-w-md rounded-lg shadow ${m.isCurrentUser ? 'bg-[#DCF8C6]' : 'bg-white'} ${m.messageType === 'image' ? 'p-1.5' : 'px-3 py-2'}`}
+              >
+
+                {/* --- 3. UPDATED: Conditional Rendering Logic --- */}
+                {m.messageType === 'image' && (
+                  <img
+                    src={m.fileUrl?.startsWith('blob:') ? m.fileUrl : getCloudinaryUrl(m.fileUrl!, 'image')}
+                    alt="Uploaded attachment"
+                    className="rounded-md max-w-full"
+                    onLoad={() => {
+                      if (messagesContainerRef.current) {
+                        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+                      }
+                    }}
+                  />
+                )}
+
+                {m.messageType === 'file' && (
+                  <a
+                    href={m.fileUrl?.startsWith('blob:') ? m.fileUrl : getCloudinaryDownloadUrl(m.fileUrl!)} target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    <FileText className="w-8 h-8 text-indigo-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-gray-800 dark:text-gray-200 text-sm font-medium truncate">
+                        {/* Show the text (e.g., "Uploading...") or the filename */}
+                        {m.isPending ? m.text : (m.fileUrl?.split('/').pop() || 'Download File')}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {m.isPending ? "Please wait..." : "File Attachment"}
+                      </p>
+                    </div>
+                    {!m.isPending && <Download className="w-5 h-5 text-gray-500 ml-2 flex-shrink-0" />}
+                  </a>
+                )}
+
+                {m.messageType === 'text' && (
+                  <p className="text-gray-800 text-sm break-words">{m.text}</p>
+                )}
+
+                {/* --- 4. UPDATED: Timestamp positioning for files/images --- */}
+                <div className={`text-xs text-gray-400 ml-2 mt-1 ${m.messageType === 'text' ? 'float-right' : 'text-right'}`}>
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                </div>
               </div>
             </div>
           ))}
@@ -138,7 +193,13 @@ export default function BookingChatVideo({
 
         <form
           className="flex items-center gap-3"
-          onSubmit={(e) => { e.preventDefault(); if (input.trim()) { sendMessage(input.trim()); setInput(""); } }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (input.trim()) {
+              sendMessage({ text: input.trim(), messageType: 'text' });
+              setInput("");
+            }
+          }}
         >
           <div className="flex-grow flex items-center bg-white rounded-full px-4 py-2 shadow-sm">
             <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}><Smile className="text-gray-500" /></button>
@@ -149,7 +210,17 @@ export default function BookingChatVideo({
               onChange={(e) => setInput(e.target.value)}
               ref={inputRef}
             />
-            <button type="button"><Paperclip className="text-gray-500" /></button>
+            {/* --- UPDATED: Paperclip button now triggers the file input --- */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*" // Only accept images for now
+            />
+            <button type="button" onClick={() => fileInputRef.current?.click()}>
+              <Paperclip className="text-gray-500" />
+            </button>
           </div>
           <button
             className="p-3 bg-[#00A884] text-white rounded-full flex-shrink-0 focus:outline-none shadow-lg"
@@ -188,7 +259,7 @@ export default function BookingChatVideo({
 
   if (mode === 'video') {
     return (
-       <div className="relative flex flex-col h-full w-full bg-gray-900 text-white items-center justify-center">
+      <div className="relative flex flex-col h-full w-full bg-gray-900 text-white items-center justify-center">
         <video
           ref={remoteVideoRef}
           autoPlay
@@ -203,31 +274,31 @@ export default function BookingChatVideo({
           muted
           className="absolute top-4 right-4 w-40 h-30 rounded-lg shadow-2xl border-2 border-white z-10 object-cover"
         />
-        
+
         <div className="absolute top-4 left-4 z-10 bg-black/50 p-3 rounded-lg text-white">
-            <h2 className="text-xl font-semibold">Video call with {name || "Unknown"}</h2>
-            <p className="text-sm text-gray-300">{getCallStatusText()}</p>
+          <h2 className="text-xl font-semibold">Video call with {name || "Unknown"}</h2>
+          <p className="text-sm text-gray-300">{getCallStatusText()}</p>
         </div>
 
         <div className="absolute bottom-10 z-10 flex items-center space-x-6 bg-black/50 p-4 rounded-full">
-            <button 
-                onClick={toggleAudio}
-                className={`p-3 rounded-full hover:bg-white/30 ${isAudioMuted ? 'bg-red-500' : 'bg-white/20'}`}
-            >
-                {isAudioMuted ? <MicOff size={24} /> : <Mic size={24} />}
-            </button>
-            <button 
-                onClick={toggleVideo}
-                className={`p-3 rounded-full hover:bg-white/30 ${isVideoOff ? 'bg-red-500' : 'bg-white/20'}`}
-            >
-                {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
-            </button>
-            <button 
-                onClick={handleEndCallAndGoBack}
-                className="p-4 bg-red-600 rounded-full hover:bg-red-700"
-            >
-                <Phone size={28} />
-            </button>
+          <button
+            onClick={toggleAudio}
+            className={`p-3 rounded-full hover:bg-white/30 ${isAudioMuted ? 'bg-red-500' : 'bg-white/20'}`}
+          >
+            {isAudioMuted ? <MicOff size={24} /> : <Mic size={24} />}
+          </button>
+          <button
+            onClick={toggleVideo}
+            className={`p-3 rounded-full hover:bg-white/30 ${isVideoOff ? 'bg-red-500' : 'bg-white/20'}`}
+          >
+            {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
+          </button>
+          <button
+            onClick={handleEndCallAndGoBack}
+            className="p-4 bg-red-600 rounded-full hover:bg-red-700"
+          >
+            <Phone size={28} />
+          </button>
         </div>
       </div>
     );

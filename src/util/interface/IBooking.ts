@@ -13,6 +13,15 @@ export enum BookingStatus {
     IN_PROGRESS = "In-Progress"
 }
 
+export interface IBookingStatusCounts {
+  [BookingStatus.All]: number;
+  [BookingStatus.PENDING]: number;
+  [BookingStatus.CONFIRMED]: number;
+  [BookingStatus.IN_PROGRESS]: number;
+  [BookingStatus.COMPLETED]: number;
+  [BookingStatus.CANCELLED]: number;
+}
+
 export interface LocationState {
   email?: string;
   role?: string;

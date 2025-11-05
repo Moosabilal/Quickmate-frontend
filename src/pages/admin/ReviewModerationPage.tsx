@@ -3,19 +3,8 @@ import { ArrowLeft, Star, Search, ChevronDown } from 'lucide-react';
 import { reviewService } from '../../services/reviewService';
 import { IReviewAdminFilters, ReviewData } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';
+import { useDebounce } from '../../hooks/useDebounce';
 
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-};
 
 const ReviewModerationPage: React.FC = () => {
     const [reviews, setReviews] = useState<ReviewData[]>([]);

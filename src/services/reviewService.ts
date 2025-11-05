@@ -1,6 +1,6 @@
 import axiosInstance from "../lib/axiosInstance";
 import { IReviewAdminFilters } from "../util/interface/IReview";
-import { handleAxiosError } from "../util/interface/helperFunction/handleError";
+import { handleAxiosError } from "../util/helperFunction/handleError";
 
 const REVIEW_URL = `/review`;
 

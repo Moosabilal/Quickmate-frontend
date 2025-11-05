@@ -1,5 +1,5 @@
 import axiosInstance from "../lib/axiosInstance"
-import { handleAxiosError } from "../util/interface/helperFunction/handleError"
+import { handleAxiosError } from "../util/helperFunction/handleError"
 import { TransactionStatus } from "../util/interface/IPayment"
 
 const WALLET_URL = `/wallet`

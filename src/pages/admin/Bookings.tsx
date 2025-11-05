@@ -3,6 +3,7 @@ import { Search, ChevronDown, CheckCircle, Clock, XCircle, ChevronLeft, ChevronR
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const statusStyles: Record<string, { bg: string; text: string; icon: JSX.Element }> = {
@@ -42,19 +43,6 @@ const FilterDropdown: React.FC<{
         </div>
     </div>
 );
-
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-};
 
 
 const BookingLogsPage: React.FC = () => {

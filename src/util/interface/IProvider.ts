@@ -111,13 +111,13 @@ export interface IProviderForChatListPage {
   bookingId?: string;
   name: string;
   profilePicture: string;
-  services: string;
   location: string;
   isOnline: boolean;
-  // completedJobs: number;
-  lastMessage?: string;
+  services: string;
+  lastMessage: string | null; 
+  messageType: 'text' | 'image' | 'file';
+  lastMessageSenderId: string | null; 
   lastMessageAt?: Date | null;
-
 }
 
 //for admin side

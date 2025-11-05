@@ -1,5 +1,5 @@
 import axiosInstance from "../lib/axiosInstance";
-import { handleAxiosError } from "../util/interface/helperFunction/handleError";
+import { handleAxiosError } from "../util/helperFunction/handleError";
 import {
   BookingStatus,
   IAdminBookingFilters,
@@ -47,19 +47,26 @@ export const bookingService = {
     }
   },
 
-  getAllBookings: async () => {
+  getAllBookings: async (search: string, status: string) => {
     try {
-      const response = await axiosInstance.get(`${BOOKING_URL}`);
+      console.log('search, status', search, status)
+      const response = await axiosInstance.get(`${BOOKING_URL}`,
+        { params: { search, status } }
+      );
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to fetch bookings.");
     }
   },
 
-  getBookingFor_Prov_mngmnt: async (id: string, searchTerm: string) => {
+  getBookingFor_Prov_mngmnt: async (providerId: string, search: string, status: string) => {
     try {
-      const response = await axiosInstance.get(`${BOOKING_URL}/getBookingFor_Prov_mngmnt/${id}`, {
-        params: { search: searchTerm },
+      const response = await axiosInstance.get(`${BOOKING_URL}/getBookingFor_Prov_mngmnt`, {
+        params: {
+          providerId,
+          search,
+          status
+        }
       });
       return response.data;
     } catch (error) {

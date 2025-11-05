@@ -6,17 +6,41 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../util/cloudinary';
 import { IProviderForChatListPage } from '../util/interface/IProvider';
 import { providerService } from '../services/providerService';
-import { socket } from '../util/socket'; 
+import { socket } from '../util/socket';
+import { useDebounce } from '../hooks/useDebounce';
 
 const createJoiningId = (id1: string, id2: string): string => {
   if (!id1 || !id2) return '';
   return [id1, id2].sort().join('-');
 };
 
+const formatLastMessage = (
+  msg: IProviderForChatListPage, 
+  currentUserId: string
+): string => {
+  if (!msg.lastMessageAt) {
+    return "No messages yet";
+  }
+
+  const isMe = msg.lastMessageSenderId === currentUserId;
+
+  switch (msg.messageType) {
+    case 'text':
+      return isMe ? `You: ${msg.lastMessage}` : (msg.lastMessage || "");
+    case 'image':
+      return isMe ? "You: 📷 Sent an image" : "📷 Received an image";
+    case 'file':
+      return isMe ? "You: 📎 Sent a file" : "📎 Received a file";
+    default:
+      return "No messages yet";
+  }
+};
+
 const ChatSidebar: React.FC = () => {
   const [providers, setProviders] = useState<IProviderForChatListPage[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const navigate = useNavigate();
 
@@ -31,10 +55,11 @@ const ChatSidebar: React.FC = () => {
     const fetchProviders = async () => {
       setLoading(true);
       try {
-        const response = await providerService.getProviderForChatPage();
+        const response = await providerService.getProviderForChatPage(debouncedSearchTerm);
+        console.log('the response', response)
         setProviders(response);
       } catch (error) {
-        if(error instanceof Error){
+        if (error instanceof Error) {
           toast.error(error.message);
         } else {
           toast.error('Failed to load chats');
@@ -49,10 +74,11 @@ const ChatSidebar: React.FC = () => {
       joiningId: string;
       senderId: string;
       text: string;
+      messageType: 'text' | 'image' | 'file';
       createdAt: string;
     }) => {
       setProviders(currentProviders => {
-        const myId = user.id; 
+        const myId = user.id;
         let partnerId: string;
 
         if (newMessage.senderId === myId) {
@@ -70,6 +96,8 @@ const ChatSidebar: React.FC = () => {
         const updatedPartner = {
           ...currentProviders[partnerIndex],
           lastMessage: newMessage.text,
+          messageType: newMessage.messageType, 
+          lastMessageSenderId: newMessage.senderId,
           lastMessageAt: new Date(newMessage.createdAt)
         };
 
@@ -85,11 +113,7 @@ const ChatSidebar: React.FC = () => {
       socket.off('receiveBookingMessage', handleNewMessage);
     };
 
-  }, [user?.id]); 
-
-  const filteredProviders = providers.filter((provider) =>
-    provider.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [user?.id, debouncedSearchTerm]);
 
   return (
     <div className="flex flex-col h-full">
@@ -116,13 +140,13 @@ const ChatSidebar: React.FC = () => {
       <div className="flex-grow overflow-y-auto">
         {loading ? (
           <p className="p-4 text-gray-500">Loading...</p>
-        ) : filteredProviders.length === 0 ? (
+        ) : providers.length === 0 ? (
           <p className="p-4 text-gray-500">No chats found.</p>
         ) : (
-          filteredProviders.map((chatPartner) => {
-            
+          providers.map((chatPartner) => {
+
             if (!user?.id) {
-                return null;
+              return null;
             }
             const joiningId = createJoiningId(user.id, chatPartner.id);
 
@@ -132,8 +156,7 @@ const ChatSidebar: React.FC = () => {
                 to={`/chat/${joiningId}`}
                 state={{ name: chatPartner.name }}
                 className={({ isActive }) =>
-                  `flex items-center p-3 space-x-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
-                    isActive ? 'bg-blue-100 dark:bg-blue-900/50' : ''
+                  `flex items-center p-3 space-x-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${isActive ? 'bg-blue-100 dark:bg-blue-900/50' : ''
                   }`
                 }
               >
@@ -150,14 +173,14 @@ const ChatSidebar: React.FC = () => {
                     <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
                       {chatPartner.lastMessageAt
                         ? new Date(chatPartner.lastMessageAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
                         : ''}
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {chatPartner.lastMessage || 'No messages yet'}
+                    {formatLastMessage(chatPartner, user.id)}
                   </p>
                 </div>
               </NavLink>

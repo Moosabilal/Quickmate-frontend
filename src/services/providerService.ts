@@ -1,6 +1,6 @@
 import axiosInstance from "../lib/axiosInstance";
 import { FilterParams, IAvailabilityUpdateData } from "../util/interface/IProvider";
-import { handleAxiosError } from "../util/interface/helperFunction/handleError";
+import { handleAxiosError } from "../util/helperFunction/handleError";
 
 const PROVIDER_URL = `/provider`;
 
@@ -139,9 +139,9 @@ export const providerService = {
     }
   },
 
-  getProviderForChatPage: async () => {
+  getProviderForChatPage: async (search: string) => {
     try {
-      const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderForChatPage`);
+      const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderForChatPage`, { params: { search}});
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to fetch provider for chat page.");

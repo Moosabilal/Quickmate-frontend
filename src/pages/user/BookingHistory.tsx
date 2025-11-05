@@ -1,33 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, MapPin, Search, Eye, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingHistoryPage } from '../../util/interface/IBooking';
+import { BookingStatus, IBookingHistoryPage, IBookingStatusCounts } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const BookingHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BookingStatus>(BookingStatus.All);
   const [searchTerm, setSearchTerm] = useState('');
   const [bookings, setBookings] = useState<IBookingHistoryPage[]>([])
+  const [isLoading, setIsLoading] = useState(true); // Set initial loading
+  const [currentPage, setCurrentPage] = useState(1);
+
+ const [tabCounts, setTabCounts] = useState<IBookingStatusCounts>({
+    [BookingStatus.All]: 0,
+    [BookingStatus.PENDING]: 0,
+    [BookingStatus.CONFIRMED]: 0,
+    [BookingStatus.IN_PROGRESS]: 0, // This now correctly uses the value "In-Progress"
+    [BookingStatus.COMPLETED]: 0,
+    [BookingStatus.CANCELLED]: 0,
+  });
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    const getBooking = async () => {
-      const response = await bookingService.getAllBookings()
-      setBookings(response)
-    }
-    getBooking()
-  }, [])
+    const getBookingHistory = async () => {
+      setIsLoading(true);
+      try {
+        const status = activeTab === BookingStatus.All ? BookingStatus.All : activeTab
+        const response = await bookingService.getAllBookings(
+          debouncedSearchTerm,
+          status || ''
+        );
+        
+        setBookings(response.data);
+        setTabCounts(response.counts);
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    getBookingHistory();
+  }, [currentPage, debouncedSearchTerm, activeTab]);
 
-  const tabs = [
-    { id: BookingStatus.All, label: 'All Bookings', count: bookings.length },
-    { id: BookingStatus.PENDING, label: 'Pending', count: bookings.filter(b => b.status === BookingStatus.PENDING).length },
-    { id: BookingStatus.COMPLETED, label: 'Completed', count: bookings.filter(b => b.status === BookingStatus.COMPLETED).length },
-    { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: bookings.filter(b => b.status === BookingStatus.IN_PROGRESS).length },
-    { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length },
-    { id: BookingStatus.CANCELLED, label: 'Canceled', count: bookings.filter(b => b.status === BookingStatus.CANCELLED).length }
-  ];
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on search
+  };
+
+  const handleTabClick = (tab: BookingStatus) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to page 1 on tab change
+  };
+
+const tabs = [
+  { id: BookingStatus.All, label: 'All Bookings', count: tabCounts[BookingStatus.All] },
+  { id: BookingStatus.PENDING, label: 'Pending', count: tabCounts[BookingStatus.PENDING] },
+  { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: tabCounts[BookingStatus.IN_PROGRESS] },
+  { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: tabCounts[BookingStatus.CONFIRMED] },
+  { id: BookingStatus.COMPLETED, label: 'Completed', count: tabCounts[BookingStatus.COMPLETED] },
+  { id: BookingStatus.CANCELLED, label: 'Canceled', count: tabCounts[BookingStatus.CANCELLED] }
+];
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -59,12 +97,6 @@ const BookingHistory: React.FC = () => {
     }
   };
 
-  const filteredBookings = bookings.filter(booking => {
-    const matchesTab = activeTab === BookingStatus.All || booking.status === activeTab;
-    const matchesSearch = booking.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.providerName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
@@ -82,7 +114,7 @@ const BookingHistory: React.FC = () => {
                   type="text"
                   placeholder="Search bookings..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
                 />
               </div>
@@ -105,15 +137,17 @@ const BookingHistory: React.FC = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${activeTab === tab.id
-                  ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                onClick={() => handleTabClick(tab.id)} // Use the handler
+                className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
               >
                 {tab.label}
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${activeTab === tab.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
-                  }`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  activeTab === tab.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                }`}>
                   {tab.count}
                 </span>
               </button>
@@ -121,9 +155,15 @@ const BookingHistory: React.FC = () => {
           </div>
         </div>
 
+        {/* This container now checks for loading state first */}
         <div className="grid gap-6">
-          {filteredBookings.length > 0 ? (
-            filteredBookings.map((booking) => (
+          {isLoading ? (
+            <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
+                <p className="mt-4 text-lg text-gray-600">Loading Bookings...</p>
+            </div>
+          ) : bookings.length > 0 ? (
+            bookings.map((booking) => (
               <div key={booking.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center gap-6">
@@ -158,10 +198,6 @@ const BookingHistory: React.FC = () => {
                               />
                               <span className="font-medium">{booking.providerName}</span>
                             </div>
-                            {/* <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-medium">{booking.rating}</span>
-                            </div> */}
                           </div>
 
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
@@ -197,29 +233,12 @@ const BookingHistory: React.FC = () => {
                               <Eye className="w-4 h-4" />
                               View Details
                             </button>
-                            {/* <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                              <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                            </button> */}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* {booking.status === 'Confirmed' && (
-                  <div className="px-6 pb-4">
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-blue-700 font-medium">Booking Confirmed</span>
-                        <span className="text-blue-600">{new Date(booking.date) > new Date() ? 'Confirmed' : 'Today'}</span>
-                      </div>
-                      <div className="mt-2 bg-blue-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full w-3/4"></div>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
               </div>
             ))
           ) : (

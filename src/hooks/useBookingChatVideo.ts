@@ -5,6 +5,8 @@ import { socket } from "../util/socket";
 import { bookingService } from "../services/bookingService";
 import { ChatMessage, MaybeStream } from "../util/interface/IChatAndVideo";
 import { useCallStore } from "../app/callStore";
+import { fileService } from "../services/fileService";
+import { toast } from "react-toastify";
 
 export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -96,27 +98,34 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         }
     }, []);
 
-    useEffect(() => {
-        const getAllChats = async () => {
-            try {
-                setLoadingHistory(true);
-                const data = await bookingService.getAllPreviousChat(joiningId);
-                const formatted = data.map((msg: any) => ({
-                    joiningId: String(msg.joiningId),
-                    senderId: String(msg.senderId),
-                    text: String(msg.text),
-                    timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
-                    isCurrentUser: String(msg.senderId) === String(currentUserId),
-                })) as ChatMessage[];
-                setMessages(formatted);
-            } catch (error) {
-                console.error("  [History] Error fetching chat history:", error);
-            } finally {
-                setLoadingHistory(false);
-            }
-        };
-        if (joiningId) getAllChats();
-    }, [currentUserId, joiningId]);
+useEffect(() => {
+    const getAllChats = async () => {
+        try {
+            setLoadingHistory(true);
+            const data = await bookingService.getAllPreviousChat(joiningId);
+            
+            const formatted = data.map((msg: any) => ({
+                joiningId: String(msg.joiningId),
+                senderId: String(msg.senderId),
+                timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+                isCurrentUser: String(msg.senderId) === String(currentUserId),
+                _id: msg._id,
+                
+                messageType: msg.messageType || 'text',
+                text: msg.text,
+                fileUrl: msg.fileUrl,
+                isPending: false 
+            })) as ChatMessage[];
+            
+            setMessages(formatted);
+        } catch (error) {
+            console.error("  [History] Error fetching chat history:", error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+    if (joiningId) getAllChats();
+}, [currentUserId, joiningId]);
 
     useEffect(() => {
         if (!joiningId) return;
@@ -124,13 +133,22 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         socket.emit("joinBookingRoom", joiningId);
 
         const chatHandler = (msg: any) => {
+            // Log the raw message to see what the socket is sending
+            console.log("💬 New chat message received:", msg);
+
             const parsed: ChatMessage = {
                 joiningId: String(msg.joiningId || joiningId),
                 senderId: String(msg.senderId || "unknown"),
-                text: String(msg.text || ""),
-                timestamp: msg.timestamp ?? new Date().toISOString(),
+                timestamp: msg.createdAt || msg.timestamp || new Date().toISOString(),
                 isCurrentUser: String(msg.senderId) === String(currentUserId),
                 _id: msg._id,
+
+                // --- FIX IS HERE ---
+                // Pass through the new properties from the message object
+                messageType: msg.messageType || 'text',
+                text: msg.text,
+                fileUrl: msg.fileUrl,
+                isPending: false // Real messages from the socket are never pending
             };
             setMessages((prev) => [...prev, parsed]);
         };
@@ -199,19 +217,65 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         };
     }, [joiningId, currentUserId, ensurePeerConnection, processIceQueue, setIncomingCall, cleanupCall]);
 
-    const sendMessage = useCallback(
-        (text: string) => {
-            const trimmed = text.trim();
-            if (!trimmed) return;
-            socket.emit("sendBookingMessage", {
+    const sendMessage = useCallback((messageData: {
+        text?: string;
+        messageType: 'text' | 'image' | 'file';
+        fileUrl?: string;
+    }) => {
+        // Don't send if it's not text and not a file
+        if (!messageData.text && !messageData.fileUrl) return;
+
+        // Don't send empty text messages
+        if (messageData.messageType === 'text' && !messageData.text?.trim()) return;
+
+        socket.emit("sendBookingMessage", {
+            joiningId,
+            senderId: currentUserId,
+            messageType: messageData.messageType,
+            text: messageData.text?.trim(),
+            fileUrl: messageData.fileUrl,
+            createdAt: new Date().toISOString()
+        });
+    }, [joiningId, currentUserId]);
+
+
+    // --- 2. UPDATED: uploadAndSendFile now uses the new sendMessage ---
+    const uploadAndSendFile = useCallback(async (file: File) => {
+        // A unique ID for the local pending message
+        const pendingId = `pending-${Date.now()}`;
+
+        try {
+            const pendingMessage: ChatMessage = {
+                _id: pendingId,
                 joiningId,
                 senderId: currentUserId,
-                text: trimmed,
-                timestamp: new Date().toISOString(),
+                messageType: file.type.startsWith('image/') ? 'image' : 'file',
+                text: `Uploading ${file.name}...`,
+                fileUrl: URL.createObjectURL(file),
+                timestamp: new Date(),
+                isCurrentUser: true,
+                isPending: true,
+            };
+            setMessages((prev) => [...prev, pendingMessage]);
+
+            const { url } = await fileService.uploadChatFile(file);
+
+            sendMessage({
+                messageType: file.type.startsWith('image/') ? 'image' : 'file',
+                fileUrl: url
             });
-        },
-        [joiningId, currentUserId]
-    );
+
+            setMessages((prev) => prev.filter(m => m._id !== pendingId));
+
+        } catch (err) {
+            console.error("File upload failed:", err);
+            toast.error("File upload failed.");
+            setMessages((prev) => prev.filter(m => m._id !== pendingId));
+        }
+    }, [joiningId, currentUserId, sendMessage]);
+
+
+
 
     const startCall = useCallback(async () => {
         try {
@@ -348,6 +412,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         messages,
         loadingHistory,
         sendMessage,
+        uploadAndSendFile,
         startCall,
         acceptCall,
         rejectCall,

@@ -51,6 +51,15 @@ export const providerService = {
     }
   },
 
+  getProviderDetails: async (providerId: string) => {
+    try {
+      const response = await axiosInstance.get(`${PROVIDER_URL}/details/${providerId}`);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch provider details.");
+    }
+  },
+
   getServicesForAddpage: async () => {
     try {
       const response = await axiosInstance.get(`${PROVIDER_URL}/getServicesForAddPage`);

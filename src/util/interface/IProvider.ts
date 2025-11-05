@@ -42,6 +42,7 @@ export interface IFeaturedProviders {
   fullName: string;
   profilePhoto: string;
   serviceName: string;
+  rating: number;
 
 }
 
@@ -53,12 +54,21 @@ export interface IProviderProfile {
   fullName: string;
   phoneNumber: string;
   email: string;
-  serviceId: string[];
   serviceLocation: string;
   serviceArea: string;
   experience: number
   profilePhoto: string;
   status: string;
+  availability?: {
+    weeklySchedule: DaySchedule[];
+    dateOverrides: DateOverride[];
+    leavePeriods: LeavePeriod[];
+  };
+  earnings?: number;
+  totalBookings?: number;
+  payoutPending?: number;
+  rating?: number;
+  isVerified?: boolean
   subscription?: {
     planId?: string;
     startDate: Date;
@@ -325,4 +335,16 @@ export interface IAvailabilityUpdateData {
     weeklySchedule: DaySchedule[];
     dateOverrides: DateOverride[];
     leavePeriods: LeavePeriod[];
+}
+
+export interface IServiceDetails {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  priceUnit: string;
+  duration: string;
+  categoryId: { name: string };
+  subCategoryId: { name: string };
+  experience?: number;
 }

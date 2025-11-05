@@ -6,6 +6,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../util/cloudinary';
 import { IProviderForChatListPage } from '../util/interface/IProvider';
 import { providerService } from '../services/providerService';
+import { socket } from '../util/socket'; 
 
 const createJoiningId = (id1: string, id2: string): string => {
   if (!id1 || !id2) return '';
@@ -22,6 +23,11 @@ const ChatSidebar: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     const fetchProviders = async () => {
       setLoading(true);
       try {
@@ -38,7 +44,48 @@ const ChatSidebar: React.FC = () => {
       }
     };
     fetchProviders();
-  }, []);
+
+    const handleNewMessage = (newMessage: {
+      joiningId: string;
+      senderId: string;
+      text: string;
+      createdAt: string;
+    }) => {
+      setProviders(currentProviders => {
+        const myId = user.id; 
+        let partnerId: string;
+
+        if (newMessage.senderId === myId) {
+          partnerId = newMessage.joiningId.split('-').find(id => id !== myId)!;
+        } else {
+          partnerId = newMessage.senderId;
+        }
+
+        if (!partnerId) return currentProviders;
+
+        const partnerIndex = currentProviders.findIndex(p => p.id === partnerId);
+
+        if (partnerIndex === -1) return currentProviders;
+
+        const updatedPartner = {
+          ...currentProviders[partnerIndex],
+          lastMessage: newMessage.text,
+          lastMessageAt: new Date(newMessage.createdAt)
+        };
+
+        const newProvidersList = currentProviders.filter(p => p.id !== partnerId);
+
+        return [updatedPartner, ...newProvidersList];
+      });
+    };
+
+    socket.on('receiveBookingMessage', handleNewMessage);
+
+    return () => {
+      socket.off('receiveBookingMessage', handleNewMessage);
+    };
+
+  }, [user?.id]); 
 
   const filteredProviders = providers.filter((provider) =>
     provider.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,9 +120,11 @@ const ChatSidebar: React.FC = () => {
           <p className="p-4 text-gray-500">No chats found.</p>
         ) : (
           filteredProviders.map((chatPartner) => {
-            const id1 = user?.id;
-            const id2 = chatPartner.id;
-            const joiningId = createJoiningId(id1!, id2!);
+            
+            if (!user?.id) {
+                return null;
+            }
+            const joiningId = createJoiningId(user.id, chatPartner.id);
 
             return (
               <NavLink

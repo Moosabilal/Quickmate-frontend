@@ -64,8 +64,11 @@ const ProviderServicesPage: React.FC = () => {
     const handleAddNewService = () => {
         const { subscription } = provider;
 
+        console.log('the subscription', subscription);
+
         if (!subscription || subscription.status === "NONE") {
             if (services.length >= 1) {
+                console.log('its coming to opend the model')
                 setIsModalOpen(true);
                 return;
             }

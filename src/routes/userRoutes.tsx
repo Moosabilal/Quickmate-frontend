@@ -21,6 +21,7 @@ const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'
 const BookingDetails = lazy(() => import('../pages/user/BookingDetails'))
 const CurrentPassword = lazy(() => import('../pages/CurrentPassword'))
 const Wallet = lazy(() => import('../pages/user/Wallet'))
+const ProviderDetailsPage = lazy(() => import('../pages/user/ProviderDetails'))
 import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
@@ -37,6 +38,7 @@ const userRoutes = [
   { path: '/verify-otp', element: <RegistrationOTPVerification /> },
   { path: '/services', element: <ServicesPage /> },
   { path: '/providers', element: <ProviderPage /> },
+  { path: '/providers/:providerId', element: <ProviderDetailsPage /> },
   { path: '/about', element: <AboutPage /> },
   { path: '/working', element: <HowItWorksPage /> },
   { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },

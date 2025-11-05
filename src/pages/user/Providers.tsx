@@ -106,7 +106,7 @@ const ProvidersPage: React.FC = () => {
                   </h3>
                   <p className="text-blue-600 text-sm font-medium">{provider.serviceName}</p>
                   <button
-                    onClick={() => navigate(`/provider-profile/${provider.id}`)}
+                    onClick={() => navigate(`/providers/${provider.id}`)}
                     className="mt-3 w-full py-1.5 px-3 bg-gradient-to-r from-blue-500 to-indigo-600 
                                text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 
                                transition-all duration-300 text-xs font-medium shadow-sm 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import Pagination from '../../components/admin/Pagination';
-import { useNavigate } from 'react-router-dom';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
+import { useDebounce } from '../../hooks/useDebounce';
 
 
 
@@ -25,14 +25,14 @@ const AdminProvidersPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
 
-  const navigate = useNavigate()
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
 
   useEffect(() => {
     const fetchProviders = async () => {
       try {
         const response = await providerService.getProvidersForAdmin({
-          search: searchTerm || '',
+          search: debouncedSearchTerm || '',
           status: approvalStatus !== 'All' ? approvalStatus : undefined,
           verification: verificationStatus !== 'All' ? verificationStatus : undefined,
           rating: ratingFilter !== 'All' ? ratingFilter : undefined,
@@ -51,7 +51,7 @@ const AdminProvidersPage: React.FC = () => {
     };
 
     fetchProviders();
-  }, [searchTerm, approvalStatus, verificationStatus, ratingFilter, currentPage]);
+  }, [debouncedSearchTerm, approvalStatus, verificationStatus, ratingFilter, currentPage]);
 
 
   const getStatusClasses = (status: ProviderList['status']) => {
@@ -238,13 +238,12 @@ const AdminProvidersPage: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                // --- FIX: Add the missing props ---
-                total={totalProviders}
-                limit={USERS_PER_PAGE}
-              />
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    total={totalProviders}
+                    limit={USERS_PER_PAGE}
+                  />
                 </div>
               </div>
             </div>

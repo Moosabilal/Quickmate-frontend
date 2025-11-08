@@ -125,7 +125,7 @@ const AnalyticsDashboard: React.FC = () => {
           <div className="mb-4 sm:mb-6">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">Top Providers by Earnings</h2>
             <div className="flex items-end gap-3 mt-2">
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900">${topProviderValue.toLocaleString()}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">₹{topProviderValue.toLocaleString()}</p>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">Top earner this month</p>
           </div>
@@ -135,7 +135,7 @@ const AnalyticsDashboard: React.FC = () => {
                 <span className="text-xs sm:text-sm text-gray-500 w-20 sm:w-24 flex-shrink-0">{provider.name}</span>
                 <div className="flex-1 h-7 sm:h-8 bg-gray-100 rounded-lg overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 flex items-center justify-end pr-2 sm:pr-3 transition-all duration-500 hover:from-emerald-600 hover:to-emerald-500 cursor-pointer" style={{ width: `${(provider.earnings / maxProvider) * 100}%` }} >
-                    <span className="text-[10px] sm:text-xs font-medium text-white">${provider.earnings.toLocaleString()}</span>
+                    <span className="text-[10px] sm:text-xs font-medium text-white">₹{provider.earnings.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -155,7 +155,7 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <h3 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Total Revenue</h3>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900">${kpi.revenue.toLocaleString()}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900">₹{kpi.revenue.toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <h3 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Avg. Rating</h3>

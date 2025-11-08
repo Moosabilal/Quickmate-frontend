@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, IUser } from '../../util/interface/IUser';
 
+const CHATBOT_SESSION_ID_KEY = 'chatbot_session_id';
 
 const getUserNameFromLocalStorage = (): string | null => {
     return localStorage.getItem('userName');
@@ -41,13 +42,17 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
 
             localStorage.setItem('userName', action.payload.user.name);
-            localStorage.setItem('userRole', action.payload.user.role); 
+            localStorage.setItem('userRole', action.payload.user.role);
+            
+            localStorage.removeItem(CHATBOT_SESSION_ID_KEY);
         },
         logout: state => {
             state.user = null;
             state.isAuthenticated = false;
             localStorage.removeItem('userName');
             localStorage.removeItem('userRole'); 
+            
+            localStorage.removeItem(CHATBOT_SESSION_ID_KEY);
         },
 
         updateProfile: (

@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { IPlan } from "../../util/interface/ISubscriptionPlan";
 import { subscriptionPlanService } from "../../services/subscriptionPlanService";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../../components/deleteConfirmationModel";
 import { DeleteConfirmationTypes } from "../../util/interface/IDeleteModelType";
+import { useDebounce } from "../../hooks/useDebounce";
+import { Search } from "lucide-react";
 
 
 export default function AdminSubscriptionPlans() {
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [openDeleteModel, setOpenDeleteModel] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<IPlan | null>(null);
@@ -28,17 +32,17 @@ export default function AdminSubscriptionPlans() {
   const [formLoading, setFormLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await subscriptionPlanService.getSubscriptionPlan();
+      const response = await subscriptionPlanService.getSubscriptionPlan(debouncedSearchTerm);
       setPlans(response);
     } catch (err) {
       toast.error(`${err}` || "Failed to fetch subscription");
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -178,9 +182,9 @@ export default function AdminSubscriptionPlans() {
       setPlans(plans.filter((p) => p.id !== deletePlanId));
       toast.success("Plan deleted successfully!");
     } catch (err) {
-      if(err instanceof Error){
+      if (err instanceof Error) {
         toast.error(err.message || "Failed to delete plan");
-      }else{
+      } else {
         toast.error(String(err) || "Failed to delete plan");
       }
     } finally {
@@ -190,7 +194,7 @@ export default function AdminSubscriptionPlans() {
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+  }, [fetchPlans]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -222,6 +226,16 @@ export default function AdminSubscriptionPlans() {
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Total Plans: {plans.length}
           </div>
+          <div className="relative w-full md:w-1/3">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by plan name..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          </div>
         </div>
 
         {loading ? (
@@ -232,9 +246,14 @@ export default function AdminSubscriptionPlans() {
         ) : plans.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">📋</div>
-            <p className="text-gray-500 text-lg">No subscription plans available.</p>
-            <p className="text-gray-400 text-sm mt-2">Create your first plan by clicking "Add New Plan".</p>
-          </div>
+            <p className="text-gray-500 text-lg">
+              {searchTerm ? "No plans match your search." : "No subscription plans available."}
+            </p>
+            {searchTerm ? (
+              <p className="text-gray-400 text-sm mt-2">Try different keywords or clear your search.</p>
+            ) : (
+              <p className="text-gray-400 text-sm mt-2">Create your first plan by clicking "Add New Plan".</p>
+            )}          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">

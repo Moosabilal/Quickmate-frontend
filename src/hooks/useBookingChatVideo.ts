@@ -133,7 +133,6 @@ useEffect(() => {
         socket.emit("joinBookingRoom", joiningId);
 
         const chatHandler = (msg: any) => {
-            // Log the raw message to see what the socket is sending
             console.log("💬 New chat message received:", msg);
 
             const parsed: ChatMessage = {
@@ -143,12 +142,10 @@ useEffect(() => {
                 isCurrentUser: String(msg.senderId) === String(currentUserId),
                 _id: msg._id,
 
-                // --- FIX IS HERE ---
-                // Pass through the new properties from the message object
                 messageType: msg.messageType || 'text',
                 text: msg.text,
                 fileUrl: msg.fileUrl,
-                isPending: false // Real messages from the socket are never pending
+                isPending: false 
             };
             setMessages((prev) => [...prev, parsed]);
         };
@@ -222,10 +219,8 @@ useEffect(() => {
         messageType: 'text' | 'image' | 'file';
         fileUrl?: string;
     }) => {
-        // Don't send if it's not text and not a file
         if (!messageData.text && !messageData.fileUrl) return;
 
-        // Don't send empty text messages
         if (messageData.messageType === 'text' && !messageData.text?.trim()) return;
 
         socket.emit("sendBookingMessage", {
@@ -239,9 +234,7 @@ useEffect(() => {
     }, [joiningId, currentUserId]);
 
 
-    // --- 2. UPDATED: uploadAndSendFile now uses the new sendMessage ---
     const uploadAndSendFile = useCallback(async (file: File) => {
-        // A unique ID for the local pending message
         const pendingId = `pending-${Date.now()}`;
 
         try {

@@ -52,7 +52,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
 
-
   const paymentOptions = [
     { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
     { value: PaymentMethod.WALLET, label: "Wallet" },
@@ -295,7 +294,7 @@ const ServiceDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans text-gray-900 flex flex-col">
-      <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8 flex-grow">
+      <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 flex-grow">
         <button
           onClick={() => window.history.back()}
           className="flex items-center text-indigo-700 hover:text-indigo-900 transition-colors duration-200 mb-8 text-lg font-medium group"
@@ -545,6 +544,7 @@ const ServiceDetailsPage: React.FC = () => {
         radius={radius}
         onSlotSelect={handleSlotSelection}
       />
+      {providerPopup && (
       <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
@@ -552,6 +552,7 @@ const ServiceDetailsPage: React.FC = () => {
         longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
         radiusKm={radius}
       />
+      )}
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} serviceId={serviceId || ''} />
     </div>

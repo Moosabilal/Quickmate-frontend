@@ -21,6 +21,6 @@ export interface IService {
     price: number;
     serviceImage: string;
     description: string;
-    // rating: number;
-    // reviews: number;
+    rating?: number;
+    reviews?: number;
 }

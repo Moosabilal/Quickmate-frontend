@@ -46,7 +46,7 @@ const ProviderServicesPage: React.FC = () => {
                 const servicesResponse = await serviceService.getServicesByProviderId(provider.id);
                 setServices(servicesResponse.services);
 
-                const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan();
+                const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan('');
                 setSubscriptionPlans(subscriptionResponse);
             } catch (error: any) {
                 toast.error(error || "Something went wrong while fetching data");
@@ -264,12 +264,12 @@ const ProviderServicesPage: React.FC = () => {
                                                         <div className="flex items-center gap-1">
                                                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                                             <span className="text-sm font-medium text-gray-700">
-                                                                {/* {service.rating} */}
+                                                                {service.rating}
                                                             </span>
                                                         </div>
                                                         <span className="text-gray-400">•</span>
                                                         <span className="text-sm text-gray-600">
-                                                            {/* {service.reviews} reviews */}
+                                                            {service.reviews} reviews
                                                         </span>
                                                     </div>
                                                 </div>

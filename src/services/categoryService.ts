@@ -1,8 +1,12 @@
 import axiosInstance from "../lib/axiosInstance";
 import { handleAxiosError } from "../util/helperFunction/handleError";
 import {
+  CategoryFilters,
+  ICategoryAdminResponse,
   ICategoryDetailsPageData,
   ICategoryResponse,
+  ICommissionSummary,
+  IserviceResponse,
 } from "../util/interface/ICategory";
 
 const CATEGORIES_PATH = "/categories";
@@ -53,14 +57,17 @@ export const categoryService = {
     }
   },
 
-  async getAllCategories(): Promise<ICategoryResponse[] | undefined> {
-    try {
-      const response = await axiosInstance.get(CATEGORIES_PATH);
-      return response.data.categories || response.data;
-    } catch (error) {
-      handleAxiosError(error, "Failed to fetch categories/subcategories.");
-    }
-  },
+  async getAllCategories(filters?: CategoryFilters): Promise<ICategoryAdminResponse> { 
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}`, { 
+                params: filters 
+            });
+            
+            return response.data; 
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch categories/subcategories.");
+        }
+    },
 
   async getAllSubCategories({
     page,
@@ -80,4 +87,45 @@ export const categoryService = {
       handleAxiosError(error, "Failed to fetch subcategories.");
     }
   },
+
+  getCommissionSummary: async (): Promise<ICommissionSummary> => {
+        try {
+          console.log('reaching service')
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/commission-summary`);
+            return response.data.data; 
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch commission summary.");
+            throw error;
+        }
+    },
+
+    getTopLevelCategories: async (): Promise<ICategoryResponse[]> => {
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/top-level`);
+            return response.data.data; 
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch categories.");
+            throw error;
+        }
+    },
+
+    getPopularServices: async (): Promise<IserviceResponse[]> => {
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/popular-services`);
+            return response.data.data;
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch popular services.");
+            throw error;
+        }
+    },
+
+    getTrendingServices: async (): Promise<IserviceResponse[]> => {
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/trending-services`);
+            return response.data.data;
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch trending services.");
+            throw error;
+        }
+    },
 };

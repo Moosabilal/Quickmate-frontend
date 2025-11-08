@@ -113,7 +113,6 @@ export interface IAdminBookingFilters {
   limit: number;
   search?: string;
   bookingStatus?: string;
-  serviceType?: string;
   dateRange?: string;
 }
 

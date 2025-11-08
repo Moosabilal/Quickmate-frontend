@@ -582,39 +582,6 @@ const ProviderProfile: React.FC = () => {
                 </div>
             )}
 
-            {/* {(!user?.googleCalendar?.tokens || Object.values(user?.googleCalendar?.tokens).length === 0) && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full relative">
-                        <button
-                            onClick={handleCloseCalendarModal}
-                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-
-                        <h2 className="text-xl font-bold text-slate-800 mb-3">Google Calendar Sync</h2>
-                        <p className="text-slate-600 mb-6">
-                            By connecting your Google Calendar, your availability and bookings will automatically sync.
-                        </p>
-
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                onClick={handleCloseCalendarModal}
-                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                // onClick={handleConnectCalendar}
-                                className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                            >
-                                Connect Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
-
 
             {isMapOpen && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">

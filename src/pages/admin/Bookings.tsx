@@ -53,7 +53,6 @@ const BookingLogsPage: React.FC = () => {
     const [filters, setFilters] = useState({
         bookingStatus: 'All',
         dateRange: 'All',
-        serviceType: 'All',
         search: '',
     });
     const [currentPage, setCurrentPage] = useState(1);
@@ -72,6 +71,7 @@ const BookingLogsPage: React.FC = () => {
                     limit: 10,
                     search: debouncedSearch,
                     bookingStatus: filters.bookingStatus,
+                    dateRange: filters.dateRange,
                 });
                 setBookings(response.bookings);
                 setTotalPages(response.totalPages);
@@ -84,7 +84,7 @@ const BookingLogsPage: React.FC = () => {
             }
         };
         fetchBookings();
-    }, [currentPage, debouncedSearch, filters.bookingStatus]);
+    }, [currentPage, debouncedSearch, filters.bookingStatus, filters.dateRange]);
 
     const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
         setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -123,7 +123,6 @@ const BookingLogsPage: React.FC = () => {
                                 onChange={(e) => handleFilterChange('bookingStatus', e.target.value)}
                             />
                             <FilterDropdown label="Date Range" options={['Last 7 Days', 'Last 30 Days']} value={filters.dateRange} onChange={(e) => handleFilterChange('dateRange', e.target.value)} />
-                            <FilterDropdown label="Service Type" options={['IT Support', 'Plumbing']} value={filters.serviceType} onChange={(e) => handleFilterChange('serviceType', e.target.value)} />
                         </div>
                     </div>
 

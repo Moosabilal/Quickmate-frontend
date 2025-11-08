@@ -138,12 +138,10 @@ export default function BookingChatVideo({
           {messages.map((m, i) => (
             <div key={m._id || i} className={`flex my-2 ${m.isCurrentUser ? 'justify-end' : 'justify-start'}`}>
 
-              {/* --- 2. UPDATED: Wrapper div to handle different message paddings --- */}
               <div
                 className={`relative max-w-xs lg:max-w-md rounded-lg shadow ${m.isCurrentUser ? 'bg-[#DCF8C6]' : 'bg-white'} ${m.messageType === 'image' ? 'p-1.5' : 'px-3 py-2'}`}
               >
 
-                {/* --- 3. UPDATED: Conditional Rendering Logic --- */}
                 {m.messageType === 'image' && (
                   <img
                     src={m.fileUrl?.startsWith('blob:') ? m.fileUrl : getCloudinaryUrl(m.fileUrl!, 'image')}
@@ -167,7 +165,6 @@ export default function BookingChatVideo({
                     <FileText className="w-8 h-8 text-indigo-500 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-gray-800 dark:text-gray-200 text-sm font-medium truncate">
-                        {/* Show the text (e.g., "Uploading...") or the filename */}
                         {m.isPending ? m.text : (m.fileUrl?.split('/').pop() || 'Download File')}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -182,7 +179,6 @@ export default function BookingChatVideo({
                   <p className="text-gray-800 text-sm break-words">{m.text}</p>
                 )}
 
-                {/* --- 4. UPDATED: Timestamp positioning for files/images --- */}
                 <div className={`text-xs text-gray-400 ml-2 mt-1 ${m.messageType === 'text' ? 'float-right' : 'text-right'}`}>
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
@@ -210,13 +206,12 @@ export default function BookingChatVideo({
               onChange={(e) => setInput(e.target.value)}
               ref={inputRef}
             />
-            {/* --- UPDATED: Paperclip button now triggers the file input --- */}
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
               className="hidden"
-              accept="image/*" // Only accept images for now
+              accept="image/*" 
             />
             <button type="button" onClick={() => fileInputRef.current?.click()}>
               <Paperclip className="text-gray-500" />

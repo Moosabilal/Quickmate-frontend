@@ -190,7 +190,7 @@ const CategoryForm: React.FC = () => {
                 const response = await categoryService.createCategory(data);
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
 
-                const newEntityId = response?._id;
+                const newEntityId = response?.id;
                 if (newEntityId && submitAction === 'addSubcategory' && !isSubCategoryMode) {
                     navigate(`/admin/subcategories/new/${newEntityId}`);
                     return;

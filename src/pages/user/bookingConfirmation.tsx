@@ -95,7 +95,6 @@ const BookingConfirmation: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header Section */}
         <div className="text-center mb-8">
           <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6">
             <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse"></div>

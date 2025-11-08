@@ -15,9 +15,9 @@ export const subscriptionPlanService = {
         }
     },
 
-    getSubscriptionPlan: async () => {
+    getSubscriptionPlan: async (search: string) => {
         try {
-            const response = await axiosInstance.get(`${SUBSCRIPTIONPLAN_URL}/getSubscriptionPlan`);
+            const response = await axiosInstance.get(`${SUBSCRIPTIONPLAN_URL}/getSubscriptionPlan`, {params: {search}});
             return response.data;
         } catch (error) {
             handleAxiosError(error, "Failed to fetch subscription plans.");

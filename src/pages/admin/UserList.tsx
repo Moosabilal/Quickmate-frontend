@@ -7,9 +7,10 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import Pagination from '../../components/admin/Pagination';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
-import { useNavigate } from 'react-router-dom';
 import { User } from '../../util/interface/IUser';
 import { toast } from 'react-toastify';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -27,29 +28,34 @@ const AdminUsersPage = () => {
   const [totalUsers, setTotalUsers] = useState(0)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true); 
       try {
         const response = await authService.getUserWithAllDetails({
           page: currentPage,
           limit: USERS_PER_PAGE,
-          search: searchTerm,
+          search: debouncedSearchTerm,
           status: statusFilter
         });
         setUsers(response.users);
-        setTotalPages(response.totalPages)
-        setTotalUsers(response.total)
+        setTotalPages(response.totalPages);
+        setTotalUsers(response.total);
       } catch (error) {
-        toast.error(`${error}`)
+        toast.error(`${error}`);
         console.error('Failed to fetch users:', error);
+      } finally {
+        setIsLoading(false); 
       }
     };
 
     fetchUsers();
-  }, [currentPage, searchTerm, statusFilter]);
+  }, [currentPage, debouncedSearchTerm, statusFilter]);
 
   const getStatusColor = (isVerified: boolean) => {
     return isVerified
@@ -158,23 +164,31 @@ const AdminUsersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {users.map((user, index) => (
-                  <tr key={user.id}>
-                    <td className="py-4 px-6">
-                      <div className={`w-10 h-10 ${getAvatarColor(index)} rounded-full flex items-center justify-center`}>
-                        <span className="text-white font-medium text-sm">{generateUserInitials(user.name)}</span>
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-10 text-gray-500">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+                      Loading users...
                     </td>
-                    <td className="py-4 px-6 font-medium">{user.name}</td>
-                    <td className="py-4 px-6 text-sm">{user.email}</td>
-                    <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.isVerified)}`}>
-                        {getStatusIcon(user.isVerified)}
-                        <span className="ml-1">{user.isVerified ? "Active" : "InActive"}</span>
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <button
+                  </tr>
+                ) : users.length > 0 ? (
+                  users.map((user, index) => (
+                    <tr key={user.id}>
+                      <td className="py-4 px-6">
+                        <div className={`w-10 h-10 ${getAvatarColor(index)} rounded-full flex items-center justify-center`}>
+                          <span className="text-white font-medium text-sm">{generateUserInitials(user.name)}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 font-medium">{user.name}</td>
+                      <td className="py-4 px-6 text-sm">{user.email}</td>
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.isVerified)}`}>
+                          {getStatusIcon(user.isVerified)}
+                          <span className="ml-1">{user.isVerified ? "Active" : "InActive"}</span>
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button
                         className="text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 px-3 py-1 rounded-lg text-sm"
                         onClick={() => navigate(`/admin/users/userDetails/${user.id}`)}
                       >
@@ -190,9 +204,16 @@ const AdminUsersPage = () => {
                       >
                         {user.isVerified ? 'Block User' : 'Unblock User'}
                       </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-10 text-gray-500">
+                      No users found matching your criteria.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
 

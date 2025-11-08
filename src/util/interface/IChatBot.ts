@@ -39,3 +39,9 @@ export interface ChatFormProps {
     setChatHistory: React.Dispatch<React.SetStateAction<ChatbotMessage[]>>;
     generateBotResponse: (history: ChatbotMessage[]) => Promise<void>;
 }
+
+export interface IChatbotResponse {
+    role: 'model';
+    text: string;
+    options?: { label: string, action: string }[];
+}

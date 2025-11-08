@@ -10,14 +10,14 @@ const BookingHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BookingStatus>(BookingStatus.All);
   const [searchTerm, setSearchTerm] = useState('');
   const [bookings, setBookings] = useState<IBookingHistoryPage[]>([])
-  const [isLoading, setIsLoading] = useState(true); // Set initial loading
+  const [isLoading, setIsLoading] = useState(true); 
   const [currentPage, setCurrentPage] = useState(1);
 
  const [tabCounts, setTabCounts] = useState<IBookingStatusCounts>({
     [BookingStatus.All]: 0,
     [BookingStatus.PENDING]: 0,
     [BookingStatus.CONFIRMED]: 0,
-    [BookingStatus.IN_PROGRESS]: 0, // This now correctly uses the value "In-Progress"
+    [BookingStatus.IN_PROGRESS]: 0, 
     [BookingStatus.COMPLETED]: 0,
     [BookingStatus.CANCELLED]: 0,
   });
@@ -50,12 +50,12 @@ const BookingHistory: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to page 1 on search
+    setCurrentPage(1); 
   };
 
   const handleTabClick = (tab: BookingStatus) => {
     setActiveTab(tab);
-    setCurrentPage(1); // Reset to page 1 on tab change
+    setCurrentPage(1); 
   };
 
 const tabs = [
@@ -137,7 +137,7 @@ const tabs = [
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => handleTabClick(tab.id)} // Use the handler
+                onClick={() => handleTabClick(tab.id)}
                 className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-all whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'

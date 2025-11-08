@@ -59,7 +59,6 @@ const AboutPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Contact Us Section */}
                 <section className="bg-white p-8 rounded-lg shadow-md mb-8 max-w-2xl mx-auto">
                     <h2 className="text-3xl font-bold text-gray-900 mb-6">Contact Us</h2>
                     <form onSubmit={handleSubmit}>

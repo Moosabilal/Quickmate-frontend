@@ -40,10 +40,9 @@ const ProviderPopup = ({
   radiusKm
 }: ProviderPopupProps) => {
 
-  console.log('the dat', setSelectedProvider,
+  console.log('the dat', 
     providerPopup,
     selectedProvider,
-    setProviderPopup,
     serviceId,
     selectedDate,
     selectedTime,
@@ -52,6 +51,9 @@ const ProviderPopup = ({
     radiusKm)
 
   console.log('the selected time', selectedTime)
+  useEffect(() => {
+  console.log("Updated coordinates in popup:", latitude, longitude);
+}, [latitude, longitude]);
 
   const initialFilters: FilterParams = {
     experience: 0,
@@ -100,8 +102,6 @@ const ProviderPopup = ({
     }
   }, [serviceId, appliedFilters, selectedTime, getProvider]);
 
-  if (!providerPopup) return null;
-
 
   const handleApplyFilters = () => {
     setAppliedFilters(filters);
@@ -126,7 +126,6 @@ const ProviderPopup = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-6xl h-[80vh] flex gap-4">
-        {/* --- Left Column: Provider List --- */}
         <div className="w-1/2 bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
             <div className="flex items-center justify-between">
@@ -159,7 +158,6 @@ const ProviderPopup = ({
 
           <div className="overflow-y-auto h-full pb-20">
             <div className="p-4 space-y-3">
-              {/* Filter Section */}
               <div
                 className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
                   }`}
@@ -220,7 +218,6 @@ const ProviderPopup = ({
                 </div>
               </div>
 
-              {/* Provider Cards */}
               {allProviders.length > 0 ? (
                 allProviders.map((provider) => (
                   <div
@@ -281,7 +278,6 @@ const ProviderPopup = ({
           </div>
         </div>
 
-        {/* --- Right Column: Provider Details --- */}
         <div className="w-1/2 bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-green-600 to-green-700 p-4 text-white flex justify-between items-center">
             <h3 className="text-xl font-bold">Provider Details</h3>
@@ -296,7 +292,6 @@ const ProviderPopup = ({
           <div className="overflow-y-auto h-full pb-20">
             {selectedProvider ? (
               <div className="p-6 space-y-6">
-                {/* Profile Header */}
                 <div className="text-center border-b pb-6">
                   <img
                     src={getCloudinaryUrl(selectedProvider.profilePhoto)}
@@ -364,7 +359,6 @@ const ProviderPopup = ({
                   )}
                 </div>
 
-                {/* Price & Experience */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 text-blue-600 mb-1">
@@ -388,7 +382,6 @@ const ProviderPopup = ({
                   </div>
                 </div>
 
-                {/* --- UPDATED SECTION: Availability + Location + Contact --- */}
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
@@ -427,7 +420,6 @@ const ProviderPopup = ({
                   </div>
                 </div>
 
-                {/* About Section */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h5 className="font-medium text-gray-900 mb-2">About</h5>
                   <p className="text-gray-700 text-sm leading-relaxed">
@@ -436,7 +428,6 @@ const ProviderPopup = ({
                   </p>
                 </div>
 
-                {/* Select Button */}
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setProviderPopup(false)}

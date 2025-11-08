@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2 } from 'lucide-react';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
-import type { ICategoryResponse } from '../../util/interface/ICategory';
+import type { ICategoryResponse, IserviceResponse } from '../../util/interface/ICategory';
 import type { IFeaturedProviders } from '../../util/interface/IProvider';
 import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { CompanyInfo } from '../../CompanyInfo';
 import { toast } from 'react-toastify';
 import { ChatbotMessage } from '../../util/interface/IChatBot';
 import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/IChatBot';
+import { chatbotService } from '../../services/chatBotService';
+import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
+
 
 
 const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
@@ -86,16 +88,19 @@ const Home: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [featuredProviders, setFeaturedProviders] = useState<IFeaturedProviders[]>([]);
-    const [popularServices, setPopularServices] = useState<ICategoryResponse[]>([]);
-    const [trendingServices, setTrendingServices] = useState<ICategoryResponse[]>([]);
+    const [popularServices, setPopularServices] = useState<IserviceResponse[]>([]);
+    const [trendingServices, setTrendingServices] = useState<IserviceResponse[]>([]);
+    
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatbotMessage[]>([{
         hideInChat: true,
         role: "model",
-        text: CompanyInfo,
+        text: AI_SYSTEM_PROMPT,
         timestamp: new Date(),
-        id: 'company-info'
+        id: 'system-prompt'
     }]);
-    const [showChatbot, setShowChatbot] = useState<boolean>(false);
+    const [showChatbot, setShowChatbot] = useState<boolean>(false);    
+    
     const [isMinimized, setIsMinimized] = useState<boolean>(false);
     const [unreadCount, setUnreadCount] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState<string>("");
@@ -128,47 +133,37 @@ const Home: React.FC = () => {
     }, [showChatbot, isMobile]);
 
     useEffect(() => {
-        const loadCategories = async (): Promise<void> => {
+        const loadHomePageData = async (): Promise<void> => {
             setIsLoading(true);
             setError(null);
 
             try {
-                const [categories, providersResponse] = await Promise.all([
-                    categoryService.getAllCategories(),
-                    providerService.getFeaturedProviders()
+                const [
+                    categoriesResponse, 
+                    providersResponse, 
+                    popularResponse, 
+                    trendingResponse
+                ] = await Promise.all([
+                    categoryService.getTopLevelCategories(),
+                    providerService.getFeaturedProviders(),
+                    categoryService.getPopularServices(),
+                    categoryService.getTrendingServices()
                 ]);
 
-                if (!categories) {
-                    throw new Error('Failed to fetch categories');
-                }
-
-                setFetchedCategories(categories);
+                setFetchedCategories(categoriesResponse || []);
                 setFeaturedProviders(providersResponse.providers || []);
-
-                const allSubCategories: ICategoryResponse[] = [];
-                categories.forEach(cat => {
-                    if (cat.subCategories && cat.subCategories.length > 0) {
-                        const activeSubCategories = cat.subCategories.filter(sub => sub.status === true);
-                        allSubCategories.push(...activeSubCategories);
-                    }
-                });
-
-                const lifoSubCategories = [...allSubCategories].reverse();
-                const numPopular = 5;
-                const numTrending = 6;
-
-                setPopularServices(lifoSubCategories.slice(0, numPopular));
-                setTrendingServices(lifoSubCategories.slice(numPopular, numPopular + numTrending));
+                setPopularServices(popularResponse || []);
+                setTrendingServices(trendingResponse || []);
 
             } catch (err) {
                 console.error("Failed to fetch data:", err);
-                setError(err instanceof Error ? err.message : "Failed to load data. Please try again later.");
+                setError(err instanceof Error ? err.message : "Failed to load data.");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        loadCategories();
+        loadHomePageData();
     }, []);
 
     useEffect(() => {
@@ -194,59 +189,49 @@ const Home: React.FC = () => {
         }
     }, [showChatbot]);
 
-    const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
-        const updateHistory = (text: string, isError: boolean = false): void => {
-            const newMessage: ChatbotMessage = {
-                role: "model",
-                text,
-                isError,
-                timestamp: new Date(),
-                id: Date.now().toString()
-            };
-
-            setChatHistory(prev => [
-                ...prev.filter(msg => msg.text !== "Thinking..."),
-                newMessage
-            ]);
+    useEffect(() => {
+        const initChat = async () => {
+            try {
+                const sId = await chatbotService.startOrGetSession();
+                setSessionId(sId);
+                const history = await chatbotService.getHistory(sId);
+                setChatHistory(history);
+            } catch (error) {
+                toast.error("Could not connect to chatbot.");
+            }
         };
+        initChat();
+    }, []);
 
-        const apiHistory = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-        const apiUrl = import.meta.env.VITE_GOOGLE_API_URL;
-
-        if (!apiKey || !apiUrl) {
-            setTimeout(() => {
-                updateHistory("Thank you for your message! This is a demo response. In a real implementation, this would connect to your Google AI API.");
-            }, 1000);
+    const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
+        if (!sessionId) {
+            toast.error("Chat session not initialized.");
             return;
         }
 
-        const requestOptions: RequestInit = {
-            method: "POST",
-            headers: {
-                "x-goog-api-key": apiKey,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ contents: apiHistory })
-        };
-
+        const userMessage = history[history.length - 1].text;
+        
         try {
-            const response = await fetch(apiUrl, requestOptions);
-            const data = await response.json();
+            const botResponse = await chatbotService.sendMessage(sessionId, userMessage);
+            
+            setChatHistory(prev => [
+                ...prev, 
+                { ...botResponse, timestamp: new Date(), id: Date.now().toString() }
+            ]);
 
-            if (!response.ok) {
-                throw new Error(data.error?.message || "Something went wrong!");
-            }
-
-            const apiResponseText = data.candidates[0].content.parts[0].text
-                .replace(/\*\*(.*?)\*\*/g, "$1")
-                .trim();
-            updateHistory(apiResponseText);
         } catch (error: any) {
-            console.error('API Error:', error);
-            updateHistory(error.message || "Sorry, I'm experiencing technical difficulties.", true);
+            setChatHistory(prev => [
+                ...prev,
+                { 
+                    role: 'model', 
+                    text: error.message || "Sorry, I'm having trouble connecting.", 
+                    isError: true, 
+                    timestamp: new Date(),
+                    id: Date.now().toString()
+                }
+            ]);
         }
-    }, []);
+    }, [sessionId]);
 
     const toggleChatbot = useCallback((): void => {
         setShowChatbot(prev => !prev);
@@ -361,8 +346,8 @@ const Home: React.FC = () => {
                             .slice(0, 4)
                             .map((category) => (
                                 <Link
-                                    to={`/booking_serviceList/${category._id}`}
-                                    key={category._id}
+                                    to={`/booking_serviceList/${category.id}`}
+                                    key={category.id}
                                     className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
@@ -388,12 +373,12 @@ const Home: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                             {popularServices.map((service) => (
                                 <Link
-                                    to={`/service-detailsPage/${service._id}`}
-                                    key={service._id}
+                                    to={`/service-detailsPage/${service.id}`}
+                                    key={service.id}
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <img
-                                        src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'}
+                                        src={service.iconUrl ? getCloudinaryUrl(service.iconUrl) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
                                         alt={`${service.name} service`}
                                         className="w-full h-48 object-cover"
                                     />
@@ -424,12 +409,12 @@ const Home: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
                             {trendingServices.map((service) => (
                                 <Link
-                                    to={`/service-detailsPage/${service._id}`}
-                                    key={service._id}
+                                    to={`/service-detailsPage/${service.id}`}
+                                    key={service.id}
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <img
-                                        src={getCloudinaryUrl(service.iconUrl) || 'https://via.placeholder.com/150?text=Service'}
+                                        src={service.iconUrl ? getCloudinaryUrl(service.iconUrl) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
                                         alt={`${service.name} service`}
                                         className="w-full h-48 object-cover"
                                     />

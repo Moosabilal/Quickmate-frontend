@@ -338,28 +338,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
-                            {/* {(booking.status !== BookingStatus.COMPLETED && booking.status !== BookingStatus.CANCELLED) &&
-                              // <><button
-                              //   onClick={() => window.open(`tel:${booking.customerPhone}`)}
-                              //   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-300"
-                              //   title="Call Customer"
-                              // >
-                              //   <Phone className="w-5 h-5" />
-                              // </button>
-                              <button
-                                onClick={() => {
-                                  console.log('the joininng id', `${booking.customerId}-${provider.id}`)
-
-                                  navigate('/provider/providerBookingManagement/providerLiveChat', { state: { bookingId: booking.id, name: booking.customerName, joiningId: `${booking.customerId}-${provider.id}` } })
-                                }}
-                                className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-300"
-                                title="Message Customer"
-                              >
-                                <MessageCircle className="w-5 h-5"
-                                />
-                              </button>
-                              // </>
-                            } */}
+                            
                           </div>
                         </div>
 

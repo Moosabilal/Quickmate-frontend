@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "vite-env.d.ts"]
+  "include": ["src", "vite-env.d.ts", "../Quickmate-backend/src/utils/helperFunctions/geocoder.ts"]
 }

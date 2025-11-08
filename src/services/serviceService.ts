@@ -7,6 +7,7 @@ export const serviceService = {
 
     createdService: async (formData: FormData) => {
         try {
+            console.log('coming')
             const response = await axiosInstance.post(`${SERVICE_URL}/addService`, formData);
             return response.data;
         } catch (error) {

@@ -13,6 +13,7 @@ import { ChatbotMessage } from '../../util/interface/IChatBot';
 import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/IChatBot';
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
+import { useAppSelector } from '../../hooks/useAppSelector';
 
 
 
@@ -106,6 +107,8 @@ const Home: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isMobile, setIsMobile] = useState<boolean>(false);
 
+    const userId = useAppSelector((state) => state.auth.user?.id);
+
     const chatBodyRef = useRef<HTMLDivElement | null>(null);
     const lastMessageRef = useRef<string>("");
 
@@ -192,9 +195,11 @@ const Home: React.FC = () => {
     useEffect(() => {
         const initChat = async () => {
             try {
-                const sId = await chatbotService.startOrGetSession();
+                const sId = await chatbotService.startOrGetSession(userId);
+                console.log('erro in getting session is')
                 setSessionId(sId);
                 const history = await chatbotService.getHistory(sId);
+                console.log('error in getting history')
                 setChatHistory(history);
             } catch (error) {
                 toast.error("Could not connect to chatbot.");

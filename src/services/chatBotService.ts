@@ -5,14 +5,15 @@ const CHATBOT_URL = '/chatbot';
 const SESSION_ID_KEY = 'chatbot_session_id';
 
 export const chatbotService = {
-    startOrGetSession: async (): Promise<string> => {
+    startOrGetSession: async (userId?: string): Promise<string> => {
         const storedSessionId = localStorage.getItem(SESSION_ID_KEY);
         if (storedSessionId) {
             return storedSessionId;
         }
         
         try {
-            const response = await axiosInstance.post(`${CHATBOT_URL}/session`);
+            const response = await axiosInstance.post(`${CHATBOT_URL}/session/${userId}`);
+            console.log('respones session id', response.data)
             
             const newSessionId = response.data.sessionId;
 

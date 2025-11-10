@@ -4,7 +4,10 @@ import {
     Plus,
     Edit3,
     Trash2,
-    IndianRupee
+    IndianRupee,
+    Briefcase,
+    Wrench,
+    Crown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -111,6 +114,13 @@ const ProviderServicesPage: React.FC = () => {
         setServiceToDelete(service);
         setShowDeleteModal(true);
     };
+    
+    const handleSubscriptionButtonClick = () => {
+        setIsModalOpen(true);
+    };
+
+    const isSubscribed = provider.subscription && 
+                        provider.subscription.status === "ACTIVE";
 
     const handleDeleteConfirm = async () => {
         if (!serviceToDelete) return;
@@ -204,6 +214,15 @@ const ProviderServicesPage: React.FC = () => {
         setServiceToDelete(null);
     };
 
+    const serviceAddFunction = () => {
+        if(provider.status === "Approved") {
+            navigate('/provider/providerService/new')
+        } else {
+            toast.info("You should be Approved by admin to add service")
+        }
+    }
+
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -224,12 +243,31 @@ const ProviderServicesPage: React.FC = () => {
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Services</h1>
                                 <p className="text-gray-600">Manage your service offerings and certificates</p>
                             </div>
-                            {services.length > 0 && <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/25"
-                                onClick={handleAddNewService}
-                            >
-                                <Plus className="w-5 h-5" />
-                                Add a service
-                            </button>}
+                            <div className="flex items-center gap-3">
+                                {/* Subscription/Upgrade Button */}
+                                <button 
+                                    onClick={handleSubscriptionButtonClick}
+                                    className={`${
+                                        isSubscribed 
+                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700' 
+                                            : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
+                                    } text-white px-6 py-3 rounded-xl transition-all flex items-center gap-2 font-medium shadow-lg`}
+                                >
+                                    <Crown className="w-5 h-5" />
+                                    {isSubscribed ? 'Upgrade Plan' : 'Subscribe Now'}
+                                </button>
+
+                                {/* Add Service Button */}
+                                {services.length > 0 && (
+                                    <button 
+                                        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/25"
+                                        onClick={handleAddNewService}
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        Add a service
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -302,13 +340,36 @@ const ProviderServicesPage: React.FC = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-20">
-                                    <p className="text-gray-500 text-lg mb-4">You haven't added any services yet.</p>
+                                <div className="col-span-full text-center py-16">
+                                    <div className="mb-8 flex justify-center">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-blue-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+
+                                            <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-12 border-2 border-blue-100">
+                                                <div className="flex items-center justify-center gap-4">
+                                                    <div className="bg-white p-4 rounded-2xl shadow-lg transform -rotate-6 hover:rotate-0 transition-transform">
+                                                        <Briefcase className="w-12 h-12 text-blue-600" />
+                                                    </div>
+                                                    <div className="bg-white p-4 rounded-2xl shadow-lg transform rotate-6 hover:rotate-0 transition-transform">
+                                                        <Wrench className="w-12 h-12 text-indigo-600" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                                        Start Offering Your Services
+                                    </h3>
+                                    <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
+                                        Showcase your expertise and connect with customers looking for your skills.
+                                    </p>    
+
                                     <button
-                                        onClick={() => provider.status === "Pending" ? toast.info("You should be activated by admin to add service ") : navigate(`/provider/providerService/new`)}
-                                        className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                        onClick={serviceAddFunction}
+                                        className="inline-flex items-center px-6 py-3 text-base font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl"
                                     >
-                                        <Plus className="w-4 h-4 mr-2" />
+                                        <Plus className="w-5 h-5 mr-2" />
                                         Add Your First Service
                                     </button>
                                 </div>

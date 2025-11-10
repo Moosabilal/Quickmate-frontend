@@ -1,12 +1,15 @@
 import axios from 'axios';
 import config from './config';
 import { authService } from '../services/authService';
+import { logout } from '../features/auth/authSlice';
 
 const axiosInstance = axios.create({
   baseURL: config.API_BASE_URL,
   withCredentials: true
 
 });
+
+export const setupInterceptors = (store: any) => {
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -18,6 +21,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+
     return Promise.reject(error);
   }
 );
@@ -42,6 +46,7 @@ axiosInstance.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error('🔁 Refresh token failed:', refreshError);
+        store.dispatch(logout());
         window.location.href = '/login';
       }
     }
@@ -67,6 +72,6 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error.response.data || "Something went wrong!, Please try again later");
   }
 );
-
+}
 
 export default axiosInstance;

@@ -11,7 +11,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 
 
-const USERS_PER_PAGE = 2
+const USERS_PER_PAGE = 4
 
 
 const AdminProvidersPage: React.FC = () => {

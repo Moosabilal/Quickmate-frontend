@@ -1,4 +1,4 @@
-import { Calendar, User, Settings, Star, IndianRupee, LayoutDashboard, Clock, MessageSquare } from 'lucide-react';
+import { Calendar, User, Settings, Star, IndianRupee, LayoutDashboard, Clock, MessageSquare, CreditCard } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Link, useLocation } from 'react-router-dom';
@@ -15,6 +15,7 @@ const Sidebar = () => {
   { icon: <Settings className="w-5 h-5" />, label: 'Services', path: `/provider/providerService` },
   { icon: <Calendar className="w-5 h-5" />, label: 'Bookings', path: `/provider/providerBookingManagement` },
   { icon: <Clock className="w-5 h-5" />, label: 'Availability', path: '/provider/availability' },
+  { icon: <CreditCard className="w-5 h-5" />, label: 'Subscription', path: '/provider/subscription' },
   { icon: <Star className="w-5 h-5" />, label: 'Performance', path: `/provider/performanceDashboard` },
   { icon: <IndianRupee className="w-5 h-5" />, label: 'Earnings', path: `/provider/earningsAnalitics` },
   { icon: <MessageSquare className="w-5 h-5" />, label: 'Live Chat',  path: '/chat' },

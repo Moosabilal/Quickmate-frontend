@@ -79,6 +79,7 @@ export const authService = {
 
   getUser: async () => {
     try {
+      console.log('how much time called')
       const response = await axiosInstance.get(`${API_URL}/getUser`);
       return response.data;
     } catch (error) {

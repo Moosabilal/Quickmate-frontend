@@ -196,10 +196,8 @@ const Home: React.FC = () => {
         const initChat = async () => {
             try {
                 const sId = await chatbotService.startOrGetSession(userId);
-                console.log('erro in getting session is')
                 setSessionId(sId);
                 const history = await chatbotService.getHistory(sId);
-                console.log('error in getting history')
                 setChatHistory(history);
             } catch (error) {
                 toast.error("Could not connect to chatbot.");

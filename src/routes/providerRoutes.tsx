@@ -12,6 +12,7 @@ const ProviderServicesPage = lazy(() => import('../pages/provider/ProviderServic
 const ServiceManagementPage = lazy(() => import('../pages/provider/Add&EditServices'));
 const ProviderBookingManagementPage = lazy(() => import('../pages/provider/bookings'));
 const ProviderAvailabilityPage = lazy(() => import('../pages/provider/ProviderAvailabilityPage'));
+const ProviderSubscriptionPage = lazy(() => import('../pages/provider/ProviderSubscriptionPage'));
 
 
 const providerRoutes = [
@@ -27,6 +28,7 @@ const providerRoutes = [
                 { path: '/provider/providerBookingManagement', element: <ProviderBookingManagementPage /> },
 
                 { path: '/provider/availability', element: <ProviderAvailabilityPage /> },
+                { path: '/provider/subscription', element: <ProviderSubscriptionPage /> },
 
                 { path: '/provider/earningsAnalitics', element: <EarningsAnalytics /> },
                 { path: 'provider/performanceDashboard', element: <PerformanceDashboard /> }

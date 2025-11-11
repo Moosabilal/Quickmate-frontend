@@ -12,8 +12,7 @@ export const chatbotService = {
         }
         
         try {
-            const response = await axiosInstance.post(`${CHATBOT_URL}/session/${userId}`);
-            console.log('respones session id', response.data)
+            const response = await axiosInstance.post(`${CHATBOT_URL}/session`, {userId});
             
             const newSessionId = response.data.sessionId;
 

@@ -15,7 +15,7 @@ export const subscriptionPlanService = {
         }
     },
 
-    getSubscriptionPlan: async (search: string) => {
+    getSubscriptionPlan: async (search?: string) => {
         try {
             const response = await axiosInstance.get(`${SUBSCRIPTIONPLAN_URL}/getSubscriptionPlan`, {params: {search}});
             return response.data;
@@ -51,6 +51,17 @@ export const subscriptionPlanService = {
         }
     },
 
+    calculateUpgrade: async (planId: string) => {
+        try {
+            // providerId is handled by the backend's AuthRequest
+            const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/calculate-upgrade`, { newPlanId: planId });
+            return response.data.data; // Returns { order, newPlan, finalAmount, ... }
+        } catch (error) {
+            handleAxiosError(error, "Failed to calculate upgrade cost.");
+            throw error;
+        }
+    },
+
     verifySubscriptionPayment: async (
         providerId: string,
         planId: string,
@@ -59,6 +70,13 @@ export const subscriptionPlanService = {
         razorpay_signature: string
     ) => {
         try {
+
+            console.log('the payment verification details', providerId)
+            console.log(planId)
+            console.log(razorpay_order_id)
+            console.log(razorpay_payment_id)
+            console.log(razorpay_signature)
+
             const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/verify-payment`, {
                 providerId,
                 planId,

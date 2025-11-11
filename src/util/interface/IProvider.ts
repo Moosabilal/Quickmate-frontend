@@ -1,17 +1,12 @@
 import React from "react";
 import { BookingStatus } from "./IBooking";
+import { SubscriptionStatus } from "./ISubscriptionPlan";
 
 export enum ProviderStatus {
   Active = 'Approved',
   InActive = 'Rejected',
   Suspended = 'Suspended',
   Pending = 'Pending',
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = "ACTIVE",
-  EXPIRED = "EXPIRED",
-  NONE = "NONE"
 }
 
 export interface Availability {

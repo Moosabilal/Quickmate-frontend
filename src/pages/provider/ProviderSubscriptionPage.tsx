@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { subscriptionPlanService } from '../../services/subscriptionPlanService';
-import { IPlan, ISubscription, IUpgradeCostResponse } from '../../util/interface/ISubscriptionPlan';
+import { ActiveModalState, IPlan, ISubscription } from '../../util/interface/ISubscriptionPlan';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { CheckCircle, Clock, CreditCard, Loader2, Zap } from 'lucide-react';
+import { ArrowDownCircle, CheckCircle, Clock, Loader2, X, Zap } from 'lucide-react';
 import { IProviderProfile } from '../../util/interface/IProvider';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
-import { UpgradeConfirmationModal } from '../../components/provider/UpgradeConfirmationModal';
+import { SubscriptionActionModal } from '../../components/provider/SubscriptionActionModal';
 
-// We need to declare Razorpay for TypeScript
 declare var Razorpay: any;
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-// Helper to format dates
 const formatDate = (dateString?: Date) => {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -23,20 +21,20 @@ const formatDate = (dateString?: Date) => {
   });
 };
 
+
+
 const ProviderSubscriptionPage: React.FC = () => {
   const [allPlans, setAllPlans] = useState<IPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Get provider info from Redux
   const { provider } = useAppSelector((state) => state.provider);
-  const { user } = useAppSelector((state) => state.auth);
   
   const [currentSubscription, setCurrentSubscription] = useState<ISubscription | null>(provider?.subscription || null);
   const [currentPlanDetails, setCurrentPlanDetails] = useState<IPlan | null>(null);
 
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [modalData, setModalData] = useState<{ plan: IPlan, details: IUpgradeCostResponse } | null>(null);
+const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
+  const isModalOpen = !!modalConfig;
 
   const dispatch = useAppDispatch();
 
@@ -46,10 +44,11 @@ const ProviderSubscriptionPage: React.FC = () => {
       const plans = await subscriptionPlanService.getSubscriptionPlan();
       setAllPlans(plans);
 
-      // Find the provider's current plan details
       if (currentSubscription?.planId && plans.length > 0) {
-        const current = plans.find((p: IPlan) => p.id === currentSubscription.planId);
+        const current = plans.find((p: IPlan) => (p.id || p._id) === currentSubscription.planId);
         setCurrentPlanDetails(current || null);
+      } else {
+        setCurrentPlanDetails(null); 
       }
     } catch (err) {
       toast.error(`${err instanceof Error ? err.message : `${err}` || "Failed to load subscription plans."}`);
@@ -62,12 +61,20 @@ const ProviderSubscriptionPage: React.FC = () => {
     fetchPlans();
   }, [fetchPlans]);
 
-  // Main payment handler
+  useEffect(() => {
+    setCurrentSubscription(provider?.subscription || null);
+  }, [provider]);
+
   const handlePayment = (
     order: any, 
     plan: IPlan,
     onSuccessMessage: string
   ) => {
+    const planId = plan.id || plan._id;
+    if (!provider?.id || !planId) {
+        toast.error("Provider or Plan ID is missing.");
+        return;
+    }
     const options = {
       key: paymentKey,
       amount: order.amount,
@@ -79,8 +86,8 @@ const ProviderSubscriptionPage: React.FC = () => {
         try {
           setIsProcessing(true);
           const verifyData = await subscriptionPlanService.verifySubscriptionPayment(
-            provider.id!, // We know provider exists if this is called
-            plan._id!,
+            provider.id!,
+            planId,
             response.razorpay_order_id,
             response.razorpay_payment_id,
             response.razorpay_signature
@@ -89,9 +96,10 @@ const ProviderSubscriptionPage: React.FC = () => {
           console.log('the verified data', verifyData)
           
           toast.success(onSuccessMessage);
-          setCurrentSubscription(verifyData.provider.subscription);
-          dispatch(updateProviderProfile(verifyData.provider));
+          // setCurrentSubscription(verifyData.provider.subscription);
+          dispatch(updateProviderProfile({ provider: verifyData.provider }));
         } catch (err) {
+          console.log('payment verification failed : ', err)
           toast.error("Payment verification failed. Please contact support.");
         } finally {
           setIsProcessing(false);
@@ -109,17 +117,41 @@ const ProviderSubscriptionPage: React.FC = () => {
     rzp1.open();
   };
 
-  // --- Button Click Handlers ---
+  const handleConfirmAction = async () => {
+    if (!modalConfig) return;
 
-  const handleConfirmUpgrade = () => {
-    if (!modalData) return;
+    if (modalConfig.type === 'upgrade' && modalConfig.details && modalConfig.newPlan) {
+      handlePayment(modalConfig.order, modalConfig.newPlan, "Upgrade successful!");
+      setModalConfig(null);
+      return;
+    }
+
+    setIsProcessing(true);
     
-    // Call the payment handler with the data we saved in state
-    handlePayment(modalData.details.order, modalData.details.newPlan, "Upgrade successful!");
+    if (modalConfig.type === 'downgrade' && modalConfig.plan) {
+      try {
+        const response = await subscriptionPlanService.scheduleDowngrade(modalConfig.plan.id!);
+        const updatedProvider = { ...provider, subscription: response.data } as IProviderProfile;
+        dispatch(updateProviderProfile({ provider: updatedProvider }));
+        toast.success(response.message);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to schedule downgrade.");
+      }
+    }
     
-    // Close the modal
-    setShowUpgradeModal(false);
-    setModalData(null);
+    else if (modalConfig.type === 'cancelDowngrade') {
+      try {
+        const response = await subscriptionPlanService.cancelDowngrade();
+        const updatedProvider = { ...provider, subscription: response.data } as IProviderProfile;
+        dispatch(updateProviderProfile({ provider: updatedProvider }));
+        toast.success(response.message);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to cancel downgrade.");
+      }
+    }
+
+    setIsProcessing(false);
+    setModalConfig(null); 
   };
 
   const onSubscribeClick = async (plan: IPlan) => {
@@ -141,19 +173,23 @@ const ProviderSubscriptionPage: React.FC = () => {
 
   const onUpgradeClick = async (plan: IPlan) => {
     console.log('the selected plan', plan)
-    if (!plan.id) {
+    const planId = plan.id || plan._id;
+    if (!planId) {
         toast.error("Cannot process upgrade, plan ID is missing.");
         return;
     }
     setIsProcessing(true);
     try {
-      const res = await subscriptionPlanService.calculateUpgrade(plan.id);
+      const res = await subscriptionPlanService.calculateUpgrade(planId);
       console.log(res.newPlan)
       
-      setModalData({ plan, details: res });
-      
-      // 3. Open the modal (instead of window.confirm)
-      setShowUpgradeModal(true);
+      setModalConfig({
+        type: 'upgrade',
+        plan: plan,
+        details: res, 
+        order: res.order, 
+        newPlan: res.newPlan 
+      });
     } catch (err: any) {
       toast.error(err.message || "Failed to calculate upgrade cost.");
     } finally {
@@ -161,11 +197,13 @@ const ProviderSubscriptionPage: React.FC = () => {
     }
   };
 
-  const onDowngradeClick = () => {
-    toast.info("Downgrades are not supported yet. Your new plan will be active after your current one expires.");
+  const onDowngradeClick = async (plan: IPlan) => {   
+    setModalConfig({ type: 'downgrade', plan: plan });
   };
 
-  // --- Render Logic ---
+  const onCancelDowngradeClick = async () => {
+    setModalConfig({ type: 'cancelDowngrade' });
+  };
   
   if (loading) {
     return (
@@ -175,13 +213,40 @@ const ProviderSubscriptionPage: React.FC = () => {
     );
   }
 
-  const otherPlans = allPlans.filter(p => p.id !== currentSubscription?.planId);
+  const otherPlans = allPlans.filter(p => (p.id || p._id) !== currentSubscription?.planId);
+  const pendingDowngradePlan = allPlans.find(
+    p => (p.id || p._id) === currentSubscription?.pendingDowngradePlanId
+  );
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">My Subscription</h1>
 
-      {/* --- CURRENT PLAN --- */}
+      {pendingDowngradePlan && currentSubscription?.status === 'ACTIVE' && (
+        <div className="mb-8 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-yellow-800">Downgrade Scheduled</h3>
+                <p className="text-sm text-yellow-700">
+                  You are scheduled to downgrade to the <strong>{pendingDowngradePlan.name}</strong> plan on 
+                  <strong> {formatDate(currentSubscription.endDate)}</strong>.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onCancelDowngradeClick}
+              disabled={isProcessing}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200 disabled:opacity-50"
+            >
+              <X className="w-4 h-4" />
+              Cancel Downgrade
+            </button>
+          </div>
+        </div>
+      )}
+
       {currentSubscription && currentSubscription.status === 'ACTIVE' && currentPlanDetails ? (
         <div className="mb-12">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Your Current Plan</h2>
@@ -210,18 +275,20 @@ const ProviderSubscriptionPage: React.FC = () => {
         </div>
       )}
 
-      {/* --- OTHER PLANS --- */}
       <div>
         <h2 className="text-xl font-semibold text-gray-700 mb-4">
           {currentSubscription?.status === 'ACTIVE' ? 'Upgrade or Change Your Plan' : 'Choose a Plan'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {otherPlans.map(plan => {
-            const isUpgrade = currentPlanDetails && (plan.price || 0) > (currentPlanDetails.price || 0);
-            const isDowngrade = currentPlanDetails && (plan.price || 0) < (currentPlanDetails.price || 0);
+            const currentPrice = currentPlanDetails?.price || 0;
+            const planPrice = plan.price || 0;
+            const isUpgrade = currentPlanDetails && planPrice > currentPrice;
+            const isDowngrade = currentPlanDetails && planPrice < currentPrice;
+            const isDisabled = isProcessing || !!pendingDowngradePlan;
             
             return (
-              <div key={plan.id} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
+              <div key={plan.id || plan._id} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
                 <div className="text-center mb-4">
                   <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
                   <p className="text-3xl font-bold text-blue-600 mt-2">₹{plan.price}</p>
@@ -236,36 +303,41 @@ const ProviderSubscriptionPage: React.FC = () => {
                   ))}
                 </ul>
                 
-                {/* The Smart Button */}
                 <button
                   onClick={() => {
                     if (isUpgrade) onUpgradeClick(plan);
-                    else if (isDowngrade) onDowngradeClick();
-                    else onSubscribeClick(plan); // For new or expired subs
+                    else if (isDowngrade) onDowngradeClick(plan);
+                    else onSubscribeClick(plan);
                   }}
-                  disabled={isProcessing}
+                  disabled={isDisabled}
                   className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2
-                    ${isUpgrade ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-blue-600 text-white hover:bg-blue-700'}
-                    ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${isUpgrade ? 'bg-green-600 text-white hover:bg-green-700' : ''}
+                    ${isDowngrade ? 'bg-gray-700 text-white hover:bg-gray-800' : ''}
+                    ${!isUpgrade && !isDowngrade ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
+                  title={isDisabled && pendingDowngradePlan ? "You already have a pending downgrade." : (isDowngrade ? "Schedule downgrade" : "")}
                 >
                   {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isUpgrade ? 'Upgrade Now' : (isDowngrade ? 'Downgrade' : 'Subscribe')}
                   {isUpgrade && <Zap className="w-4 h-4" />}
+                  {isDowngrade && <ArrowDownCircle className="w-4 h-4" />}
+                  
+                  {isUpgrade ? 'Upgrade Now' : (isDowngrade ? 'Schedule Downgrade' : 'Subscribe')}
                 </button>
               </div>
             );
           })}
         </div>
       </div>
-      {showUpgradeModal && modalData && (
-        <UpgradeConfirmationModal
-          isOpen={showUpgradeModal}
+      {isModalOpen && modalConfig && (
+        <SubscriptionActionModal
+          isOpen={isModalOpen}
           isProcessing={isProcessing}
-          onClose={() => setShowUpgradeModal(false)}
-          onConfirm={handleConfirmUpgrade}
-          plan={modalData.plan}
-          details={modalData.details}
+          onClose={() => { if (!isProcessing) setModalConfig(null); }}
+          onConfirm={handleConfirmAction}
+          actionType={modalConfig.type}
+          plan={modalConfig.plan}
+          details={modalConfig.details}
         />
       )}
     </div>

@@ -200,11 +200,12 @@ const Home: React.FC = () => {
                 const history = await chatbotService.getHistory(sId);
                 setChatHistory(history);
             } catch (error) {
+                console.log('connection to chatbot : ', error)
                 toast.error("Could not connect to chatbot.");
             }
         };
         initChat();
-    }, []);
+    }, [userId]);
 
     const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
         if (!sessionId) {

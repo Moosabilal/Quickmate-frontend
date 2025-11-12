@@ -21,4 +21,16 @@ export const adminService = {
       handleAxiosError(error, "Failed to fetch analytics dashboard data.");
     }
   },
+  
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    try {
+      const response = await axiosInstance.put(`${API_URL}/change-password`, {
+        currentPassword,
+        newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to update password.");
+    }
+  },
 };

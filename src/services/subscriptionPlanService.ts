@@ -62,6 +62,27 @@ export const subscriptionPlanService = {
         }
     },
 
+    scheduleDowngrade: async (planId: string) => {
+        try {
+            const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/schedule-downgrade`, { newPlanId: planId });
+            return response.data; // Returns { success, message, data: ISubscription }
+        } catch (error) {
+            handleAxiosError(error, "Failed to schedule downgrade.");
+            throw error;
+        }
+    },
+
+    cancelDowngrade: async () => {
+        try {
+            // No payload is needed as the providerId is from the auth token
+            const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/cancel-downgrade`);
+            return response.data; // Returns { success, message, data: ISubscription }
+        } catch (error) {
+            handleAxiosError(error, "Failed to cancel downgrade.");
+            throw error;
+        }
+    },
+
     verifySubscriptionPayment: async (
         providerId: string,
         planId: string,
@@ -70,12 +91,6 @@ export const subscriptionPlanService = {
         razorpay_signature: string
     ) => {
         try {
-
-            console.log('the payment verification details', providerId)
-            console.log(planId)
-            console.log(razorpay_order_id)
-            console.log(razorpay_payment_id)
-            console.log(razorpay_signature)
 
             const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/verify-payment`, {
                 providerId,

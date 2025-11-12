@@ -59,7 +59,10 @@ const authSlice = createSlice({
             state,
             action: PayloadAction<{ user: IUser }>
         ) => {
+            console.log('Updating profile with user:', action.payload.user);
+            localStorage.removeItem('userName');
             state.user = action.payload.user;
+            localStorage.setItem('userName', action.payload.user.name);
             state.isAuthenticated = action.payload.user.isVerified || false;
         },
     },

@@ -7,7 +7,6 @@ import {
     IndianRupee,
     Briefcase,
     Wrench,
-    Crown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -115,13 +114,6 @@ const ProviderServicesPage: React.FC = () => {
         setShowDeleteModal(true);
     };
     
-    const handleSubscriptionButtonClick = () => {
-        setIsModalOpen(true);
-    };
-
-    const isSubscribed = provider.subscription && 
-                        provider.subscription.status === "ACTIVE";
-
     const handleDeleteConfirm = async () => {
         if (!serviceToDelete) return;
 
@@ -244,20 +236,7 @@ const ProviderServicesPage: React.FC = () => {
                                 <p className="text-gray-600">Manage your service offerings and certificates</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                {/* Subscription/Upgrade Button */}
-                                <button 
-                                    onClick={handleSubscriptionButtonClick}
-                                    className={`${
-                                        isSubscribed 
-                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700' 
-                                            : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
-                                    } text-white px-6 py-3 rounded-xl transition-all flex items-center gap-2 font-medium shadow-lg`}
-                                >
-                                    <Crown className="w-5 h-5" />
-                                    {isSubscribed ? 'Upgrade Plan' : 'Subscribe Now'}
-                                </button>
 
-                                {/* Add Service Button */}
                                 {services.length > 0 && (
                                     <button 
                                         className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/25"
@@ -416,7 +395,7 @@ const ProviderServicesPage: React.FC = () => {
                             <div className="bg-white rounded-xl p-6 border border-gray-200">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-purple-100 rounded-lg">
-                                        <DollarSign className="w-6 h-6 text-purple-600" />
+                                        <IndianRupee className="w-6 h-6 text-purple-600" />
                                     </div>
                                     <div>
                                         <div className="text-2xl font-bold text-gray-900">${services.reduce((sum, s) => sum + s.price, 0)}</div>

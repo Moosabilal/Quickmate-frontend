@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, Users, Activity } from 'lucide-react';
+import { TrendingUp, Users, Activity, IndianRupee } from 'lucide-react';
 import { providerService } from '../../services/providerService'; 
 import { EarningsAnalyticsData } from '../../util/interface/IProvider';
 
@@ -69,7 +69,7 @@ const EarningsAnalyticsContent: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div className="bg-gradient-to-br from-indigo-500 to-blue-500 rounded-2xl p-6 text-white shadow-xl shadow-indigo-500/20">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center"><DollarSign className="w-6 h-6" /></div>
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center"><IndianRupee className="w-6 h-6" /></div>
               <div className={`flex items-center space-x-1 bg-white/20 px-3 py-1 rounded-full ${earningsChange >= 0 ? 'text-white' : 'text-red-300'}`}>
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-sm font-semibold">{earningsChange}%</span>

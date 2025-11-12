@@ -14,6 +14,7 @@ const UserDetailsPage = lazy(() => import('../pages/admin/UsersDetails'))
 const Bookings = lazy(() => import('../pages/admin/Bookings'))
 const ReviewModerationPage = lazy(() => import('../pages/admin/ReviewModerationPage'));
 const AnalyticsDashboard = lazy(() => import('../pages/admin/AnalyticsDashboard'))
+const AdminProfileSettings = lazy(() => import('../pages/admin/AdminProfileSettings'));
 
 
 import AdminLayout from '../layouts/AdminLayout';
@@ -24,6 +25,7 @@ const adminRoutes = [
       element: <ProtectedRoute roles={['Admin']} />,
       children: [
       { path: '/admin', element: <AdminDashboard /> },
+      { path: '/admin/profile-settings', element: <AdminProfileSettings /> },
       { path: '/admin/users', element: <AdminUsersPage /> },
       { path: '/admin/providers', element: <AdminProvidersPage /> },
       { path: '/admin/categories', element: <CategoryCommissionManagement /> },

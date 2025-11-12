@@ -1,9 +1,18 @@
+export enum ReviewStatus {
+    ALL = 'All',
+    APPROVED = 'Approved',
+    REJECTED = 'Rejected',
+    PENDING = 'Pending',
+    REMOVED = 'Removed',
+}
+
 export interface IReviewAdminFilters {
     page?: number;
     limit?: number;
     search?: string;
     rating?: number;
     sort?: 'newest' | 'oldest';
+    status?: ReviewStatus;
 }
 
 export interface ReviewData {
@@ -13,4 +22,5 @@ export interface ReviewData {
     reviewContent: string;
     rating: number;
     date: string;
+    status: string;
 }

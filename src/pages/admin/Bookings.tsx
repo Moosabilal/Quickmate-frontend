@@ -1,5 +1,5 @@
 import React, { useState, useEffect, JSX } from 'react';
-import { Search, ChevronDown, CheckCircle, Clock, XCircle, ChevronLeft, ChevronRight, DollarSign, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, CheckCircle, Clock, XCircle, ChevronLeft, ChevronRight, Loader2, IndianRupee } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -7,9 +7,9 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const statusStyles: Record<string, { bg: string; text: string; icon: JSX.Element }> = {
-        Paid: { bg: 'bg-green-100', text: 'text-green-800', icon: <DollarSign className="w-4 h-4" /> },
+        Paid: { bg: 'bg-green-100', text: 'text-green-800', icon: <IndianRupee className="w-4 h-4" /> },
         Unpaid: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-        Refunded: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <DollarSign className="w-4 h-4" /> },
+        Refunded: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <IndianRupee className="w-4 h-4" /> },
         Completed: { bg: 'bg-blue-100', text: 'text-blue-800', icon: <CheckCircle className="w-4 h-4" /> },
         Pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
         Canceled: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-4 h-4" /> },
@@ -146,7 +146,7 @@ const BookingLogsPage: React.FC = () => {
                                     bookings.map((booking) => (
                                         <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
                                             <td className="p-4 font-medium text-slate-700">{booking.id}</td>
-                                            <td className="p-4"><div className="flex items-center gap-3"><img src={getCloudinaryUrl(booking.userAvatar)} alt={booking.userName} className="w-9 h-9 rounded-full"/><span>{booking.userName}</span></div></td>
+                                            <td className="p-4"><div className="flex items-center gap-3"><img src={booking.userAvatar ? getCloudinaryUrl(booking.userAvatar) : '/profileImage.png'} alt={booking.userName} className="w-9 h-9 rounded-full"/><span>{booking.userName}</span></div></td>
                                             <td className="p-4">{booking.providerName}</td>
                                             <td className="p-4">{booking.serviceType}</td>
                                             <td className="p-4">{booking.dateTime}</td>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart, Settings } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -14,6 +14,7 @@ const Sidebar = () => {
   { icon: <CalendarCheck className="w-5 h-5" />, label: 'Bookings', path: '/admin/bookings' },
   { icon: <MessageSquareQuote className="w-5 h-5" />, label: 'Review Moderation', path: '/admin/reviewModerationPage' },
   { icon: <BarChart className="w-5 h-5" />, label: 'Analytics', path: '/admin/analyticsDashboard' },
+  { icon: <Settings className="w-5 h-5" />, label: 'Account Settings', path: '/admin/profile-settings' },
 
     // { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];

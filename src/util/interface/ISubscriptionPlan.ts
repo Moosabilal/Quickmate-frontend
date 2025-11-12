@@ -31,6 +31,7 @@ export interface ISubscription {
   startDate: Date;
   endDate: Date;
   status: SubscriptionStatus;
+  pendingDowngradePlanId?: string;
 }
 
 export interface SubscriptionPlansModalProps {
@@ -59,4 +60,37 @@ export interface UpgradeModalProps {
     newPlanPrice: number;
     finalAmount: number;
   };
+}
+
+export type ModalActionType = 'upgrade' | 'downgrade' | 'cancelDowngrade';
+
+
+export interface ModalConfig {
+  type: ModalActionType;
+  title: string;
+  confirmText: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  confirmBg: string;
+  confirmHoverBg: string;
+  message?: React.ReactNode; 
+}
+
+export interface SubscriptionActionModalProps {
+  isOpen: boolean;
+  isProcessing: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  actionType: ModalActionType;
+  plan?: IPlan; 
+  details?: Omit<IUpgradeCostResponse, 'order' | 'newPlan'>; 
+}
+
+
+export type ActiveModalState = {
+  type: ModalActionType;
+  plan?: IPlan;
+  details?: Omit<IUpgradeCostResponse, 'order' | 'newPlan'>;
+  order?: any; 
+  newPlan?: IPlan;
 }

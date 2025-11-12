@@ -8,6 +8,8 @@ import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
 import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateProfile } from '../../features/auth/authSlice';
 
 
 
@@ -48,6 +50,8 @@ const ProfileSetting: React.FC = () => {
 
     const navigate = useNavigate();
 
+    const dispatch = useAppDispatch();
+
     useEffect(() => {
         const fetchAddress = async () => {
             const address = await addressService.getAddress()
@@ -75,11 +79,13 @@ const ProfileSetting: React.FC = () => {
             } else if (typeof editingProfilePicture === 'string' && editingProfilePicture) {
                 formData.append('profilePicture', editingProfilePicture);
             }
-            await authService.updateProfile(formData);
+            const updatedData = await authService.updateProfile(formData);
 
             setName(editingName);
             setEmail(editingEmail);
             setProfilePicture(editingProfilePicture);
+            dispatch(updateProfile({ user: updatedData }));
+
 
             toast.success('profile Updated Successfully')
             setIsEditing(false);

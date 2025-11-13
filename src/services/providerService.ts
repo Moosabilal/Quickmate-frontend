@@ -81,12 +81,12 @@ export const providerService = {
   getProvidersForAdmin: async (filters: {
     search?: string;
     status?: string;
-    verification?: string;
     rating?: string;
     page?: number;
     limit?: number;
   }) => {
     try {
+      console.log('the type of reaign', typeof filters.rating, typeof filters.status)
       const queryParams = new URLSearchParams(filters as any).toString();
       const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderList?${queryParams}`);
       return response.data;

@@ -1,14 +1,46 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Star, Search, ChevronDown, Trash2, UserX, Check, X } from 'lucide-react';
+import { ArrowLeft, Star, Search, ChevronDown, Trash2, UserX, Check, X, CheckCircle } from 'lucide-react';
 import { reviewService } from '../../services/reviewService';
 import { IReviewAdminFilters, ReviewData, ReviewStatus } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';
 import { useDebounce } from '../../hooks/useDebounce';
-import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/authService';
-import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
+import { ReviewAction } from '../../util/interface/IReviewActionModel';
+import ReviewActionModal from '../../components/admin/ReviewActionModal';
+import { StatusBadge } from '../../components/admin/ReviewStatus';
 
+const REVIEWS_PER_PAGE = 10
+
+const ReviewTableRowSkeleton: React.FC = () => (
+    <tr className="animate-pulse">
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="flex space-x-3">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+            </div>
+        </td>
+    </tr>
+);
 
 const ReviewModerationPage: React.FC = () => {
     const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -29,8 +61,8 @@ const ReviewModerationPage: React.FC = () => {
     const [isDateOpen, setIsDateOpen] = useState(false);
 
     const [showModal, setShowModal] = useState(false);
-    const [modalAction, setModalAction] = useState<'reject' | 'ban' | 'approve' | null>(null);
-    const [selectedItem, setSelectedItem] = useState<{ id: string, name: string, type: DeleteConfirmationTypes } | null>(null);
+    const [modalAction, setModalAction] = useState<ReviewAction | null>(null);
+   const [selectedReview, setSelectedReview] = useState<ReviewData | null>(null);
 
     const ratingOptions = ['All', '5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'];
     const dateOptions = ['Newest', 'Oldest'];
@@ -47,7 +79,7 @@ const ReviewModerationPage: React.FC = () => {
         try {
             const filters: IReviewAdminFilters = {
                 page: pagination.page,
-                limit: 10,
+                limit: REVIEWS_PER_PAGE,
                 sort: selectedDate.toLowerCase() as 'newest' | 'oldest',
                 status: activeTab,
             };
@@ -104,48 +136,66 @@ const ReviewModerationPage: React.FC = () => {
     };
 
     const handleApproveClick = (review: ReviewData) => {
-        setSelectedItem({ id: review.id, name: `review by ${review.user.name}`, type: DeleteConfirmationTypes.REVIEW });
-        setModalAction('approve');
+        setModalAction(activeTab === ReviewStatus.REMOVED ? 're-approve' : 'approve');
+        setSelectedReview(review);
         setShowModal(true);
     };
 
     const handleRejectClick = (review: ReviewData) => {
-        setSelectedItem({ id: review.id, name: `review by ${review.user.name}`, type: DeleteConfirmationTypes.REVIEW });
         setModalAction('reject');
+        setSelectedReview(review);
         setShowModal(true);
     };
 
     const handleBanClick = (review: ReviewData) => {
-        setSelectedItem({ id: review.id, name: review.user.name, type: DeleteConfirmationTypes.PROFILE }); // Use PROFILE type
-        setModalAction('ban');
+        setModalAction(review.user.isVerified ? 'ban' : 'unban');
+        setSelectedReview(review);
         setShowModal(true);
     };
 
     const handleModalClose = () => {
         setShowModal(false);
-        setSelectedItem(null);
-        setModalAction(null);
+        // Delay clearing data to allow modal to fade out
+        setTimeout(() => {
+            setSelectedReview(null);
+            setModalAction(null);
+        }, 300);
     };
 
     const handleConfirmAction = async () => {
-        if (!modalAction || !selectedItem) return;
+        if (!modalAction || !selectedReview) return;
 
         setIsProcessing(true);
         try {
-            if (modalAction === 'approve') {
-                await reviewService.updateReviewStatus(selectedItem.id, ReviewStatus.APPROVED);
-                toast.success(`Review has been approved.`);
-            } else if (modalAction === 'reject') {
-                // Soft delete by setting status to 'REMOVED'
-                await reviewService.updateReviewStatus(selectedItem.id, ReviewStatus.REMOVED);
-                toast.warn(`Review from ${selectedItem.name} has been removed.`);
-            } else if (modalAction === 'ban') {
-                // Ban the user by toggling their status
-                const response = await authService.updateUser(selectedItem.id);
-                toast.success(response.message);
-                // No need to refetch reviews, but you might want to update user status locally if displayed
+            switch (modalAction) {
+                case 'approve':
+                case 're-approve':
+                    await reviewService.updateReviewStatus(selectedReview.id, ReviewStatus.APPROVED);
+                    toast.success(`Review has been approved.`);
+                    break;
+                case 'reject':
+                    await reviewService.updateReviewStatus(selectedReview.id, ReviewStatus.REMOVED);
+                    toast.warn(`Review from ${selectedReview.user.name} has been removed.`);
+                    break;
+                case 'ban':
+                case 'unban':{
+                    const response = await authService.updateUser(selectedReview.user.id);
+                    toast.success(response.message);
+                    // Manually update UI state
+                    setReviews(prevReviews => 
+                        prevReviews.map(r => 
+                            r.user.id === selectedReview.user.id 
+                            ? { ...r, user: { ...r.user, isVerified: !r.user.isVerified } } 
+                            : r
+                        )
+                    );
+                }
+                    break;
             }
-            fetchReviews();
+            
+            if (modalAction !== 'ban' && modalAction !== 'unban') {
+                fetchReviews(); // Refetch review list
+            }
             handleModalClose();
         } catch (err: any) {
             toast.error(err.message || "An error occurred.");
@@ -154,35 +204,6 @@ const ReviewModerationPage: React.FC = () => {
         }
     };
 
-    const getModalConfig = () => {
-        if (!modalAction || !selectedItem) return {};
-
-        switch (modalAction) {
-            case 'approve':
-                return {
-                    title: 'Approve Review',
-                    confirmText: 'Approve',
-                    message: `Are you sure you want to approve this review? It will become public.`,
-                    type: DeleteConfirmationTypes.REVIEW // Can reuse this type
-                };
-            case 'reject':
-                return {
-                    title: 'Reject Review',
-                    confirmText: 'Reject & Remove',
-                    message: `Are you sure you want to reject this review? It will be moved to the 'Removed' tab.`,
-                    type: DeleteConfirmationTypes.REVIEW
-                };
-            case 'ban':
-                return {
-                    title: 'Ban User',
-                    confirmText: 'Ban User',
-                    message: `Are you sure you want to ban ${selectedItem.name}? This will block their account.`,
-                    type: DeleteConfirmationTypes.PROFILE
-                };
-            default:
-                return {};
-        }
-    };
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -246,7 +267,7 @@ const ReviewModerationPage: React.FC = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {isLoading ? (
-                                    <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Loading reviews...</td></tr>
+                                    [...Array(5)].map((_, i) => <ReviewTableRowSkeleton key={i} />)
                                 ) : error ? (
                                     <tr><td colSpan={6} className="px-6 py-8 text-center text-red-500">{error}</td></tr>
                                 ) : reviews.length > 0 ? (
@@ -257,7 +278,9 @@ const ReviewModerationPage: React.FC = () => {
                                             <td className="px-6 py-4 max-w-sm text-sm text-gray-700"><p className="line-clamp-2">{review.reviewContent}</p></td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{renderStars(review.rating)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{review.date}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{review.status}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <StatusBadge status={review.status} />
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div className="flex space-x-3">
                                                     {activeTab === ReviewStatus.PENDING && (
@@ -282,9 +305,15 @@ const ReviewModerationPage: React.FC = () => {
                                                         </button>
                                                     )}
                                                     <span className="text-gray-300">|</span>
-                                                    <button onClick={() => handleBanClick(review)} className="flex items-center gap-1 text-red-600 hover:text-red-900">
-                                                        <UserX className="w-4 h-4" /> Ban User
-                                                    </button>
+                                                    {review.user.isVerified ? (
+                                                        <button onClick={() => handleBanClick(review)} className="flex items-center gap-1 text-red-600 hover:text-red-900">
+                                                            <UserX className="w-4 h-4" /> Ban User
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={() => handleBanClick(review)} className="flex items-center gap-1 text-green-600 hover:text-green-900">
+                                                            <CheckCircle className="w-4 h-4" /> Unban User
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -301,24 +330,22 @@ const ReviewModerationPage: React.FC = () => {
                                 currentPage={pagination.page}
                                 totalPages={pagination.totalPages}
                                 total={pagination.total}
-                                limit={10}
+                                limit={REVIEWS_PER_PAGE}
                                 onPageChange={handlePageChange}
                             />
                         </div>
                     )}
                 </div>
             </div>
-            {showModal && selectedItem && (
-                <DeleteConfirmationModal
+            {showModal && selectedReview && modalAction && (
+                <ReviewActionModal
                     isOpen={showModal}
                     onClose={handleModalClose}
                     onConfirm={handleConfirmAction}
                     isLoading={isProcessing}
-                    itemType={selectedItem.type}
-                    itemName={selectedItem.name}
-                    titleProp={getModalConfig().title}
-                    confirmTextProp={getModalConfig().confirmText}
-                    customMessage={getModalConfig().message as string}
+                    action={modalAction}
+                    itemName={modalAction.includes('ban') ? selectedReview.user.name : undefined}
+                    itemDetails={!modalAction.includes('ban') ? selectedReview.reviewContent : undefined}
                 />
             )}
         </div>

@@ -12,7 +12,28 @@ import { toast } from 'react-toastify';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 
-
+const UserTableRowSkeleton: React.FC = () => (
+  <tr className="animate-pulse">
+    <td className="py-4 px-6">
+      <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+    </td>
+    <td className="py-4 px-6">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+    </td>
+    <td className="py-4 px-6">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+    </td>
+    <td className="py-4 px-6">
+      <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+    </td>
+    <td className="py-4 px-6 text-right">
+      <div className="flex justify-end gap-2">
+        <div className="h-6 w-14 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        <div className="h-6 w-14 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      </div>
+    </td>
+  </tr>
+);
 
 const USERS_PER_PAGE = 6;
 
@@ -28,7 +49,7 @@ const AdminUsersPage = () => {
   const [totalUsers, setTotalUsers] = useState(0)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const navigate = useNavigate()
@@ -165,12 +186,11 @@ const AdminUsersPage = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-10 text-gray-500">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-                      Loading users...
-                    </td>
-                  </tr>
+                  <>
+                    {[...Array(USERS_PER_PAGE)].map((_, i) => (
+                      <UserTableRowSkeleton key={i} />
+                    ))}
+                  </>
                 ) : users.length > 0 ? (
                   users.map((user, index) => (
                     <tr key={user.id}>

@@ -84,10 +84,7 @@ const ProviderPopup = ({
           )
         );
 
-        console.log("the filtered params", filteredParams);
-
         const providers = await providerService.getserviceProvider(serviceId, filteredParams);
-        console.log("the providers", providers);
 
         setAllProviders(providers);
       } catch (error: any) {

@@ -119,6 +119,7 @@ export const authService = {
 
   updateUser: async (userId: string) => {
     try {
+      console.log('the userId is', userId)
       const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`);
       return response.data;
     } catch (error) {

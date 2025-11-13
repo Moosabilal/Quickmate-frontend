@@ -6,38 +6,67 @@ import { toast } from 'react-toastify';
 import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 
+const TableRowSkeleton: React.FC = () => (
+  <tr className="animate-pulse">
+    <td className="px-6 py-4">
+      <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+    </td>
+    <td className="px-6 py-4">
+      <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+    </td>
+  </tr>
+);
 
-
-
-
-
-const USERS_PER_PAGE = 4
+const PROVIDER_PER_PAGE = 4
 
 
 const AdminProvidersPage: React.FC = () => {
   const [providers, setProviders] = useState<ProviderList[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [approvalStatus, setApprovalStatus] = useState('All');
-  const [verificationStatus, setVerificationStatus] = useState('All');
   const [ratingFilter, setRatingFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProviders, setTotalProviders] = useState(0);
   const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const ratingOptions = [
+    { label: '5 Stars', value: '5' },
+    { label: '4 Stars', value: '4' },
+    { label: '3 Stars', value: '3' },
+    { label: '2 Stars', value: '2' },
+    { label: '1 Star', value: '1' }
+  ];
 
 
   useEffect(() => {
     const fetchProviders = async () => {
+      setIsLoading(true);
       try {
         const response = await providerService.getProvidersForAdmin({
           search: debouncedSearchTerm || '',
           status: approvalStatus !== 'All' ? approvalStatus : undefined,
-          verification: verificationStatus !== 'All' ? verificationStatus : undefined,
           rating: ratingFilter !== 'All' ? ratingFilter : undefined,
           page: currentPage,
-          limit: USERS_PER_PAGE,
+          limit: PROVIDER_PER_PAGE,
         });
         setProviders(response.data)
         setTotalProviders(response.total)
@@ -47,12 +76,13 @@ const AdminProvidersPage: React.FC = () => {
       } catch (error) {
         setError(`error.response?.data.message`)
         console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProviders();
-  }, [debouncedSearchTerm, approvalStatus, verificationStatus, ratingFilter, currentPage]);
-
+  }, [debouncedSearchTerm, approvalStatus, ratingFilter, currentPage]);
 
   const getStatusClasses = (status: ProviderList['status']) => {
     switch (status) {
@@ -109,26 +139,19 @@ const AdminProvidersPage: React.FC = () => {
 
             </select>
 
-            {/* <select
-              value={verificationStatus}
-              onChange={(e) => setVerificationStatus(e.target.value)}
-              className="px-4 py-2 border rounded-md"
-            >
-              <option value="All">Verification</option>
-              <option value="Verified">Verified</option>
-              <option value="Unverified">Unverified</option>
-            </select>
-
             <select
-              value={ratingFilter}
+              value={ratingFilter} 
               onChange={(e) => setRatingFilter(e.target.value)}
               className="px-4 py-2 border rounded-md"
             >
-              <option value="All">Rating</option>
-              <option value="4.5">4.5+</option>
-              <option value="4.0">4.0+</option>
-              <option value="3.0">3.0+</option>
-            </select> */}
+              <option value="All">All Ratings</option>
+
+              {ratingOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
@@ -147,7 +170,20 @@ const AdminProvidersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                {providers.length > 0 && !error ? (
+                {isLoading ? (
+                  // Show 4 skeleton rows while loading
+                  <>
+                    {[...Array(PROVIDER_PER_PAGE)].map((_, i) => (
+                      <TableRowSkeleton key={i} />
+                    ))}
+                  </>
+                ) : error ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-red-500 text-lg">
+                      {error}
+                    </td>
+                  </tr>
+                ) : providers.length > 0 ? (
                   providers.map((provider) => (
                     <tr key={provider.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4">
@@ -242,7 +278,7 @@ const AdminProvidersPage: React.FC = () => {
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
                     total={totalProviders}
-                    limit={USERS_PER_PAGE}
+                    limit={PROVIDER_PER_PAGE}
                   />
                 </div>
               </div>

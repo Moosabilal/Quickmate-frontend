@@ -1,31 +1,11 @@
-import React, { useState, useEffect, JSX } from 'react';
-import { Search, ChevronDown, CheckCircle, Clock, XCircle, ChevronLeft, ChevronRight, Loader2, IndianRupee } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useDebounce } from '../../hooks/useDebounce';
+import { StatusBadge } from '../../components/admin/BookingStatusBadge';
 
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-    const statusStyles: Record<string, { bg: string; text: string; icon: JSX.Element }> = {
-        Paid: { bg: 'bg-green-100', text: 'text-green-800', icon: <IndianRupee className="w-4 h-4" /> },
-        Unpaid: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-        Refunded: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <IndianRupee className="w-4 h-4" /> },
-        Completed: { bg: 'bg-blue-100', text: 'text-blue-800', icon: <CheckCircle className="w-4 h-4" /> },
-        Pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-        Canceled: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-4 h-4" /> },
-        Cancelled: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-4 h-4" /> },
-        Ongoing: { bg: 'bg-cyan-100', text: 'text-cyan-800', icon: <Clock className="w-4 h-4" /> },
-    };
-    
-    const style = statusStyles[status] || statusStyles.Pending;
-
-    return (
-        <span className={`inline-flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full ${style.bg} ${style.text}`}>
-            {style.icon}
-            {status}
-        </span>
-    );
-};
 
 const FilterDropdown: React.FC<{ 
     label: string; 
@@ -43,6 +23,25 @@ const FilterDropdown: React.FC<{
         </div>
     </div>
 );
+
+const BookingTableRowSkeleton: React.FC = () => (
+  <tr className="animate-pulse">
+    <td className="p-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/4"></div></td>
+    <td className="p-4">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+      </div>
+    </td>
+    <td className="p-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div></td>
+    <td className="p-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div></td>
+    <td className="p-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div></td>
+    <td className="p-4 text-center"><div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"></div></td>
+    <td className="p-4 text-center"><div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"></div></td>
+  </tr>
+);
+
+const BOOKING_PER_PAGE = 10;
 
 
 const BookingLogsPage: React.FC = () => {
@@ -68,7 +67,7 @@ const BookingLogsPage: React.FC = () => {
             try {
                 const response: IAdminBookingsResponse = await bookingService.getAllBookingsForAdmin({
                     page: currentPage,
-                    limit: 10,
+                    limit: BOOKING_PER_PAGE,
                     search: debouncedSearch,
                     bookingStatus: filters.bookingStatus,
                     dateRange: filters.dateRange,
@@ -134,14 +133,15 @@ const BookingLogsPage: React.FC = () => {
                                     <th className="p-4 font-medium">User Name</th>
                                     <th className="p-4 font-medium">Provider Name</th>
                                     <th className="p-4 font-medium">Service Type</th>
-                                    <th className="p-4 font-medium">Date & Time</th>
+                                    <th className="p-4 font-medium">Scheduled Date & Time</th>
                                     <th className="p-4 font-medium text-center">Payment Status</th>
                                     <th className="p-4 font-medium text-center">Booking Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                                 {loading ? (
-                                    <tr><td colSpan={7} className="text-center p-8"><Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto" /></td></tr>
+                                    // Show 5 skeleton rows
+                                    [...Array(BOOKING_PER_PAGE)].map((_, i) => <BookingTableRowSkeleton key={i} />)
                                 ) : bookings.length > 0 ? (
                                     bookings.map((booking) => (
                                         <tr key={booking.id} className="hover:bg-slate-50 transition-colors">

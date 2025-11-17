@@ -27,6 +27,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const localStreamRef = useRef<MaybeStream>(null);
     const remoteStreamRef = useRef<MaybeStream>(null);
     const iceCandidateQueueRef = useRef<RTCIceCandidate[]>([]);
+    const isAcceptingCallRef = useRef(false);
 
     const cleanupCall = useCallback(() => {
         console.log("Running call cleanup...");
@@ -34,6 +35,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
         iceCandidateQueueRef.current = [];
         setIsAudioMuted(false);
         setIsVideoOff(false);
+        isAcceptingCallRef.current = false;
 
         if (localStream) {
             localStream.getTracks().forEach((track) => track.stop());
@@ -54,6 +56,18 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun1.l.google.com:19302" },
+                // Add TURN servers for better connectivity across firewalls/NATs
+                // Note: Replace with your own TURN server credentials in production
+                {
+                    urls: "turn:turn.quickmate.com:3478",
+                    username: "quickmate-user",
+                    credential: "quickmate-pass"
+                },
+                {
+                    urls: "turn:turn.quickmate.com:3478?transport=tcp",
+                    username: "quickmate-user",
+                    credential: "quickmate-pass"
+                }
             ],
         }),
         []
@@ -82,9 +96,37 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             setRemoteStream(stream);
         };
 
+        // Add connection state monitoring
+        pc.onconnectionstatechange = () => {
+            console.log("WebRTC Connection State:", pc.connectionState);
+            switch (pc.connectionState) {
+                case "connected":
+                    setCallStatus("connected");
+                    break;
+                case "disconnected":
+                case "failed":
+                    console.error("WebRTC connection failed");
+                    setCallStatus("ended");
+                    cleanupCall();
+                    break;
+                case "closed":
+                    setCallStatus("ended");
+                    break;
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            console.log("ICE Connection State:", pc.iceConnectionState);
+            if (pc.iceConnectionState === "failed") {
+                console.error("ICE connection failed");
+                setCallStatus("ended");
+                cleanupCall();
+            }
+        };
+
         pcRef.current = pc;
         return pc;
-    }, [currentUserId, joiningId, rtcConfig]);
+    }, [currentUserId, joiningId, rtcConfig, cleanupCall]);
 
     const processIceQueue = useCallback(() => {
         if (pcRef.current) {
@@ -163,10 +205,11 @@ useEffect(() => {
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
                 processIceQueue();
-                setCallStatus("connected");
+                // Remove premature status setting - let connection state handler manage it
             } catch (error) {
                 console.error("Error handling answer:", error);
                 setCallStatus("ended");
+                cleanupCall();
             }
         };
 
@@ -297,9 +340,19 @@ useEffect(() => {
             });
         } catch (error) {
             console.error("Error in startCall:", error);
+            if (error instanceof DOMException) {
+                if (error.name === "NotAllowedError") {
+                    alert("Camera and microphone access denied. Please allow access to make video calls.");
+                } else if (error.name === "NotFoundError") {
+                    alert("No camera or microphone found. Please connect a camera and microphone.");
+                } else {
+                    alert("Error accessing camera/microphone: " + error.message);
+                }
+            }
             setCallStatus("ended");
+            cleanupCall();
         }
-    }, [joiningId, currentUserId, ensurePeerConnection]);
+    }, [joiningId, currentUserId, ensurePeerConnection, cleanupCall]);
 
 
 
@@ -330,9 +383,24 @@ useEffect(() => {
             return;
         }
 
+        // Prevent multiple simultaneous accept attempts
+        if (isAcceptingCallRef.current) {
+            console.log("Accept call already in progress, ignoring duplicate call");
+            return;
+        }
+
+        isAcceptingCallRef.current = true;
+
         try {
             setCallStatus("connecting");
             const pc = ensurePeerConnection();
+
+            // Check if we already have a remote description set
+            if (pc.signalingState !== "stable") {
+                console.log("Peer connection not in stable state, skipping acceptCall");
+                isAcceptingCallRef.current = false;
+                return;
+            }
 
             if (!localStreamRef.current) {
                 localStreamRef.current = await navigator.mediaDevices.getUserMedia({
@@ -358,12 +426,24 @@ useEffect(() => {
             });
 
             setIncomingCall(null);
-            setCallStatus("connected");
+            // Remove premature status setting - let connection state handler manage it
         } catch (error) {
             console.error("Error in acceptCall:", error);
+            if (error instanceof DOMException) {
+                if (error.name === "NotAllowedError") {
+                    alert("Camera and microphone access denied. Please allow access to make video calls.");
+                } else if (error.name === "NotFoundError") {
+                    alert("No camera or microphone found. Please connect a camera and microphone.");
+                } else {
+                    alert("Error accessing camera/microphone: " + error.message);
+                }
+            }
             rejectCall();
+            cleanupCall();
+        } finally {
+            isAcceptingCallRef.current = false;
         }
-    }, [ensurePeerConnection, processIceQueue, joiningId, currentUserId, setIncomingCall, rejectCall]);
+    }, [ensurePeerConnection, processIceQueue, joiningId, currentUserId, setIncomingCall, rejectCall, cleanupCall]);
 
     const endCall = useCallback(() => {
         if (callStatus !== "idle") {

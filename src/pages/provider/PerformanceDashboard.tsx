@@ -10,6 +10,7 @@ const PerformanceDashboard = () => {
     const [performanceData, setPerformanceData] = useState<IProviderPerformance | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    console.log('the performance data', performanceData)
 
     useEffect(() => {
         const fetchPerformance = async () => {
@@ -151,7 +152,7 @@ const PerformanceDashboard = () => {
                                 {performanceData.reviews.map((review, index) => (
                                     <div key={index} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                                         <div className="flex items-start gap-4">
-                                            <img src={getCloudinaryUrl(review.avatar)} alt={`${review.name}'s avatar`} className="w-10 h-10 rounded-full object-cover bg-gray-200" />
+                                            <img src={review.avatar ? getCloudinaryUrl(review.avatar) : '/profileImage.png'} alt={`${review.name}'s avatar`} className="w-10 h-10 rounded-full object-cover bg-gray-200" />
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-center">
                                                     <div>

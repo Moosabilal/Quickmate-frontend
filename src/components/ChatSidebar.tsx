@@ -161,7 +161,7 @@ const ChatSidebar: React.FC = () => {
                 }
               >
                 <img
-                  src={getCloudinaryUrl(chatPartner.profilePicture)}
+                  src={chatPartner.profilePicture ? getCloudinaryUrl(chatPartner.profilePicture) : '/profileImage.png'}
                   alt={chatPartner.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />

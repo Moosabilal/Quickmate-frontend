@@ -22,6 +22,7 @@ const BookingDetails = lazy(() => import('../pages/user/BookingDetails'))
 const CurrentPassword = lazy(() => import('../pages/CurrentPassword'))
 const Wallet = lazy(() => import('../pages/user/Wallet'))
 const ProviderDetailsPage = lazy(() => import('../pages/user/ProviderDetails'))
+const PaymentPage = lazy(() => import('../pages/user/ProviderDetails'))
 import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
@@ -64,6 +65,7 @@ const userRoutes = [
         { path: '/profile/currentPassword', element: <CurrentPassword /> },
         { path: '/profile/reset-password/:token', element: <ResetPasswordForm /> },
         { path: '/profile/wallet', element: <Wallet /> },
+        { path: '/payment', element: <PaymentPage /> },
 
 
       ],

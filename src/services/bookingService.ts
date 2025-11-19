@@ -4,6 +4,7 @@ import {
   BookingStatus,
   IAdminBookingFilters,
   IBookingRequest,
+  IChatPaymentVerify,
 } from "../util/interface/IBooking";
 import { paymentVerificationRequest } from "../util/interface/IPayment";
 
@@ -138,4 +139,15 @@ export const bookingService = {
       handleAxiosError(error, "Failed to fetch providers within range.");
     }
   },
+
+  verifyChatPayment: async (data: IChatPaymentVerify) => {
+        try {
+            // We call the *new* backend endpoint
+            const response = await axiosInstance.post(`${BOOKING_URL}/verify-chat-payment`, data);
+            return response.data; // Returns the newly created booking
+        } catch (error) {
+            handleAxiosError(error, "Failed to verify chat payment.");
+            throw error;
+        }
+    },
 };

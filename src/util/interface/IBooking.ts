@@ -167,3 +167,10 @@ export interface DateTimePopupProps {
   handleDateTimeConfirm: (date: string, time: string) => void;
   providersTimings?: { day: string; startTime: string; endTime: string }[];
 }
+
+export interface IChatPaymentVerify {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  bookingData: IBookingRequest;
+}

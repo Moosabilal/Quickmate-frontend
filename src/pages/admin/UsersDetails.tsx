@@ -141,10 +141,6 @@ const UserDetailsPage: React.FC = () => {
                                 <span>Unblock User</span>
                             </button>
                         )}
-                        {/* <button className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
-                            <Briefcase className="w-5 h-5" />
-                            <span>Create as Provider</span>
-                        </button> */}
                     </div>
                 </div>
 

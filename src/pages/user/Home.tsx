@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2 } from 'lucide-react';
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
@@ -14,8 +14,10 @@ import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
+import { bookingService } from '../../services/bookingService';
 
-
+declare var Razorpay: any;
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
     const fullStars: number = Math.floor(rating);
@@ -107,10 +109,12 @@ const Home: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isMobile, setIsMobile] = useState<boolean>(false);
 
-    const userId = useAppSelector((state) => state.auth.user?.id);
+    const user = useAppSelector((state) => state.auth.user);
 
     const chatBodyRef = useRef<HTMLDivElement | null>(null);
     const lastMessageRef = useRef<string>("");
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -195,7 +199,7 @@ const Home: React.FC = () => {
     useEffect(() => {
         const initChat = async () => {
             try {
-                const sId = await chatbotService.startOrGetSession(userId);
+                const sId = await chatbotService.startOrGetSession(user?.id);
                 setSessionId(sId);
                 const history = await chatbotService.getHistory(sId);
                 setChatHistory(history);
@@ -205,7 +209,7 @@ const Home: React.FC = () => {
             }
         };
         initChat();
-    }, [userId]);
+    }, [user?.id]);
 
     const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
         if (!sessionId) {
@@ -217,11 +221,74 @@ const Home: React.FC = () => {
         
         try {
             const botResponse = await chatbotService.sendMessage(sessionId, userMessage);
+
+            console.log('the bot response in frontend', botResponse)
             
             setChatHistory(prev => [
                 ...prev, 
                 { ...botResponse, timestamp: new Date(), id: Date.now().toString() }
             ]);
+
+            if (botResponse.action === 'REQUIRE_PAYMENT' && botResponse.payload) {
+                const { orderId, amount, bookingData } = botResponse.payload;
+                console.log('the return booking data', orderId, amount, bookingData)
+                
+                const options = {
+                    key: paymentKey, 
+                    amount: amount * 100, 
+                    currency: "INR",
+                    name: "QuickMate Booking",
+                    description: `Booking for ${bookingData.serviceId}`,
+                    order_id: orderId,
+                    
+                    handler: async (response: any) => {
+                        try {
+                            
+                            const verifyData = {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                bookingData: bookingData
+                            };
+                            
+                            const booking = await chatbotService.verifyChatPayment(sessionId,verifyData); 
+                            
+                            const successMsg = `✅ Payment successful! Your booking (ID: ${booking.id}) is confirmed. Redirecting you now...`;
+                            setChatHistory(prev => [
+                                ...prev,
+                                { role: 'model', text: successMsg, timestamp: new Date(), id: Date.now().toString() }
+                            ]);
+                            
+                            setTimeout(() => {
+                                navigate(`/confirmationModel/${booking.id}`); 
+                            }, 2000);
+
+                        } catch (err) {
+                            console.error(err);
+                            toast.error("Payment verification failed. Please contact support.");
+                        }
+                    },
+                    
+                    prefill: {
+                        name: user?.name || bookingData.customerName,
+                        email: user?.email || "",
+                        contact: bookingData.phone,
+                    },
+                    theme: { color: "#3057b0ff" },
+                    
+                    modal: {
+                        ondismiss: () => {
+                            toast.info("Payment cancelled.");
+                        }
+                    }
+                };
+                
+                const rzp1 = new Razorpay(options);
+                rzp1.on('payment.failed', function (response: any){
+                    toast.error(response.error.description || "Payment failed");
+                });
+                rzp1.open();
+            }
 
         } catch (error: any) {
             setChatHistory(prev => [
@@ -235,7 +302,7 @@ const Home: React.FC = () => {
                 }
             ]);
         }
-    }, [sessionId]);
+    }, [sessionId, user, navigate]);
 
     const toggleChatbot = useCallback((): void => {
         setShowChatbot(prev => !prev);

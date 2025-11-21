@@ -10,7 +10,7 @@ import {
   Search,
   Eye,
   PlayCircle,
-  IndianRupee
+  IndianRupee,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { getCloudinaryUrl } from '../../util/cloudinary';
@@ -265,7 +265,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                           <div className="flex items-start space-x-4 flex-1">
                             <div className="relative">
                               <img
-                                src={getCloudinaryUrl(booking.customerImage)}
+                                src={booking.customerImage ? getCloudinaryUrl(booking.customerImage) : '/profileImage.png'}
                                 alt={booking.customerName}
                                 className="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
                               />
@@ -315,15 +315,6 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 </p>
                               </div>
 
-                              {/* {booking.rating && (
-                                <div className="flex items-center space-x-2 mt-2">
-                                  <div className="flex items-center space-x-1">
-                                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                    <span className="text-sm font-medium">{booking.rating}</span>
-                                  </div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Customer Rating</span>
-                                </div>
-                              )} */}
                             </div>
                           </div>
 
@@ -460,15 +451,6 @@ const ProviderBookingManagementPage: React.FC = () => {
                           {selectedBooking.status.replace('-', ' ').toUpperCase()}
                         </span>
                       </div>
-                      {/* {selectedBooking.rating && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Rating</label>
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <span className="text-gray-900 dark:text-white font-medium">{selectedBooking.rating}</span>
-                          </div>
-                        </div>
-                      )} */}
                     </div>
                   </div>
 

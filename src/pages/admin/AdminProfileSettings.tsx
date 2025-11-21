@@ -12,10 +12,7 @@ const AdminProfileSettings: React.FC = () => {
     const { user } = useAppSelector(state => state.auth);
     const dispatch = useAppDispatch();
 
-    // --- 2. NEW: State to control edit mode ---
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-    // State for the forms
     const [name, setName] = useState(user?.name || "Admin User");
     const [email, setEmail] = useState(user?.email || "admin@example.com");
     
@@ -25,17 +22,13 @@ const AdminProfileSettings: React.FC = () => {
     
     const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-    // State for photo uploading
     const [newProfileImage, setNewProfileImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Loading states
     const [isSaving, setIsSaving] = useState(false);
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-    // --- 3. Sync local state with Redux user state ---
-    // This ensures that if the user prop changes (e.g., after save), the state updates.
     useEffect(() => {
         if (user && !isEditingProfile) {
             setName(user.name);
@@ -68,7 +61,7 @@ const AdminProfileSettings: React.FC = () => {
             toast.success("Profile updated successfully!");
             setNewProfileImage(null);
             setImagePreview(null);
-            setIsEditingProfile(false); // --- 4. Switch back to view mode ---
+            setIsEditingProfile(false);
         } catch (err: any) {
             toast.error(err.message || "Failed to update profile.");
         } finally {
@@ -76,10 +69,8 @@ const AdminProfileSettings: React.FC = () => {
         }
     };
 
-    // --- 5. NEW: Cancel button handler ---
     const handleCancelEdit = () => {
         setIsEditingProfile(false);
-        // Reset form fields to their original state from Redux
         setName(user?.name || "Admin User");
         setEmail(user?.email || "admin@example.com");
         setNewProfileImage(null);
@@ -117,21 +108,17 @@ const AdminProfileSettings: React.FC = () => {
                 Admin Account Settings
             </h1>
             
-            {/* Account info + photo form */}
             <form onSubmit={handleAccountSave}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
-                    {/* --- Left Column --- */}
                     <div className="lg:col-span-2 space-y-8">
                         
-                        {/* --- Account Information --- */}
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold flex items-center text-gray-900 dark:text-gray-100">
                                     <User className="w-5 h-5 mr-2 text-blue-600" />
                                     Account Information
                                 </h2>
-                                {/* --- 6. Show "Edit" button only in view mode --- */}
                                 {!isEditingProfile && (
                                     <button
                                         type="button"
@@ -144,11 +131,9 @@ const AdminProfileSettings: React.FC = () => {
                                 )}
                             </div>
                             
-                            {/* --- 7. Conditional Form --- */}
                             <div className="space-y-4">
                                 {isEditingProfile ? (
                                     <>
-                                        {/* --- Edit Mode --- */}
                                         <div>
                                             <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
                                             <input
@@ -172,7 +157,6 @@ const AdminProfileSettings: React.FC = () => {
                                     </>
                                 ) : (
                                     <>
-                                        {/* --- View Mode --- */}
                                         <div>
                                             <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</label>
                                             <p className="text-lg text-gray-900 dark:text-gray-100 p-2">{name}</p>
@@ -188,9 +172,7 @@ const AdminProfileSettings: React.FC = () => {
                         
                     </div>
 
-                    {/* --- Right Column --- */}
                     <div className="lg:col-span-1 space-y-8">
-                        {/* --- Profile Photo --- */}
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
                                 <Camera className="w-5 h-5 mr-2 text-green-600" />
@@ -212,7 +194,6 @@ const AdminProfileSettings: React.FC = () => {
                                     accept="image/*"
                                 />
                                 
-                                {/* --- 8. Show buttons only in edit mode --- */}
                                 {isEditingProfile && (
                                     <div className="flex flex-col items-center">
                                         <button 
@@ -239,7 +220,6 @@ const AdminProfileSettings: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* --- 9. Show Save/Cancel buttons only in edit mode --- */}
                         <div className="sticky top-8">
                             {isEditingProfile && (
                                 <div className="space-y-4">
@@ -266,8 +246,6 @@ const AdminProfileSettings: React.FC = () => {
                 </div>
             </form>
             
-            {/* --- 10. Password form is moved outside the main form --- */}
-            {/* This fixes the nested <form> bug */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-2">
                 <div className="lg:col-span-2">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -338,7 +316,6 @@ const AdminProfileSettings: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* End of component */}
         </div>
     );
 };

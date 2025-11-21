@@ -155,7 +155,6 @@ const ReviewModerationPage: React.FC = () => {
 
     const handleModalClose = () => {
         setShowModal(false);
-        // Delay clearing data to allow modal to fade out
         setTimeout(() => {
             setSelectedReview(null);
             setModalAction(null);
@@ -181,7 +180,6 @@ const ReviewModerationPage: React.FC = () => {
                 case 'unban':{
                     const response = await authService.updateUser(selectedReview.user.id);
                     toast.success(response.message);
-                    // Manually update UI state
                     setReviews(prevReviews => 
                         prevReviews.map(r => 
                             r.user.id === selectedReview.user.id 
@@ -194,7 +192,7 @@ const ReviewModerationPage: React.FC = () => {
             }
             
             if (modalAction !== 'ban' && modalAction !== 'unban') {
-                fetchReviews(); // Refetch review list
+                fetchReviews();
             }
             handleModalClose();
         } catch (err: any) {

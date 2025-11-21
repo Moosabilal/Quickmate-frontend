@@ -87,7 +87,6 @@ const ReviewActionModal: React.FC<ReviewActionModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-auto transform transition-all">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-xl ${config.iconBg}`}>
@@ -102,11 +101,9 @@ const ReviewActionModal: React.FC<ReviewActionModalProps> = ({
           )}
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <p className="text-gray-700 leading-relaxed mb-4">{config.message}</p>
 
-          {/* Show review text or user name */}
           {itemDetails && (
             <blockquote className="mb-4 p-4 bg-gray-50 rounded-xl border-l-4 border-gray-400">
               <p className="text-sm text-gray-700 italic line-clamp-3">"{itemDetails}"</p>
@@ -129,7 +126,6 @@ const ReviewActionModal: React.FC<ReviewActionModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
           <button
             onClick={onClose}

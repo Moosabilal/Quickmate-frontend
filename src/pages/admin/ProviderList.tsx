@@ -5,6 +5,7 @@ import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useNavigate } from 'react-router-dom';
 
 const TableRowSkeleton: React.FC = () => (
   <tr className="animate-pulse">
@@ -47,6 +48,9 @@ const AdminProvidersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const navigate = useNavigate();
+
 
   const ratingOptions = [
     { label: '5 Stars', value: '5' },
@@ -105,12 +109,8 @@ const AdminProvidersPage: React.FC = () => {
         <main className="p-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Providers</h1>
-            {/* <button onClick={() =>navigate('/provider-registration')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Create Provider
-            </button> */}
           </div>
 
-          {/* Search & Filters */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4">
             <input
               type="text"
@@ -140,7 +140,7 @@ const AdminProvidersPage: React.FC = () => {
             </select>
 
             <select
-              value={ratingFilter} 
+              value={ratingFilter}
               onChange={(e) => setRatingFilter(e.target.value)}
               className="px-4 py-2 border rounded-md"
             >
@@ -171,7 +171,6 @@ const AdminProvidersPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
                 {isLoading ? (
-                  // Show 4 skeleton rows while loading
                   <>
                     {[...Array(PROVIDER_PER_PAGE)].map((_, i) => (
                       <TableRowSkeleton key={i} />
@@ -254,6 +253,12 @@ const AdminProvidersPage: React.FC = () => {
                                 </option>
                               ))}
                           </select>
+                          <button
+                            onClick={() => navigate(`/admin/providers/${provider.id}`)}
+                            className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 text-sm font-medium"
+                          >
+                            View Details
+                          </button>
                         </div>
                       </td>
                     </tr>

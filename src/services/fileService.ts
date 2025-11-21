@@ -2,7 +2,6 @@ import axiosInstance from "../lib/axiosInstance";
 
 export const fileService = {
     uploadChatFile: async (file: File): Promise<{ url: string }> => {
-        // Validate file before upload
         const maxSizeMB = 10;
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff'];
 
@@ -10,13 +9,11 @@ export const fileService = {
             throw new Error('No file selected');
         }
 
-        // Check file size
         const fileSizeMB = file.size / (1024 * 1024);
         if (fileSizeMB > maxSizeMB) {
             throw new Error(`File size (${fileSizeMB.toFixed(2)}MB) exceeds maximum limit of ${maxSizeMB}MB`);
         }
 
-        // Check file type
         if (!allowedTypes.includes(file.type)) {
             throw new Error(`File type ${file.type} not supported. Allowed types: ${allowedTypes.join(', ')}`);
         }
@@ -31,7 +28,7 @@ export const fileService = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-                timeout: 60000, // 60 second timeout
+                timeout: 60000,
             });
 
             console.log('File upload successful:', response.data);
@@ -39,7 +36,6 @@ export const fileService = {
         } catch (error: any) {
             console.error("Error uploading file:", error);
 
-            // Extract meaningful error message from response
             let errorMessage = 'Failed to upload file';
 
             if (error.response?.data?.message) {

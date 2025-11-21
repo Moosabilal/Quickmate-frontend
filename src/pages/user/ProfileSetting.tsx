@@ -19,12 +19,11 @@ const ProfileSetting: React.FC = () => {
 
     const [name, setName] = useState(user?.name || 'N/A');
     const [email, setEmail] = useState(user?.email || 'N/A');
-    const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || 'nothing');
+    const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || '');
 
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
-    const [isMapOpen, setIsMapOpen] = useState(false)
 
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -69,6 +68,8 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(true);
     };
 
+    console.log('the providpiicture', profilePicture, editingProfilePicture)
+
     const handleSaveChanges = async () => {
         try {
             const formData = new FormData();
@@ -108,31 +109,31 @@ const ProfileSetting: React.FC = () => {
 
     const handleAddAddress = async (newAddress: IAddress) => {
 
-            try {
-                let savedAddress: IAddress;
+        try {
+            let savedAddress: IAddress;
 
-                if (isEditingAddress && currentAddress.id) {
-                    savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
+            if (isEditingAddress && currentAddress.id) {
+                savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
 
-                    setAddressList(prev =>
-                        prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
-                    );
-                    toast.success("Address Updated")
-                } else {
-                    savedAddress = await addressService.createAddress(newAddress);
-                    setAddressList(prev => [...prev, savedAddress]);
-                    toast.success("Address Created")
-                }
-
-                setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
-                setIsEditingAddress(false);
-                setAddressPopup(false);
-
-            } catch (error) {
-                console.error('Failed to save address:', error);
-                alert('Something went wrong while saving the address. Please try again.');
+                setAddressList(prev =>
+                    prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
+                );
+                toast.success("Address Updated")
+            } else {
+                savedAddress = await addressService.createAddress(newAddress);
+                setAddressList(prev => [...prev, savedAddress]);
+                toast.success("Address Created")
             }
-        
+
+            setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
+            setIsEditingAddress(false);
+            setAddressPopup(false);
+
+        } catch (error) {
+            console.error('Failed to save address:', error);
+            alert('Something went wrong while saving the address. Please try again.');
+        }
+
     };
 
 
@@ -225,11 +226,11 @@ const ProfileSetting: React.FC = () => {
                             <div className="relative w-32 h-32">
                                 <img
                                     src={
-                                        editingProfilePicture
-                                            ? typeof editingProfilePicture === 'string'
-                                                ? getCloudinaryUrl(editingProfilePicture)
-                                                : URL.createObjectURL(editingProfilePicture)
-                                            : undefined
+                                        editingProfilePicture && typeof editingProfilePicture === 'string'
+                                            ? getCloudinaryUrl(editingProfilePicture)
+                                            : editingProfilePicture instanceof File
+                                                ? URL.createObjectURL(editingProfilePicture)
+                                                : '/profileImage.png'
                                     }
                                     alt="Profile"
                                     className="w-full h-full rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
@@ -280,7 +281,7 @@ const ProfileSetting: React.FC = () => {
                         </div>
                         <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                             <img
-                                src={typeof profilePicture === 'string' ? getCloudinaryUrl(profilePicture) : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : undefined}
+                                src={typeof profilePicture === 'string' && profilePicture ? getCloudinaryUrl(profilePicture) : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : '/profileImage.png'}
                                 alt="Profile"
                                 className="w-28 h-28 rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
                             />
@@ -398,32 +399,6 @@ const ProfileSetting: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            {/* {isMapOpen && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
-                        <h2 className="text-lg font-semibold p-4 border-b">Select Service Location</h2>
-                        <button 
-                            onClick={() => setIsMapOpen(false)} 
-                            className="absolute top-3 right-4 text-xl hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center"
-                        >
-                            ×
-                        </button>
-
-                        <MapContainer center={mapCenter} zoom={5} className="h-[400px] w-full rounded-b-lg">
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <LocationSelector onSelect={(lat, lng) => {
-                                setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
-                                setErrors(prev => ({ ...prev, serviceLocation: undefined }));
-                                setIsMapOpen(false);
-                            }} />
-                            {formData.serviceLocation && (
-                                <Marker position={[formData.serviceLocation.lat, formData.serviceLocation.lng]} />
-                            )}
-                        </MapContainer>
-                    </div>
-                </div>
-            )} */}
 
             <AddressPopup
                 addressPopup={addressPopup}

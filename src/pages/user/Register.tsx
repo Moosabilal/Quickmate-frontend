@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../../services/authService';
 import { useNavigate, Link } from 'react-router-dom';
-import ThemeToggle from '../../components/ThemeToggle';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { login } from '../../features/auth/authSlice';
 import { toast } from 'react-toastify';
 import { GoogleLogin } from '@react-oauth/google';
 import { RegistrationFormTouched, RegistrationValidationErrors } from '../../util/interface/IUser';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [validationErrors, setValidationErrors] = useState<RegistrationValidationErrors>({});
@@ -197,7 +199,7 @@ const Register = () => {
 
 
         } catch (err: any) {
-            const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+            const errorMessage = err?.message || 'Registration failed. Please try again.';
             toast.error(errorMessage);
         } finally {
             setLoading(false);
@@ -218,10 +220,6 @@ const Register = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-emerald-100 dark:from-gray-950 dark:to-teal-950 p-4">
             <div className="relative bg-white dark:bg-gray-800 p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 hover:shadow-2xl">
-                <div className="absolute top-4 right-4">
-                    <ThemeToggle />
-                </div>
-
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-extrabold text-teal-600 dark:text-teal-400 mb-2">
                         QuickMate
@@ -299,17 +297,28 @@ const Register = () => {
                         >
                             Password <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onBlur={() => handleBlur('password')}
-                            className={getInputClasses('password')}
-                            placeholder="••••••••"
-                            aria-invalid={touched.password && validationErrors.password ? 'true' : 'false'}
-                            aria-describedby={touched.password && validationErrors.password ? 'password-error' : 'password-help'}
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onBlur={() => handleBlur('password')}
+                                className={getInputClasses('password')}
+                                placeholder="••••••••"
+                                aria-invalid={touched.password && validationErrors.password ? 'true' : 'false'}
+                                aria-describedby={touched.password && validationErrors.password ? 'password-error' : 'password-help'}
+
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400"
+                                tabIndex={-1}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                         {touched.password && validationErrors.password && (
                             <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.password}
@@ -329,17 +338,29 @@ const Register = () => {
                         >
                             Confirm Password <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            id="confirm-password"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            onBlur={() => handleBlur('confirmPassword')}
-                            className={getInputClasses('confirmPassword')}
-                            placeholder="••••••••"
-                            aria-invalid={touched.confirmPassword && validationErrors.confirmPassword ? 'true' : 'false'}
-                            aria-describedby={touched.confirmPassword && validationErrors.confirmPassword ? 'confirm-password-error' : undefined}
-                        />
+                        <div className="relative">
+                            <input
+                                id="confirm-password"
+                                type={showConfirmPassword ? "text" : "password"}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onBlur={() => handleBlur('confirmPassword')}
+                                className={getInputClasses('confirmPassword')}
+                                placeholder="••••••••"
+                                aria-invalid={touched.confirmPassword && validationErrors.confirmPassword ? 'true' : 'false'}
+                                aria-describedby={touched.confirmPassword && validationErrors.confirmPassword ? 'confirm-password-error' : undefined}
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400"
+                                tabIndex={-1}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
                         {touched.confirmPassword && validationErrors.confirmPassword && (
                             <p id="confirm-password-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {validationErrors.confirmPassword}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useDebounce } from '../../hooks/useDebounce';
 import { StatusBadge } from '../../components/admin/BookingStatusBadge';
+import { useNavigate } from 'react-router-dom';
 
 
 const FilterDropdown: React.FC<{ 
@@ -38,6 +39,7 @@ const BookingTableRowSkeleton: React.FC = () => (
     <td className="p-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div></td>
     <td className="p-4 text-center"><div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"></div></td>
     <td className="p-4 text-center"><div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"></div></td>
+    <td className="p-4 text-center"><div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-md mx-auto"></div></td> 
   </tr>
 );
 
@@ -58,6 +60,7 @@ const BookingLogsPage: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalBookings, setTotalBookings] = useState(0);
 
+    const navigate = useNavigate();
     const debouncedSearch = useDebounce(filters.search, 500);
 
     useEffect(() => {
@@ -136,11 +139,11 @@ const BookingLogsPage: React.FC = () => {
                                     <th className="p-4 font-medium">Scheduled Date & Time</th>
                                     <th className="p-4 font-medium text-center">Payment Status</th>
                                     <th className="p-4 font-medium text-center">Booking Status</th>
+                                    <th className="p-4 font-medium text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                                 {loading ? (
-                                    // Show 5 skeleton rows
                                     [...Array(BOOKING_PER_PAGE)].map((_, i) => <BookingTableRowSkeleton key={i} />)
                                 ) : bookings.length > 0 ? (
                                     bookings.map((booking) => (
@@ -152,6 +155,15 @@ const BookingLogsPage: React.FC = () => {
                                             <td className="p-4">{booking.dateTime}</td>
                                             <td className="p-4 text-center"><StatusBadge status={booking.paymentStatus} /></td>
                                             <td className="p-4 text-center"><StatusBadge status={booking.bookingStatus} /></td>
+                                            <td className="p-4 text-center">
+                                                <button 
+                                                    onClick={() => navigate(`/admin/bookings/${booking.id}`)}
+                                                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors group"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (

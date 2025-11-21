@@ -53,9 +53,8 @@ export const subscriptionPlanService = {
 
     calculateUpgrade: async (planId: string) => {
         try {
-            // providerId is handled by the backend's AuthRequest
             const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/calculate-upgrade`, { newPlanId: planId });
-            return response.data.data; // Returns { order, newPlan, finalAmount, ... }
+            return response.data.data; 
         } catch (error) {
             handleAxiosError(error, "Failed to calculate upgrade cost.");
             throw error;
@@ -65,7 +64,7 @@ export const subscriptionPlanService = {
     scheduleDowngrade: async (planId: string) => {
         try {
             const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/schedule-downgrade`, { newPlanId: planId });
-            return response.data; // Returns { success, message, data: ISubscription }
+            return response.data;
         } catch (error) {
             handleAxiosError(error, "Failed to schedule downgrade.");
             throw error;
@@ -74,9 +73,8 @@ export const subscriptionPlanService = {
 
     cancelDowngrade: async () => {
         try {
-            // No payload is needed as the providerId is from the auth token
             const response = await axiosInstance.post(`${SUBSCRIPTIONPLAN_URL}/cancel-downgrade`);
-            return response.data; // Returns { success, message, data: ISubscription }
+            return response.data; 
         } catch (error) {
             handleAxiosError(error, "Failed to cancel downgrade.");
             throw error;

@@ -35,7 +35,10 @@ export interface IBookingRequest {
   customerName: string;
   phone: string;
   instructions?: string;
-  addressId?: string
+  addressId?: string;
+  amount?: number;
+  scheduledDate?: string;
+  scheduledTime?: string;
 }
 
 
@@ -105,7 +108,6 @@ export interface IProviderBookingManagement {
   customerEmail: string;
   specialRequests: string;
   createdAt: string;
-  // rating: number | null;
 }
 
 export interface IAdminBookingFilters {
@@ -168,9 +170,32 @@ export interface DateTimePopupProps {
   providersTimings?: { day: string; startTime: string; endTime: string }[];
 }
 
-export interface IChatPaymentVerify {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-  bookingData: IBookingRequest;
+export interface BookingData {
+  serviceId: string;
+  providerId: string;
+  addressId: string;
+  instructions?: string;
+  scheduledDate: string;  
+  scheduledTime: string;  
+  customerName: string;
+  phone: string;
+  amount: number;
+}
+
+export interface IBookingDetailData {
+  booking: {
+    _id: string;
+    status: string;
+    paymentStatus: string;
+    amount: string;
+    date: string;
+    time: string;
+    createdAt: string;
+    instructions?: string;
+  };
+  user: { name: string; email: string; phone: string; image: string };
+  provider: { _id: string; name: string; email: string; phone: string; image: string; serviceArea: string };
+  service: { title: string; duration: string; price: number };
+  address: { label: string; fullAddress: string };
+  payment?: { method: string; transactionId: string; date: string };
 }

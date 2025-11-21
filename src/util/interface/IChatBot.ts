@@ -1,4 +1,5 @@
 import React from "react";
+import { IBookingRequest } from "./IBooking";
 
 export interface ChatbotMessage {
     hideInChat?: boolean;
@@ -43,5 +44,17 @@ export interface ChatFormProps {
 export interface IChatbotResponse {
     role: 'model';
     text: string;
-    options?: { label: string, action: string }[];
+    action?: 'REQUIRE_PAYMENT'; 
+    payload?: {
+        orderId: string;
+        amount: number;
+        bookingData: any; 
+    };
+}
+
+export interface IChatPaymentVerify {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  bookingData: IBookingRequest;
 }

@@ -128,4 +128,14 @@ export const categoryService = {
             throw error;
         }
     },
+
+    getRelatedServices: async (serviceId: string) => {
+        try {
+            const response = await axiosInstance.get(`${CATEGORIES_PATH}/${serviceId}/related`);
+            return response.data.data;
+        } catch (error) {
+            console.error("Failed to fetch related services", error);
+            return [];
+        }
+    },
 };

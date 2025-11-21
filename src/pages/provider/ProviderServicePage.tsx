@@ -356,54 +356,6 @@ const ProviderServicesPage: React.FC = () => {
 
                         </div>
 
-                        {/* {services.length > 0 && <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div className="bg-white rounded-xl p-6 border border-gray-200">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Settings className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-gray-900">{services.length}</div>
-                                        <div className="text-sm text-gray-600">Active Services</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl p-6 border border-gray-200">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-100 rounded-lg">
-                                        <Award className="w-6 h-6 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-gray-600">Certified Services</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl p-6 border border-gray-200">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-yellow-100 rounded-lg">
-                                        <Star className="w-6 h-6 text-yellow-600" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-gray-900">4.8</div>
-                                        <div className="text-sm text-gray-600">Average Rating</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl p-6 border border-gray-200">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-100 rounded-lg">
-                                        <IndianRupee className="w-6 h-6 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-gray-900">${services.reduce((sum, s) => sum + s.price, 0)}</div>
-                                        <div className="text-sm text-gray-600">Total Value</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>} */}
                     </div>
                 </div>
             </div>

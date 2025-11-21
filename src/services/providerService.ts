@@ -226,4 +226,13 @@ export const providerService = {
       handleAxiosError(error, "Failed to update availability.");
     }
   },
+
+  getProviderFullDetails: async (providerId: string) => {
+        try {
+            const response = await axiosInstance.get(`${PROVIDER_URL}/admin/${providerId}/full-details`);
+            return response.data.data;
+        } catch (error) {
+            handleAxiosError(error, "Failed to fetch provider full details.");
+        }
+    },
 };

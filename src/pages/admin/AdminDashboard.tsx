@@ -220,9 +220,9 @@ const AdminDashboard: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    {/* <Link to={`/admin/providers/${provider._id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    <Link to={`/admin/providers/${provider._id}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
                       View Profile
-                    </Link> */}
+                    </Link>
                   </div>
                 ))}
               </div>

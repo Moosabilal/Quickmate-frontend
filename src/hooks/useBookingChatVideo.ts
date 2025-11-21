@@ -96,7 +96,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
             setRemoteStream(stream);
         };
 
-        // Add connection state monitoring
         pc.onconnectionstatechange = () => {
             console.log("WebRTC Connection State:", pc.connectionState);
             switch (pc.connectionState) {
@@ -205,7 +204,6 @@ useEffect(() => {
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
                 processIceQueue();
-                // Remove premature status setting - let connection state handler manage it
             } catch (error) {
                 console.error("Error handling answer:", error);
                 setCallStatus("ended");
@@ -383,7 +381,6 @@ useEffect(() => {
             return;
         }
 
-        // Prevent multiple simultaneous accept attempts
         if (isAcceptingCallRef.current) {
             console.log("Accept call already in progress, ignoring duplicate call");
             return;
@@ -395,7 +392,6 @@ useEffect(() => {
             setCallStatus("connecting");
             const pc = ensurePeerConnection();
 
-            // Check if we already have a remote description set
             if (pc.signalingState !== "stable") {
                 console.log("Peer connection not in stable state, skipping acceptCall");
                 isAcceptingCallRef.current = false;
@@ -426,7 +422,6 @@ useEffect(() => {
             });
 
             setIncomingCall(null);
-            // Remove premature status setting - let connection state handler manage it
         } catch (error) {
             console.error("Error in acceptCall:", error);
             if (error instanceof DOMException) {

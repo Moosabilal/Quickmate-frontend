@@ -69,7 +69,9 @@ export interface IProviderProfile {
     startDate: Date;
     endDate: Date;
     status: SubscriptionStatus
-  }
+  };
+  createdAt?: Date;
+
 
 }
 

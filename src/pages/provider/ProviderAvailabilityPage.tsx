@@ -9,6 +9,10 @@ const ProviderAvailabilityPage: React.FC = () => {
     const [weeklySchedule, setWeeklySchedule] = useState<DaySchedule[]>([]);
     const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
     const [leavePeriods, setLeavePeriods] = useState<LeavePeriod[]>([]);
+
+    const [initialWeeklySchedule, setInitialWeeklySchedule] = useState<DaySchedule[]>([]);
+    const [initialDateOverrides, setInitialDateOverrides] = useState<DateOverride[]>([]);
+    const [initialLeavePeriods, setInitialLeavePeriods] = useState<LeavePeriod[]>([]);
     
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +27,10 @@ const ProviderAvailabilityPage: React.FC = () => {
                 setWeeklySchedule(data.weeklySchedule || []);
                 setDateOverrides(data.dateOverrides || []);
                 setLeavePeriods(data.leavePeriods || []);
+
+                setInitialWeeklySchedule(data.weeklySchedule || []);
+                setInitialDateOverrides(data.dateOverrides || []);
+                setInitialLeavePeriods(data.leavePeriods || []);
             } catch (err) {
                 console.error("Error loading provider availability:", err);
                 setError("Failed to load availability data. Please try again.");
@@ -35,16 +43,29 @@ const ProviderAvailabilityPage: React.FC = () => {
     }, []);
 
     const handleSaveChanges = async () => {
+        const hasChanges =
+            JSON.stringify(weeklySchedule) !== JSON.stringify(initialWeeklySchedule) ||
+            JSON.stringify(dateOverrides) !== JSON.stringify(initialDateOverrides) ||
+            JSON.stringify(leavePeriods) !== JSON.stringify(initialLeavePeriods);
+
+        if (!hasChanges) {
+            toast.info("No changes detected.");
+            return;
+        }
+
         setIsSaving(true);
         try {
             const dataToSave = { weeklySchedule, dateOverrides, leavePeriods };
-            console.log("Saving data:", dataToSave);
+            const response = await providerService.updateAvailability(dataToSave);
+            
+            setInitialWeeklySchedule(response.data.weeklySchedule);
+            setInitialDateOverrides(response.data.dateOverrides);
+            setInitialLeavePeriods(response.data.leavePeriods);
 
-            await providerService.updateAvailability(dataToSave);
             toast.success("Availability saved successfully!");
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error saving provider availability:", err);
-            toast.error("Failed to save availability. Please try again.");
+            toast.error(err.message || "Failed to save availability. Please check for overlapping times or past dates.");
         } finally {
             setIsSaving(false);
         }

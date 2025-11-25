@@ -5,7 +5,7 @@ import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import type { ICategoryResponse, IserviceResponse } from '../../util/interface/ICategory';
 import type { IFeaturedProviders } from '../../util/interface/IProvider';
-import ChatForm from '../../components/user/ChatForm';
+import ChatForm from '../../components/user/ChatForm'; 
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
@@ -251,16 +251,18 @@ const Home: React.FC = () => {
                                 bookingData: bookingData
                             };
                             
-                            const booking = await chatbotService.verifyChatPayment(sessionId,verifyData); 
+                            const resData = await chatbotService.verifyChatPayment(sessionId,verifyData); 
+
+                            console.log('the chatpayment restult', resData)
                             
-                            const successMsg = `✅ Payment successful! Your booking (ID: ${booking.id}) is confirmed. Redirecting you now...`;
+                            const successMsg = `✅ Payment successful! Your booking (ID: ${resData.booking._id}) is confirmed. Redirecting you now...`;
                             setChatHistory(prev => [
                                 ...prev,
                                 { role: 'model', text: successMsg, timestamp: new Date(), id: Date.now().toString() }
                             ]);
                             
                             setTimeout(() => {
-                                navigate(`/confirmationModel/${booking.id}`); 
+                                navigate(`/confirmationModel/${resData.booking._id}`); 
                             }, 2000);
 
                         } catch (err) {
@@ -303,6 +305,30 @@ const Home: React.FC = () => {
             ]);
         }
     }, [sessionId, user, navigate]);
+
+    const handleOptionClick = useCallback((text: string) => {
+        console.log('the option click text', text)
+        if (text === "NAVIGATE_PROFILE_ADDRESS") {
+            navigate('/profile');
+            return;
+        }
+
+        const userMessage: ChatbotMessage = {
+            role: 'user',
+            text: text,
+            timestamp: new Date(),
+            id: Date.now().toString()
+        };
+
+        setChatHistory(prev => [...prev, userMessage]);
+
+        // Use a timeout to ensure the state update for the user message has rendered
+        // before we send it to the backend.
+        setTimeout(() => {
+            generateBotResponse([...chatHistory, userMessage]);
+        }, 0);
+
+    }, [generateBotResponse, chatHistory, navigate]);
 
     const toggleChatbot = useCallback((): void => {
         setShowChatbot(prev => !prev);
@@ -721,7 +747,7 @@ const Home: React.FC = () => {
                                         </div>
 
                                         {chatHistory.map((chat, index) => (
-                                            <ChatMessage key={chat.id || `message-${index}`} chat={chat} />
+                                            <ChatMessage key={chat.id || `message-${index}`} chat={chat} onOptionClick={handleOptionClick} />
                                         ))}
                                     </div>
 

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { DayPicker, DateRange } from 'react-day-picker';
+import React, { useState, MouseEvent } from 'react';
+import { DayPicker, DateRange, Modifiers } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { format, addDays } from 'date-fns';
 import { DateOverride, TimeSlot, LeavePeriod, EditDateModalProps } from '../../util/interface/IProvider';
+import { toast } from 'react-toastify';
 import { X, PlusCircle, Trash2, CalendarX2 } from 'lucide-react';
 
 const timeOptions = Array.from({ length: 48 }, (_, i) => {
@@ -36,6 +37,15 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
             setSelectedRange(undefined);
         }
     };
+    
+    const handleCalendarClick = (e: MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        const button = target.closest('button.rdp-day_disabled');
+        if (button) {
+            toast.info("You cannot select a past date or a date within a leave period.");
+        }
+    };
+
 
     const handleSaveOverride = (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => {
         const dateString = format(date, 'yyyy-MM-dd');
@@ -96,16 +106,18 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                     Select a date to set specific busy times or mark the entire day as unavailable.
                 </p>
 
-                <DayPicker
-                    mode="single"
-                    selected={selectedDate || undefined}
-                    onDayClick={handleDayClickSingle}
-                    modifiers={{ overridden: overrideDates, leave: disabledDays }}
-                    modifiersClassNames={{ overridden: 'day-overridden', leave: 'day-leave' }}
-                    disabled={disabledDays}
-                    className="w-full"
-                    styles={{ day: { transition: 'all 0.2s ease' } }}
-                />
+                <div onClickCapture={handleCalendarClick}>
+                    <DayPicker
+                        mode="single"
+                        selected={selectedDate || undefined}
+                        onDayClick={handleDayClickSingle}
+                        modifiers={{ overridden: overrideDates, leave: disabledDays }}
+                        modifiersClassNames={{ overridden: 'day-overridden', leave: 'day-leave' }}
+                        disabled={[{ before: new Date() }, ...disabledDays]}
+                        className="w-full"
+                        styles={{ day: { transition: 'all 0.2s ease' } }}
+                    />
+                </div>
 
                 <style>{`
                     .day-overridden { font-weight: bold; color: #4f46e5; background-color: #e0e7ff; }
@@ -119,42 +131,44 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                     Select a start and end date on the calendar below to block off an extended period.
                 </p>
 
-                <DayPicker
-                    mode="range"
-                    selected={selectedRange}
-                    onSelect={handleSelectRange}
-                    modifiers={{ leave: disabledDays }}
-                    modifiersClassNames={{ leave: 'day-leave' }}
-                    disabled={disabledDays}
-                    className="w-full"
-                    styles={{ day: { transition: 'all 0.2s ease' } }}
-                    footer={
-                        selectedRange?.from && (
-                            <div className="mt-4 pt-4 border-t space-y-4">
-                                <p className="text-sm text-gray-600 text-center">
-                                    Selected Period: <strong>{format(selectedRange.from, 'PP')}</strong>
-                                    {selectedRange.to && ` - ${format(selectedRange.to, 'PP')}`}
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="text"
-                                        value={leaveReason}
-                                        onChange={(e) => setLeaveReason(e.target.value)}
-                                        placeholder="Reason for leave (e.g., Vacation)"
-                                        className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
-                                    />
-                                    <button
-                                        onClick={handleAddLeavePeriod}
-                                        disabled={!selectedRange.to}
-                                        className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 disabled:opacity-50"
-                                    >
-                                        Add
-                                    </button>
+                <div onClickCapture={handleCalendarClick}>
+                    <DayPicker
+                        mode="range"
+                        selected={selectedRange}
+                        onSelect={handleSelectRange}
+                        modifiers={{ leave: disabledDays }}
+                        modifiersClassNames={{ leave: 'day-leave' }}
+                        disabled={[{ before: new Date() }, ...disabledDays]}
+                        className="w-full"
+                        styles={{ day: { transition: 'all 0.2s ease' } }}
+                        footer={
+                            selectedRange?.from && (
+                                <div className="mt-4 pt-4 border-t space-y-4">
+                                    <p className="text-sm text-gray-600 text-center">
+                                        Selected Period: <strong>{format(selectedRange.from, 'PP')}</strong>
+                                        {selectedRange.to && ` - ${format(selectedRange.to, 'PP')}`}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={leaveReason}
+                                            onChange={(e) => setLeaveReason(e.target.value)}
+                                            placeholder="Reason for leave (e.g., Vacation)"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
+                                        />
+                                        <button
+                                            onClick={handleAddLeavePeriod}
+                                            disabled={!selectedRange.to}
+                                            className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )
-                    }
-                />
+                            )
+                        }
+                    />
+                </div>
 
                 {leavePeriods.length > 0 && (
                     <div className="mt-6 pt-6 border-t">
@@ -205,6 +219,14 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
     const [busySlots, setBusySlots] = useState<TimeSlot[]>(initialOverride?.busySlots || []);
     const [reason, setReason] = useState(initialOverride?.reason || '');
 
+    const handleUnavailableToggle = (checked: boolean) => {
+        setIsUnavailable(checked);
+        if (checked) {
+            // When toggled ON (unavailable), clear specific busy slots.
+            setBusySlots([]);
+        }
+    };
+
     const handleAddSlot = () => setBusySlots([...busySlots, { start: '09:00', end: '10:00' }]);
     const handleRemoveSlot = (index: number) => setBusySlots(busySlots.filter((_, i) => i !== index));
     const handleSlotTimeChange = (index: number, type: 'start' | 'end', value: string) => {
@@ -235,7 +257,7 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
                                 type="checkbox"
                                 id="unavailable-toggle"
                                 checked={isUnavailable}
-                                onChange={e => setIsUnavailable(e.target.checked)}
+                                onChange={e => handleUnavailableToggle(e.target.checked)}
                                 className="sr-only peer"
                             />
                             <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-300 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>

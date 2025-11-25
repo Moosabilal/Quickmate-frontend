@@ -328,7 +328,10 @@ const ProfileSetting: React.FC = () => {
                     ))}
                 </div>
                 <button
-                    onClick={() => setAddressPopup(true)}
+                    onClick={() => {
+                        setShowAddressModal(true);
+                        setAddressPopup(true)
+                    }}
                     className="mt-6 px-4 py-2 border border-blue-500 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm font-semibold"
                 >
                     Add address

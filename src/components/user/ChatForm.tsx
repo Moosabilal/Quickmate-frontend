@@ -45,7 +45,7 @@ const ChatForm: React.FC<ChatFormProps> = ({
                     ...chatHistory, 
                     { 
                         ...newUserMessage,
-                        text: `Using the details provided above, please address this query: ${userMessage}` 
+                        text: userMessage
                     }
                 ]);
                 setIsLoading(false);

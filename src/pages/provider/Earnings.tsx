@@ -31,6 +31,7 @@ const EarningsAnalyticsContent: React.FC = () => {
       try {
         const period = activeTab.toLowerCase() as 'week' | 'month';
         const result = await providerService.getEarningsAnalytics(period);
+        console.log('the result ', result)
         
         if (result.success) {
           setData(result.data);

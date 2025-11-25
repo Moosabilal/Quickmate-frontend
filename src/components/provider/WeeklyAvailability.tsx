@@ -8,12 +8,9 @@ interface WeeklyAvailabilityProps {
     setSchedule: React.Dispatch<React.SetStateAction<DaySchedule[]>>;
 }
 
-const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const hours = Math.floor(i / 2);
-    const minutes = (i % 2) * 30;
-    const formattedHours = String(hours).padStart(2, '0');
-    const formattedMinutes = String(minutes).padStart(2, '0');
-    return `${formattedHours}:${formattedMinutes}`;
+const timeOptions = Array.from({ length: 24 }, (_, i) => {
+    const formattedHours = String(i).padStart(2, '0');
+    return `${formattedHours}:00`;
 });
 
 export const WeeklyAvailability: React.FC<WeeklyAvailabilityProps> = ({ schedule, setSchedule }) => {

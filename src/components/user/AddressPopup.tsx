@@ -66,16 +66,18 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          let lat = position.coords.latitude;
-          let lng = position.coords.longitude;
-          lat = 12.6619;
-          lng = 74.8880;
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
 
-          const withinRange = await bookingService.findProviderRange(serviceId!, lat, lng, radius);
+          console.log('the lat and lang', lat, lng)
 
-          if (!withinRange) {
-            setError("No service provider found at your location. Please select a different address.");
-            return;
+          if (serviceId) {
+            const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
+
+            if (!withinRange) {
+              setError("No service provider found at your location. Please select a different address.");
+              return; 
+            }
           }
 
           const locationData = await providerService.getState(lat, lng);
@@ -111,7 +113,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         console.error("Geolocation error:", error);
         toast.error("Unable to retrieve your location. Please check your browser's location permissions.");
         setLoading(false);
-      }
+      },
+      { enableHighAccuracy: true }
     );
   };
 
@@ -182,7 +185,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       const res = await addressService.getAddress()
       setMockAddresses(res)
     } catch (err) {
-      if(err instanceof Error){
+      if (err instanceof Error) {
         toast.error(err.message);
       } else {
         toast.error('Something went wrong. Please try again.');
@@ -222,8 +225,8 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             <div>
               {error && <p className="text-red-600 mb-2">{error}</p>}
             </div>
-            <div className="flex flex-col gap-4">
-              {serviceId && <div className="flex items-center gap-4">
+            {serviceId &&  <><div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
                 <label className="block text-sm font-medium text-gray-700 whitespace-nowrap">
                   Search Radius: {radius} km
                 </label>
@@ -247,7 +250,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                   onChange={(e) => setRadius(Number(e.target.value))}
                   className="w-16 px-2 py-1 border rounded-md text-center"
                 />
-              </div>}
+              </div>
               <div className="flex justify-between items-center">
                 <label className="block text-base font-semibold text-gray-700 flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
@@ -262,10 +265,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                 </button>
               </div>
 
-
             </div>
-
-
 
 
             <div className="space-y-3">
@@ -290,7 +290,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
               >
                 + Add New Address
               </button>
-            </div>
+            </div></>}
           </div>
           {showAddAddress && (
             <div className="border-t pt-4">

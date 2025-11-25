@@ -8,6 +8,7 @@ export interface ChatbotMessage {
     isError?: boolean;
     timestamp?: Date;
     id?: string;
+    options?: any[];
 }
 
 export interface ChatMessageProps {
@@ -49,7 +50,8 @@ export interface IChatbotResponse {
         orderId: string;
         amount: number;
         bookingData: any; 
-    };
+    },
+    options?: any[];
 }
 
 export interface IChatPaymentVerify {

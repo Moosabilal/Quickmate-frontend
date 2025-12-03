@@ -24,8 +24,10 @@ const ChatRoom: React.FC = () => {
     <div className="flex flex-col h-screen bg-[#E5DDD5]">
       <header className="flex items-center p-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white shadow-sm z-10 flex-shrink-0 border-b dark:border-gray-700">
         <button 
+          type="button"
           onClick={() => navigate('/chat')} 
           className="mr-4 lg:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          aria-label="Back to chat list"
         >
           <ArrowLeft size={24} />
         </button>
@@ -41,6 +43,8 @@ const ChatRoom: React.FC = () => {
 
         <div className="flex items-center space-x-4">
           <button 
+            type="button"
+            aria-label="Start video call"
             onClick={handleStartVideoCall} 
             className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
           >
@@ -50,7 +54,7 @@ const ChatRoom: React.FC = () => {
       </header>
       
       <div 
-        className="flex-grow overflow-hidden" 
+        className="flex-grow overflow-hidden mb-20" 
         style={{ backgroundImage: "url('https://i.redd.it/qwd83nc4xxf41.jpg')" }}
       >
         <BookingChatVideo 

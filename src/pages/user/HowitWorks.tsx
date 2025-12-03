@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HowItWorksPage: React.FC = () => {
+  const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
 
@@ -17,9 +19,11 @@ const HowItWorksPage: React.FC = () => {
             <p className="text-lg md:text-xl text-gray-700 max-w-2xl mb-10">
               Find, book, and manage local services with ease.
             </p>
-            {/* <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105">
+            <button 
+            onClick={() => navigate('/services')}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105">
               Get Started
-            </button> */}
+            </button>
           </div>
         </section>
 

@@ -147,6 +147,7 @@ const Header = () => {
                                                 Service Dashboard
                                             </Link>}
                                             <button
+                                                type='button'
                                                 onClick={() => setShowDeleteModal(true)}
                                                 className="w-full text-left flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                                             >

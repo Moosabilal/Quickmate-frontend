@@ -14,7 +14,6 @@ import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { bookingService } from '../../services/bookingService';
 
 declare var Razorpay: any;
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;

@@ -46,12 +46,16 @@ const IncomingCallModal: React.FC = () => {
         </p>
         <div className="flex justify-center space-x-6">
           <button
+            type="button"
+            aria-label="Decline call"
             onClick={handleDecline}
             className="p-4 bg-red-600 text-white rounded-full hover:bg-red-700 transition"
           >
             <PhoneOff />
           </button>
           <button
+            type="button"
+            aria-label="Accept call"
             onClick={handleAccept}
             className="p-4 bg-green-600 text-white rounded-full hover:bg-green-700 transition"
           >

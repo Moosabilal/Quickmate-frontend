@@ -20,64 +20,64 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   const getItemConfig = (type: DeleteConfirmationTypes) => {
     const configs = {
       [DeleteConfirmationTypes.SERVICE]: {
-        icon: <Shield className="w-6 h-6 text-blue-600" />,
-        iconBg: 'bg-blue-100',
+        icon: <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />,
+        iconBg: 'bg-blue-100 dark:bg-blue-900/30',
         title: 'Delete Service',
         defaultMessage: 'Are you sure you want to delete this service? This will remove it from your offerings and customers will no longer be able to book it.',
         warningText: 'This action will also cancel any pending bookings for this service.',
         confirmText: 'Delete Service'
       },
       [DeleteConfirmationTypes.BOOKING]: {
-        icon: <Calendar className="w-6 h-6 text-purple-600" />,
-        iconBg: 'bg-purple-100',
+        icon: <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
+        iconBg: 'bg-purple-100 dark:bg-purple-900/30',
         title: 'Cancel Booking',
         defaultMessage: 'Are you sure you want to cancel this booking?.',
         warningText: '',
         confirmText: 'Cancel Booking'
       },
       [DeleteConfirmationTypes.CERTIFICATE]: {
-        icon: <FileText className="w-6 h-6 text-green-600" />,
-        iconBg: 'bg-green-100',
+        icon: <FileText className="w-6 h-6 text-green-600 dark:text-green-400" />,
+        iconBg: 'bg-green-100 dark:bg-green-900/30',
         title: 'Delete Certificate',
         defaultMessage: 'Are you sure you want to delete this certificate? This may affect your service credibility.',
         warningText: 'Customers will no longer see this certification on your profile.',
         confirmText: 'Delete Certificate'
       },
       [DeleteConfirmationTypes.PORTFOLIO]: {
-        icon: <Star className="w-6 h-6 text-yellow-600" />,
-        iconBg: 'bg-yellow-100',
+        icon: <Star className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />,
+        iconBg: 'bg-yellow-100 dark:bg-yellow-900/30',
         title: 'Delete Portfolio Item',
         defaultMessage: 'Are you sure you want to delete this portfolio item? This will remove it from your showcase.',
         warningText: 'This may impact how customers perceive your work quality.',
         confirmText: 'Delete Portfolio'
       },
       [DeleteConfirmationTypes.PROFILE]: {
-        icon: <User className="w-6 h-6 text-red-600" />,
-        iconBg: 'bg-red-100',
+        icon: <User className="w-6 h-6 text-red-600 dark:text-red-400" />,
+        iconBg: 'bg-red-100 dark:bg-red-900/30',
         title: titleProp,
         confirmText: confirmTextProp,
         defaultMessage: customMessage || "Are you sure?",
         warningText: "This will remove access to this site."
       },
       [DeleteConfirmationTypes.REVIEW]: {
-        icon: <Star className="w-6 h-6 text-orange-600" />,
-        iconBg: 'bg-orange-100',
+        icon: <Star className="w-6 h-6 text-orange-600 dark:text-orange-400" />,
+        iconBg: 'bg-orange-100 dark:bg-orange-900/30',
         title: 'Delete Review Response',
         defaultMessage: 'Are you sure you want to delete your response to this review?',
         warningText: 'Customers will no longer see your response to this review.',
         confirmText: 'Delete Response'
       },
       [DeleteConfirmationTypes.LOGOUT]: {
-        icon: <LogOut className="w-6 h-6 text-gray-600" />,
-        iconBg: 'bg-gray-100',
+        icon: <LogOut className="w-6 h-6 text-gray-600 dark:text-gray-400" />,
+        iconBg: 'bg-gray-100 dark:bg-gray-700',
         title: 'Logout',
         defaultMessage: 'Are you sure you want to log out? You will need to sign in again to access your account.',
         warningText: 'Make sure you have saved your work before logging out.',
         confirmText: 'Logout'
       },
       [DeleteConfirmationTypes.SUBSCRIPTION]: {
-        icon: <CreditCard className="w-6 h-6 text-red-600" />,
-        iconBg: 'bg-red-100',
+        icon: <CreditCard className="w-6 h-6 text-red-600 dark:text-red-400" />,
+        iconBg: 'bg-red-100 dark:bg-red-900/30',
         title: 'Remove Subscription Plan',
         defaultMessage: 'Are you sure you want to delete this subscription plan? Users currently subscribed may be affected.',
         warningText: 'This action cannot be undone. Ensure no active users depend on this plan before proceeding.',
@@ -111,61 +111,63 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-auto transform transition-all">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full mx-auto transform transition-all border border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-xl ${config.iconBg}`}>
               {config.icon}
             </div>
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
               {config.title}
             </h3>
           </div>
           {!isLoading && (
             <button
+              type="button"
+              aria-label="Close"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
           )}
         </div>
 
         <div className="p-6">
-          <p className="text-gray-700 leading-relaxed mb-4">
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
             {message}
           </p>
 
           {itemName && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-xl border-l-4 border-red-400">
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border-l-4 border-red-400 dark:border-red-500">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 mb-1">
+                  <p className="font-semibold text-gray-900 dark:text-white mb-1">
                     {itemType.charAt(0).toUpperCase() + itemType.slice(1)}:
-                    <span className="text-red-600 ml-2">{itemName}</span>
+                    <span className="text-red-600 dark:text-red-400 ml-2">{itemName}</span>
                   </p>
                   {itemDetails && (
-                    <p className="text-sm text-gray-600 whitespace-pre-line">{itemDetails}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{itemDetails}</p>
                   )}
                 </div>
-                <Trash2 className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <Trash2 className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
               </div>
             </div>
           )}
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 rounded-xl p-4 mb-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-yellow-800 mb-1">Important Notice</p>
-                <p className="text-sm text-yellow-700">
+                <p className="font-medium text-yellow-800 dark:text-yellow-400 mb-1">Important Notice</p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300/80">
                   {config.warningText}
                 </p>
                 {additionalInfo && (
-                  <p className="text-sm text-yellow-700 mt-2 whitespace-pre-line">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300/80 mt-2 whitespace-pre-line">
                     {additionalInfo}
                   </p>
                 )}
@@ -176,18 +178,18 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
           <button
             onClick={handleCancel}
             disabled={isLoading}
-            className="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="px-6 py-2.5 text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors flex items-center gap-2 min-w-[140px] justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 text-white bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 rounded-xl transition-colors flex items-center gap-2 min-w-[140px] justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg dark:shadow-red-900/20"
           >
             {isLoading ? (
               <>

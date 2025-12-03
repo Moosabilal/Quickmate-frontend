@@ -193,6 +193,9 @@ const ProfileSetting: React.FC = () => {
                                         value={editingName}
                                         onChange={(e) => setEditingName(e.target.value)}
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                        title="Full Name"
+                                        placeholder="Enter your full name"
+                                        
                                     />
                                 </div>
                                 <div>

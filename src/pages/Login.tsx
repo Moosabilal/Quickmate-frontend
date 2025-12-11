@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
 import { Eye, EyeOff } from "lucide-react";
+import { isAxiosError } from 'axios';
 import { FormTouched, ValidationErrors } from '../util/interface/IUser';
 
 const Login = () => {
@@ -87,8 +88,12 @@ const Login = () => {
                 dispatch(updateProviderProfile({ provider: providerData }))
             }
             toast.success(`Welcome back, ${user.name}!`);
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+        } catch (err) {
+            let errorMessage = 'Login failed. Please check your credentials.';
+            if (isAxiosError(err) && err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            }
+            setError(errorMessage);
             toast.error(errorMessage);
         } finally {
             setLoading(false);
@@ -214,9 +219,13 @@ const Login = () => {
                                     dispatch(login({ user: res.data.user }));
                                     toast.success(`Welcome, ${res.data.user.name}`);
                                     navigate('/');
-                                } catch (error: any) {
+                                } catch (error) {
                                     console.error(error);
-                                    toast.error('Google login failed. Try again.');
+                                    let errorMessage = 'Google login failed. Try again.';
+                                    if (isAxiosError(error) && error.response?.data?.message) {
+                                        errorMessage = error.response.data.message;
+                                    }
+                                    toast.error(errorMessage);
                                 }
                             }}
                             onError={() => toast.error('Google login failed')}

@@ -1,46 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Star, Search, ChevronDown, Trash2, UserX, Check, X, CheckCircle } from 'lucide-react';
+import { Star, Search, ChevronDown, Trash2, UserX, Check, X, CheckCircle } from 'lucide-react';
 import { reviewService } from '../../services/reviewService';
 import { IReviewAdminFilters, ReviewData, ReviewStatus } from '../../util/interface/IReview';
 import Pagination from '../../components/admin/Pagination';
 import { useDebounce } from '../../hooks/useDebounce';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/authService';
+import { isAxiosError } from 'axios';
 import { ReviewAction } from '../../util/interface/IReviewActionModel';
 import ReviewActionModal from '../../components/admin/ReviewActionModal';
 import { StatusBadge } from '../../components/admin/ReviewStatus';
+import { ReviewTableRowSkeleton } from '../../components/admin/ReviewTableRowSkeleton';
 
 const REVIEWS_PER_PAGE = 10
-
-const ReviewTableRowSkeleton: React.FC = () => (
-    <tr className="animate-pulse">
-        <td className="px-6 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="flex space-x-3">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-            </div>
-        </td>
-    </tr>
-);
 
 const ReviewModerationPage: React.FC = () => {
     const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -124,7 +96,7 @@ const ReviewModerationPage: React.FC = () => {
     const renderStars = (rating: number) => (
         <div className="flex text-amber-400">
             {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`w-4 h-4 ${i < rating ? 'fill-amber-400' : 'text-gray-300'}`} />
+                <Star key={i} className={`w-4 h-4 ${i < rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-gray-600'}`} />
             ))}
         </div>
     );
@@ -195,8 +167,14 @@ const ReviewModerationPage: React.FC = () => {
                 fetchReviews();
             }
             handleModalClose();
-        } catch (err: any) {
-            toast.error(err.message || "An error occurred.");
+        } catch (err) {
+            let errorMessage = "An error occurred.";
+            if (isAxiosError(err) && err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+            toast.error(errorMessage);
         } finally {
             setIsProcessing(false);
         }
@@ -204,44 +182,92 @@ const ReviewModerationPage: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-700 flex flex-col transition-colors duration-300">
             <div className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-                <div className="flex items-center space-x-4 mb-6">
-                    <button className="p-2 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors"><ArrowLeft className="w-5 h-5 text-gray-600" /></button>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Reviews</h1>
-                </div>
-                <p className="text-gray-600 mb-6">Manage user reviews to maintain platform trust and quality.</p>
+                
+                <p className="text-slate-600 dark:text-gray-300 mb-6">Manage user reviews to maintain platform trust and quality.</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="md:col-span-2">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="lg:col-span-2">
                         <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 text-gray-400" /></div>
-                            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search by user, provider, or content..." className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200" />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-slate-400 dark:text-gray-400" />
+                            </div>
+                            <input 
+                                type="text" 
+                                value={searchTerm} 
+                                onChange={(e) => setSearchTerm(e.target.value)} 
+                                placeholder="Search by user, provider, or content..." 
+                                className="block w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm" 
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="relative">
-                            <button type="button" onClick={() => setIsRatingOpen(!isRatingOpen)} className="inline-flex justify-between items-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">{selectedRating === 'All' ? 'Rating' : selectedRating}<ChevronDown className="-mr-1 ml-2 h-5 w-5" /></button>
-                            {isRatingOpen && (<div className="absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"><div className="py-1">{ratingOptions.map((option) => (<button key={option} onClick={() => { setSelectedRating(option); setIsRatingOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{option}</button>))}</div></div>)}
-                        </div>
-                        <div className="relative">
-                            <button type="button" onClick={() => setIsDateOpen(!isDateOpen)} className="inline-flex justify-between items-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">{selectedDate}<ChevronDown className="-mr-1 ml-2 h-5 w-5" /></button>
-                            {isDateOpen && (<div className="absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"><div className="py-1">{dateOptions.map((option) => (<button key={option} onClick={() => { setSelectedDate(option); setIsDateOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{option}</button>))}</div></div>)}
+                            <button 
+                                type="button" 
+                                onClick={() => setIsRatingOpen(!isRatingOpen)} 
+                                className="inline-flex justify-between items-center w-full px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                            >
+                                {selectedRating === 'All' ? 'All Ratings' : selectedRating}
+                                <ChevronDown className={`-mr-1 ml-2 h-5 w-5 transition-transform ${isRatingOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isRatingOpen && (
+                                <div className="absolute z-10 mt-2 w-full rounded-xl shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="py-1">
+                                        {ratingOptions.map((option) => (
+                                            <button 
+                                                key={option} 
+                                                onClick={() => { setSelectedRating(option); setIsRatingOpen(false); }} 
+                                                className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
+                        <div className="relative">
+                            <button 
+                                type="button" 
+                                onClick={() => setIsDateOpen(!isDateOpen)} 
+                                className="inline-flex justify-between items-center w-full px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                            >
+                                {selectedDate}
+                                <ChevronDown className={`-mr-1 ml-2 h-5 w-5 transition-transform ${isDateOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isDateOpen && (
+                                <div className="absolute z-10 mt-2 w-full rounded-xl shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="py-1">
+                                        {dateOptions.map((option) => (
+                                            <button 
+                                                key={option} 
+                                                onClick={() => { setSelectedDate(option); setIsDateOpen(false); }} 
+                                                className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="mb-6 border-b border-gray-200">
+                <div className="mb-6 border-b border-slate-200 dark:border-gray-600">
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.label}
                                 onClick={() => setActiveTab(tab.status)}
-                                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${tab.status === activeTab
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
+                                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    tab.status === activeTab
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                                    : 'border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200 hover:border-slate-300 dark:hover:border-gray-500'
+                                }`}
                             >
                                 {tab.label}
                             </button>
@@ -249,67 +275,91 @@ const ReviewModerationPage: React.FC = () => {
                     </nav>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-gray-600/50 transition-colors">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-slate-200 dark:divide-gray-700">
+                            <thead className="bg-slate-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">User</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Provider</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[250px]">Review</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Rating</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Date</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Status</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Actions</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[140px]">User</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[140px]">Provider</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[250px]">Review</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Rating</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Date</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Status</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider min-w-[180px]">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-slate-200 dark:divide-gray-700">
                                 {isLoading ? (
                                     [...Array(5)].map((_, i) => <ReviewTableRowSkeleton key={i} />)
                                 ) : error ? (
-                                    <tr><td colSpan={6} className="px-6 py-8 text-center text-red-500">{error}</td></tr>
+                                    <tr><td colSpan={7} className="px-6 py-8 text-center text-red-500 dark:text-red-400 font-medium">{error}</td></tr>
                                 ) : reviews.length > 0 ? (
                                     reviews.map((review) => (
-                                        <tr key={review.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{review.user.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{review.provider.name}</td>
-                                            <td className="px-6 py-4 max-w-sm text-sm text-gray-700"><p className="line-clamp-2">{review.reviewContent}</p></td>
+                                        <tr key={review.id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{review.user.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-gray-300">{review.provider.name}</td>
+                                            <td className="px-6 py-4 max-w-sm text-sm text-slate-700 dark:text-gray-300">
+                                                <p className="line-clamp-2" title={review.reviewContent}>{review.reviewContent}</p>
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{renderStars(review.rating)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{review.date}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">{review.date}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <StatusBadge status={review.status} />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex space-x-3">
+                                                <div className="flex items-center space-x-2">
                                                     {activeTab === ReviewStatus.PENDING && (
                                                         <>
-                                                            <button onClick={() => handleApproveClick(review)} className="flex items-center gap-1 text-green-600 hover:text-green-900">
-                                                                <Check className="w-4 h-4" /> Approve
+                                                            <button 
+                                                                onClick={() => handleApproveClick(review)} 
+                                                                className="flex items-center gap-1 px-2 py-1 text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20 rounded transition-colors"
+                                                                title="Approve Review"
+                                                            >
+                                                                <Check className="w-4 h-4" />
                                                             </button>
-                                                            <span className="text-gray-300">|</span>
-                                                            <button onClick={() => handleRejectClick(review)} className="flex items-center gap-1 text-red-600 hover:text-red-900">
-                                                                <X className="w-4 h-4" /> Reject
+                                                            <span className="text-slate-300 dark:text-gray-600">|</span>
+                                                            <button 
+                                                                onClick={() => handleRejectClick(review)} 
+                                                                className="flex items-center gap-1 px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                                title="Reject Review"
+                                                            >
+                                                                <X className="w-4 h-4" />
                                                             </button>
                                                         </>
                                                     )}
                                                     {activeTab === ReviewStatus.APPROVED && (
-                                                        <button onClick={() => handleRejectClick(review)} className="flex items-center gap-1 text-red-600 hover:text-red-900">
+                                                        <button 
+                                                            onClick={() => handleRejectClick(review)} 
+                                                            className="flex items-center gap-1 px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                        >
                                                             <Trash2 className="w-4 h-4" /> Remove
                                                         </button>
                                                     )}
                                                     {activeTab === ReviewStatus.REMOVED && (
-                                                        <button onClick={() => handleApproveClick(review)} className="flex items-center gap-1 text-green-600 hover:text-green-900">
+                                                        <button 
+                                                            onClick={() => handleApproveClick(review)} 
+                                                            className="flex items-center gap-1 px-2 py-1 text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20 rounded transition-colors"
+                                                        >
                                                             <Check className="w-4 h-4" /> Re-Approve
                                                         </button>
                                                     )}
-                                                    <span className="text-gray-300">|</span>
+                                                    <span className="text-slate-300 dark:text-gray-600">|</span>
                                                     {review.user.isVerified ? (
-                                                        <button onClick={() => handleBanClick(review)} className="flex items-center gap-1 text-red-600 hover:text-red-900">
-                                                            <UserX className="w-4 h-4" /> Ban User
+                                                        <button 
+                                                            onClick={() => handleBanClick(review)} 
+                                                            className="flex items-center gap-1 px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                            title="Ban User"
+                                                        >
+                                                            <UserX className="w-4 h-4" />
                                                         </button>
                                                     ) : (
-                                                        <button onClick={() => handleBanClick(review)} className="flex items-center gap-1 text-green-600 hover:text-green-900">
-                                                            <CheckCircle className="w-4 h-4" /> Unban User
+                                                        <button 
+                                                            onClick={() => handleBanClick(review)} 
+                                                            className="flex items-center gap-1 px-2 py-1 text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20 rounded transition-colors"
+                                                            title="Unban User"
+                                                        >
+                                                            <CheckCircle className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                 </div>
@@ -317,13 +367,13 @@ const ReviewModerationPage: React.FC = () => {
                                         </tr>
                                     ))
                                 ) : (
-                                    <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">No reviews found matching your criteria.</td></tr>
+                                    <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-500 dark:text-gray-400">No reviews found matching your criteria.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                     {!isLoading && reviews.length > 0 && (
-                        <div className="px-4 py-3 border-t border-gray-200">
+                        <div className="bg-slate-50 dark:bg-gray-700/30 px-6 py-4 border-t border-slate-200 dark:border-gray-700 rounded-b-2xl">
                             <Pagination
                                 currentPage={pagination.page}
                                 totalPages={pagination.totalPages}
@@ -335,6 +385,7 @@ const ReviewModerationPage: React.FC = () => {
                     )}
                 </div>
             </div>
+            
             {showModal && selectedReview && modalAction && (
                 <ReviewActionModal
                     isOpen={showModal}

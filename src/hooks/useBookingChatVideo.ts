@@ -8,7 +8,7 @@ import { useCallStore } from "../app/callStore";
 import { fileService } from "../services/fileService";
 import { toast } from "react-toastify";
 
-export function useBookingChatVideo(currentUserId: string, joiningId: string) {
+export function useBookingChatVideo(currentUserId: string, joiningId: string, userName: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const { setIncomingCall } = useCallStore();
@@ -26,7 +26,7 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string) {
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const localStreamRef = useRef<MaybeStream>(null);
     const remoteStreamRef = useRef<MaybeStream>(null);
-    const iceCandidateQueueRef = useRef<RTCIceCandidate[]>([]);
+    const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
     const isAcceptingCallRef = useRef(false);
 
     const cleanupCall = useCallback(() => {
@@ -145,7 +145,7 @@ useEffect(() => {
             setLoadingHistory(true);
             const data = await bookingService.getAllPreviousChat(joiningId);
             
-            const formatted = data.map((msg: any) => ({
+            const formatted = data.map((msg: ChatMessage) => ({
                 joiningId: String(msg.joiningId),
                 senderId: String(msg.senderId),
                 timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
@@ -173,7 +173,7 @@ useEffect(() => {
 
         socket.emit("joinBookingRoom", joiningId);
 
-        const chatHandler = (msg: any) => {
+        const chatHandler = (msg: ChatMessage) => {
             console.log("💬 New chat message received:", msg);
 
             const parsed: ChatMessage = {
@@ -191,14 +191,23 @@ useEffect(() => {
             setMessages((prev) => [...prev, parsed]);
         };
 
-        const offerHandler = async (payload: any) => {
+        const offerHandler = async (payload: {
+            joiningId: string;
+            offer: RTCSessionDescriptionInit;
+            fromUserId: string;
+            fromUserName?: string;
+        }) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) {
                 return;
             }
             setIncomingCall(payload);
         };
 
-        const answerHandler = async (payload: any) => {
+        const answerHandler = async (payload: {
+            joiningId: string;
+            answer: RTCSessionDescriptionInit;
+            fromUserId: string;
+        }) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             const pc = ensurePeerConnection();
             try {
@@ -211,7 +220,11 @@ useEffect(() => {
             }
         };
 
-        const iceHandler = async (payload: any) => {
+        const iceHandler = async (payload: {
+            joiningId: string;
+            candidate: RTCIceCandidateInit;
+            fromUserId: string;
+        }) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             const pc = ensurePeerConnection();
             if (pc.remoteDescription) {
@@ -221,7 +234,7 @@ useEffect(() => {
             }
         };
 
-        const hangupHandler = (payload: any) => {
+        const hangupHandler = (payload: { joiningId: string; fromUserId: string }) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
 
             cleanupCall();
@@ -230,7 +243,11 @@ useEffect(() => {
             setCallStatus("ended");
         };
 
-        const callRejectedHandler = (payload: any) => {
+        const callRejectedHandler = (payload: {
+            joiningId: string;
+            fromUserId: string;
+            toUserId: string;
+        }) => {
             if (payload.joiningId !== joiningId || payload.fromUserId === currentUserId) return;
             cleanupCall();
             setIncomingCall(null);
@@ -334,7 +351,7 @@ useEffect(() => {
                 joiningId,
                 offer,
                 fromUserId: currentUserId,
-                fromUserName: currentUserId,
+                fromUserName: userName,
             });
         } catch (error) {
             console.error("Error in startCall:", error);
@@ -350,7 +367,7 @@ useEffect(() => {
             setCallStatus("ended");
             cleanupCall();
         }
-    }, [joiningId, currentUserId, ensurePeerConnection, cleanupCall]);
+    }, [joiningId, currentUserId, ensurePeerConnection, cleanupCall, userName]);
 
 
 

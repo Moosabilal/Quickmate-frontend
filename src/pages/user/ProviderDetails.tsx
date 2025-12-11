@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { IProviderProfile, DaySchedule, IServiceDetails } from '../../util/interface/IProvider';
+import { isAxiosError } from 'axios';
 
 
 const ProviderDetailsPage: React.FC = () => {
@@ -35,8 +36,14 @@ const ProviderDetailsPage: React.FC = () => {
         } else {
           throw new Error("Failed to fetch provider data.");
         }
-      } catch (err: any) {
-        setError(err.message || "Failed to load provider details.");
+      } catch (err) {
+        let errorMessage = "Failed to load provider details.";
+        if (isAxiosError(err) && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        setError(errorMessage);
         console.error(err);
       } finally {
         setLoading(false);

@@ -155,20 +155,20 @@ export interface Booking {
   category: string;
 }
 
-export interface StatData {
-  toFixed: any;
-  current: number;
-  previous: number;
-  change: number;
-}
+// export interface StatData {
+//   toFixed: any;
+//   current: number;
+//   previous: number;
+//   change: number;
+// }
 
-export interface Stats {
-  ratingHistory: never[];
-  earnings: StatData;
-  completedJobs: StatData;
-  upcomingBookings: StatData;
-  averageRating: StatData;
-}
+// export interface Stats {
+//   ratingHistory: never[];
+//   earnings: StatData;
+//   completedJobs: StatData;
+//   upcomingBookings: StatData;
+//   averageRating: StatData;
+// }
 
 
 export interface IDashboardResponse {

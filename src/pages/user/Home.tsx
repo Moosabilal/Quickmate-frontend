@@ -5,7 +5,7 @@ import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import type { ICategoryResponse, IserviceResponse } from '../../util/interface/ICategory';
 import type { IFeaturedProviders } from '../../util/interface/IProvider';
-import ChatForm from '../../components/user/ChatForm'; 
+import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
@@ -14,8 +14,30 @@ import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
+import { isAxiosError } from 'axios';
+import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
 
-declare var Razorpay: any;
+const testimonials: Testimonial[] = [
+    {
+        id: 1,
+        author: 'Sarah F.',
+        rating: 5,
+        text: 'QuickMate made finding a reliable cleaner so easy! Jessica was efficient and amazing, my home has never looked better!',
+    },
+    {
+        id: 2,
+        author: 'David L.',
+        rating: 5,
+        text: 'Highly recommend! Peter was insightful in helping my Music Theory! He was professional and helped me grasp difficult concepts.',
+    },
+];
+
+const defaultQuickActions: QuickAction[] = [
+    { id: '1', label: 'Get Started', action: 'Get Started' },
+    { id: '2', label: 'Pricing', action: 'Pricing' },
+    { id: '3', label: 'Contact', action: 'Contact' }
+];
+
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
@@ -64,27 +86,6 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
     );
 };
 
-const testimonials: Testimonial[] = [
-    {
-        id: 1,
-        author: 'Sarah F.',
-        rating: 5,
-        text: 'QuickMate made finding a reliable cleaner so easy! Jessica was efficient and amazing, my home has never looked better!',
-    },
-    {
-        id: 2,
-        author: 'David L.',
-        rating: 5,
-        text: 'Highly recommend! Peter was insightful in helping my Music Theory! He was professional and helped me grasp difficult concepts.',
-    },
-];
-
-const defaultQuickActions: QuickAction[] = [
-    { id: '1', label: 'Get Started', action: 'Get Started' },
-    { id: '2', label: 'Pricing', action: 'Pricing' },
-    { id: '3', label: 'Contact', action: 'Contact' }
-];
-
 const Home: React.FC = () => {
     const [fetchedCategories, setFetchedCategories] = useState<ICategoryResponse[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -92,7 +93,7 @@ const Home: React.FC = () => {
     const [featuredProviders, setFeaturedProviders] = useState<IFeaturedProviders[]>([]);
     const [popularServices, setPopularServices] = useState<IserviceResponse[]>([]);
     const [trendingServices, setTrendingServices] = useState<IserviceResponse[]>([]);
-    
+
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatbotMessage[]>([{
         hideInChat: true,
@@ -101,8 +102,8 @@ const Home: React.FC = () => {
         timestamp: new Date(),
         id: 'system-prompt'
     }]);
-    const [showChatbot, setShowChatbot] = useState<boolean>(false);    
-    
+    const [showChatbot, setShowChatbot] = useState<boolean>(false);
+
     const [isMinimized, setIsMinimized] = useState<boolean>(false);
     const [unreadCount, setUnreadCount] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState<string>("");
@@ -145,9 +146,9 @@ const Home: React.FC = () => {
 
             try {
                 const [
-                    categoriesResponse, 
-                    providersResponse, 
-                    popularResponse, 
+                    categoriesResponse,
+                    providersResponse,
+                    popularResponse,
                     trendingResponse
                 ] = await Promise.all([
                     categoryService.getTopLevelCategories(),
@@ -217,14 +218,14 @@ const Home: React.FC = () => {
         }
 
         const userMessage = history[history.length - 1].text;
-        
+
         try {
             const botResponse = await chatbotService.sendMessage(sessionId, userMessage);
 
             console.log('the bot response in frontend', botResponse)
-            
+
             setChatHistory(prev => [
-                ...prev, 
+                ...prev,
                 { ...botResponse, timestamp: new Date(), id: Date.now().toString() }
             ]);
 
@@ -232,36 +233,36 @@ const Home: React.FC = () => {
                 const { orderId, amount, bookingData } = botResponse.payload;
                 console.log('the return booking data', orderId, amount, bookingData)
                 
-                const options = {
-                    key: paymentKey, 
-                    amount: amount * 100, 
+                const options: RazorpayOptions = {
+                    key: paymentKey,
+                    amount: amount * 100,
                     currency: "INR",
                     name: "QuickMate Booking",
                     description: `Booking for ${bookingData.serviceId}`,
                     order_id: orderId,
-                    
-                    handler: async (response: any) => {
+
+                    handler: async (response: RazorpayResponse) => {
                         try {
-                            
+
                             const verifyData = {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature,
                                 bookingData: bookingData
                             };
-                            
-                            const resData = await chatbotService.verifyChatPayment(sessionId,verifyData); 
+
+                            const resData = await chatbotService.verifyChatPayment(sessionId, verifyData);
 
                             console.log('the chatpayment restult', resData)
-                            
+
                             const successMsg = `✅ Payment successful! Your booking (ID: ${resData.booking._id}) is confirmed. Redirecting you now...`;
                             setChatHistory(prev => [
                                 ...prev,
                                 { role: 'model', text: successMsg, timestamp: new Date(), id: Date.now().toString() }
                             ]);
-                            
+
                             setTimeout(() => {
-                                navigate(`/confirmationModel/${resData.booking._id}`); 
+                                navigate(`/confirmationModel/${resData.booking._id}`);
                             }, 2000);
 
                         } catch (err) {
@@ -269,38 +270,37 @@ const Home: React.FC = () => {
                             toast.error("Payment verification failed. Please contact support.");
                         }
                     },
-                    
+
                     prefill: {
                         name: user?.name || bookingData.customerName,
                         email: user?.email || "",
                         contact: bookingData.phone,
                     },
                     theme: { color: "#3057b0ff" },
-                    
+
                     modal: {
                         ondismiss: () => {
                             toast.info("Payment cancelled.");
                         }
                     }
                 };
-                
-                const rzp1 = new Razorpay(options);
-                rzp1.on('payment.failed', function (response: any){
+
+                const rzp1 = new window.Razorpay(options);
+                rzp1.on('payment.failed', function (response: RazorpayPaymentFailedResponse) {
                     toast.error(response.error.description || "Payment failed");
                 });
                 rzp1.open();
             }
-
-        } catch (error: any) {
+        } catch (error) {
+            let errorMessage = "Sorry, I'm having trouble connecting.";
+            if (isAxiosError(error) && error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
             setChatHistory(prev => [
                 ...prev,
-                { 
-                    role: 'model', 
-                    text: error.message || "Sorry, I'm having trouble connecting.", 
-                    isError: true, 
-                    timestamp: new Date(),
-                    id: Date.now().toString()
-                }
+                { role: 'model', text: errorMessage, isError: true, timestamp: new Date(), id: Date.now().toString() }
             ]);
         }
     }, [sessionId, user, navigate]);
@@ -321,8 +321,6 @@ const Home: React.FC = () => {
 
         setChatHistory(prev => [...prev, userMessage]);
 
-        // Use a timeout to ensure the state update for the user message has rendered
-        // before we send it to the backend.
         setTimeout(() => {
             generateBotResponse([...chatHistory, userMessage]);
         }, 0);

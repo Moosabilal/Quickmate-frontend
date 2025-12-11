@@ -8,8 +8,9 @@ import { IProviderProfile } from '../../util/interface/IProvider';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { SubscriptionActionModal } from '../../components/provider/SubscriptionActionModal';
+import { isAxiosError } from 'axios';
+import { RazorpayOptions, RazorpayResponse } from '../../util/interface/IRazorpay';
 
-declare var Razorpay: any;
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const formatDate = (dateString?: Date) => {
@@ -21,8 +22,6 @@ const formatDate = (dateString?: Date) => {
   });
 };
 
-
-
 const ProviderSubscriptionPage: React.FC = () => {
   const [allPlans, setAllPlans] = useState<IPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +32,7 @@ const ProviderSubscriptionPage: React.FC = () => {
   const [currentSubscription, setCurrentSubscription] = useState<ISubscription | null>(provider?.subscription || null);
   const [currentPlanDetails, setCurrentPlanDetails] = useState<IPlan | null>(null);
 
-const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
+  const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
   const isModalOpen = !!modalConfig;
 
   const dispatch = useAppDispatch();
@@ -66,7 +65,10 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
   }, [provider]);
 
   const handlePayment = (
-    order: any, 
+    order: {
+      id: string;
+      amount: number;
+    },
     plan: IPlan,
     onSuccessMessage: string
   ) => {
@@ -75,14 +77,14 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
         toast.error("Provider or Plan ID is missing.");
         return;
     }
-    const options = {
+    const options: RazorpayOptions = {
       key: paymentKey,
       amount: order.amount,
       currency: "INR",
       name: "QuickMate Subscription",
       description: `Payment for ${plan.name}`,
       order_id: order.id,
-      handler: async (response: any) => {
+      handler: async (response: RazorpayResponse) => {
         try {
           setIsProcessing(true);
           const verifyData = await subscriptionPlanService.verifySubscriptionPayment(
@@ -99,8 +101,12 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
           // setCurrentSubscription(verifyData.provider.subscription);
           dispatch(updateProviderProfile({ provider: verifyData.provider }));
         } catch (err) {
-          console.log('payment verification failed : ', err)
-          toast.error("Payment verification failed. Please contact support.");
+          let errorMessage = "Payment verification failed. Please contact support.";
+          if (isAxiosError(err) && err.response?.data?.message) {
+            errorMessage = err.response.data.message;
+          }
+          console.log('payment verification failed : ', err);
+          toast.error(errorMessage);
         } finally {
           setIsProcessing(false);
         }
@@ -111,10 +117,14 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
         contact: provider?.phoneNumber,
       },
       theme: { color: "#3057b0ff" }
-    };
+    } as RazorpayOptions;
     
-    const rzp1 = new Razorpay(options);
-    rzp1.open();
+    if (window.Razorpay) {
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } else {
+      toast.error("Razorpay SDK failed to load. Please check your connection and try again.");
+    }
   };
 
   const handleConfirmAction = async () => {
@@ -134,8 +144,12 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
         const updatedProvider = { ...provider, subscription: response.data } as IProviderProfile;
         dispatch(updateProviderProfile({ provider: updatedProvider }));
         toast.success(response.message);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to schedule downgrade.");
+      } catch (err) {
+        let errorMessage = "Failed to schedule downgrade.";
+        if (isAxiosError(err) && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        }
+        toast.error(errorMessage);
       }
     }
     
@@ -145,8 +159,12 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
         const updatedProvider = { ...provider, subscription: response.data } as IProviderProfile;
         dispatch(updateProviderProfile({ provider: updatedProvider }));
         toast.success(response.message);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to cancel downgrade.");
+      } catch (err) {
+        let errorMessage = "Failed to cancel downgrade.";
+        if (isAxiosError(err) && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        }
+        toast.error(errorMessage);
       }
     }
 
@@ -164,8 +182,12 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
     try {
       const { order } = await subscriptionPlanService.createSubscriptionOrder(provider.id, plan.id);
       handlePayment(order, plan, "Subscription activated successfully!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create order.");
+    } catch (err) {
+      let errorMessage = "Failed to create order.";
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -190,8 +212,12 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
         order: res.order, 
         newPlan: res.newPlan 
       });
-    } catch (err: any) {
-      toast.error(err.message || "Failed to calculate upgrade cost.");
+    } catch (err) {
+      let errorMessage = "Failed to calculate upgrade cost.";
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -207,8 +233,8 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-10">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+      <div className="flex items-center justify-center p-10 bg-slate-50 dark:bg-gray-900 min-h-[300px]">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     );
   }
@@ -219,17 +245,17 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">My Subscription</h1>
+    <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Subscription</h1>
 
       {pendingDowngradePlan && currentSubscription?.status === 'ACTIVE' && (
-        <div className="mb-8 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+        <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-600/50 rounded-lg transition-colors">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+              <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-yellow-800">Downgrade Scheduled</h3>
-                <p className="text-sm text-yellow-700">
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Downgrade Scheduled</h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   You are scheduled to downgrade to the <strong>{pendingDowngradePlan.name}</strong> plan on 
                   <strong> {formatDate(currentSubscription.endDate)}</strong>.
                 </p>
@@ -238,7 +264,7 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
             <button
               onClick={onCancelDowngradeClick}
               disabled={isProcessing}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200 disabled:opacity-50"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-800/40 border border-yellow-300 dark:border-yellow-600 rounded-md hover:bg-yellow-200 dark:hover:bg-yellow-800/60 disabled:opacity-50 transition-colors"
             >
               <X className="w-4 h-4" />
               Cancel Downgrade
@@ -249,15 +275,15 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
 
       {currentSubscription && currentSubscription.status === 'ACTIVE' && currentPlanDetails ? (
         <div className="mb-12">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Your Current Plan</h2>
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Your Current Plan</h2>
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white rounded-2xl shadow-xl dark:shadow-blue-900/20 p-8 transition-colors">
             <div className="flex justify-between items-start">
               <div>
-                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
                   {currentPlanDetails.name}
                 </span>
                 <h3 className="text-4xl font-bold mt-4">₹{currentPlanDetails.price}
-                  <span className="text-lg font-normal"> / {currentPlanDetails.durationInDays} days</span>
+                  <span className="text-lg font-normal opacity-90"> / {currentPlanDetails.durationInDays} days</span>
                 </h3>
               </div>
               <CheckCircle className="w-16 h-16 text-white/30" />
@@ -269,14 +295,14 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
           </div>
         </div>
       ) : (
-        <div className="mb-12 text-center p-8 bg-gray-100 rounded-2xl">
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">No Active Subscription</h2>
-          <p className="text-gray-500">Choose a plan below to get started and unlock all features.</p>
+        <div className="mb-12 text-center p-8 bg-gray-100 dark:bg-gray-800 rounded-2xl transition-colors">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">No Active Subscription</h2>
+          <p className="text-gray-500 dark:text-gray-400">Choose a plan below to get started and unlock all features.</p>
         </div>
       )}
 
       <div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
           {currentSubscription?.status === 'ACTIVE' ? 'Upgrade or Change Your Plan' : 'Choose a Plan'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -288,17 +314,17 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
             const isDisabled = isProcessing || !!pendingDowngradePlan;
             
             return (
-              <div key={plan.id || plan._id} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
+              <div key={plan.id || plan._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-black/30 p-6 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300">
                 <div className="text-center mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
-                  <p className="text-3xl font-bold text-blue-600 mt-2">₹{plan.price}</p>
-                  <p className="text-gray-500 text-sm">/ {plan.durationInDays} days</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">₹{plan.price}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">/ {plan.durationInDays} days</p>
                 </div>
                 <ul className="flex-grow space-y-2 mb-6">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-gray-600 text-sm">{feature}</span>
+                      <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-300 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -311,9 +337,9 @@ const [modalConfig, setModalConfig] = useState<ActiveModalState | null>(null);
                   }}
                   disabled={isDisabled}
                   className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2
-                    ${isUpgrade ? 'bg-green-600 text-white hover:bg-green-700' : ''}
-                    ${isDowngrade ? 'bg-gray-700 text-white hover:bg-gray-800' : ''}
-                    ${!isUpgrade && !isDowngrade ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
+                    ${isUpgrade ? 'bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600' : ''}
+                    ${isDowngrade ? 'bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-500' : ''}
+                    ${!isUpgrade && !isDowngrade ? 'bg-blue-600 dark:bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500' : ''}
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                   title={isDisabled && pendingDowngradePlan ? "You already have a pending downgrade." : (isDowngrade ? "Schedule downgrade" : "")}

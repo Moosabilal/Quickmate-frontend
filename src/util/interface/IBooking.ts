@@ -10,7 +10,8 @@ export enum BookingStatus {
     CONFIRMED = "Confirmed",
     CANCELLED = "Cancelled",
     COMPLETED = "Completed",
-    IN_PROGRESS = "In-Progress"
+    IN_PROGRESS = "In-Progress",
+    EXPIRED = "Expired"
 }
 
 export interface IBookingStatusCounts {
@@ -20,6 +21,7 @@ export interface IBookingStatusCounts {
   [BookingStatus.IN_PROGRESS]: number;
   [BookingStatus.COMPLETED]: number;
   [BookingStatus.CANCELLED]: number;
+  [BookingStatus.EXPIRED]: number;
 }
 
 export interface LocationState {
@@ -187,7 +189,7 @@ export interface BookingData {
 export interface IBookingDetailData {
   booking: {
     _id: string;
-    status: string;
+    status: BookingStatus;
     paymentStatus: string;
     amount: string;
     date: string;

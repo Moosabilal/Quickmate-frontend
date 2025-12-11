@@ -8,6 +8,8 @@ import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
 import { LocationState } from '../util/interface/IBooking';
 import { bookingService } from '../services/bookingService';
+import { isAxiosError } from 'axios';
+
 
 let OTP_RESEND_TIMEOUT_SECONDS = 60;
 
@@ -105,8 +107,11 @@ const RegistrationOTPVerification = () => {
         navigate(`/provider/providerBookingManagement`)
       }
 
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'OTP verification failed. Please try again.';
+    } catch (err) {
+      let errorMessage = 'OTP verification failed. Please try again.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -148,8 +153,11 @@ const RegistrationOTPVerification = () => {
           return prevTimer - 1;
         });
       }, 1000);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again later.';
+    } catch (err) {
+      let errorMessage = 'Failed to resend OTP. Please try again later.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

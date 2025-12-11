@@ -1,6 +1,7 @@
 import axiosInstance from "../lib/axiosInstance";
+import { isAxiosError } from "axios";
 import { handleAxiosError } from "../util/helperFunction/handleError";
-import { ChatbotMessage, IChatbotResponse, IChatPaymentVerify } from "../util/interface/IChatBot";
+import { ChatbotMessage, IChatbotResponse, IChatHistoryMessage, IChatPaymentVerify } from "../util/interface/IChatBot";
 
 const CHATBOT_URL = '/chatbot';
 const SESSION_ID_KEY = 'chatbot_session_id';
@@ -35,7 +36,7 @@ export const chatbotService = {
         try {
             const response = await axiosInstance.get(`${CHATBOT_URL}/session/${sessionId}`);
             
-            return response.data.history.map((msg: any) => ({
+            return response.data.history.map((msg: IChatHistoryMessage) => ({
                 ...msg,
                 timestamp: new Date(msg.createdAt),
                 role: msg.role === 'user' ? 'user' : 'model' 
@@ -50,9 +51,9 @@ export const chatbotService = {
         try {
             const response = await axiosInstance.post(`${CHATBOT_URL}/session/${sessionId}/message`, { text });
                         
-            return response.data.response;
-        } catch (error: any) {
-            if (error.response && error.response.status === 404) {
+            return response.data.response; 
+        } catch (error) {
+            if (isAxiosError(error) && error.response && error.response.status === 404) {
                 console.warn("Stale chat session ID detected. Clearing from localStorage.");
                 localStorage.removeItem(SESSION_ID_KEY);
                 throw new Error("Chat session expired. Please refresh the page.");
@@ -69,16 +70,6 @@ export const chatbotService = {
             return response.data; 
         } catch (error) {
             handleAxiosError(error, "Failed to verify chat payment.");
-            throw error;
-        }
-    },
-
-    getSessionStatus: async (sessionId: string): Promise<any> => {
-        try {
-            const response = await axiosInstance.get(`${CHATBOT_URL}/session/${sessionId}/status`);
-            return response.data.session;
-        } catch (error) {
-            console.error('Failed to get session status:', error);
             throw error;
         }
     },

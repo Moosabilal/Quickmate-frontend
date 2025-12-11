@@ -34,7 +34,6 @@ const ProviderRegistration: React.FC = () => {
 
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [services, setServices] = useState<{ value: string; label: string }[]>([]);
     const [address, setAddress] = useState('')
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});
     const navigate = useNavigate();
@@ -51,16 +50,7 @@ const ProviderRegistration: React.FC = () => {
                 setFormData(prev => ({ ...prev, agreeTerms: checked }));
             }
         } else {
-            if (id === 'servicesOffered') {
-                const selectedService = services.find(service => service.value === value);
-                setFormData(prev => ({
-                    ...prev,
-                    [id]: value,
-                    serviceName: selectedService?.label || '',
-                }));
-            } else {
                 setFormData(prev => ({ ...prev, [id]: value }));
-            }
         }
         setErrors(prev => ({ ...prev, [id]: undefined }));
     };

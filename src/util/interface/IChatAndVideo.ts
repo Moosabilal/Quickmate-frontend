@@ -4,6 +4,7 @@ export interface ChatMessage {
     senderId: string;
     timestamp: string | Date;
     isCurrentUser?: boolean;
+    createdAt?: string | Date;
     
     messageType: 'text' | 'image' | 'file';
     text?: string; 

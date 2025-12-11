@@ -21,6 +21,7 @@ import { Booking, IDashboardResponse, IDashboardStatus, RatingHistoryPoint, Stat
 import { providerService } from '../../services/providerService';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
+import { getStatusColor } from '../../components/getStatusColor';
 
 
 const Dashboard: React.FC = () => {
@@ -64,19 +65,8 @@ const Dashboard: React.FC = () => {
         }));
     }
 
-
-    const getStatusColor = (status: string): string => {
-        switch (status.toLowerCase()) {
-            case 'upcoming': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-            case 'scheduled': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-            case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-            case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-700 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
@@ -118,63 +108,9 @@ const Dashboard: React.FC = () => {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Bookings Timeline Column */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Bookings Timeline</h2>
-                                <button className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                                    <Eye className="w-4 h-4" />
-                                    <span onClick={() => navigate('/provider/providerBookingManagement')} >View All</span>
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                {dashboardData.length > 0 ? (
-                                    dashboardData.map((booking) => (
-                                        <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md dark:hover:shadow-gray-900/50 transition-all duration-300">
-                                            <div className="flex items-start space-x-4">
-                                                <img
-                                                    src={getCloudinaryUrl(booking.image)}
-                                                    alt={booking.service}
-                                                    className="w-16 h-16 rounded-xl object-cover bg-gray-100 dark:bg-gray-700"
-                                                />
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-                                                                {booking.service}
-                                                            </h4>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                                {booking.client}
-                                                            </p>
-                                                        </div>
-                                                        <span
-                                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                                                booking.status
-                                                            )}`}
-                                                        >
-                                                            {booking.status}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                        {booking.category}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))) : (
-                                    <div>
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No bookings found.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Rating Trends Column */}
-                    <div className="lg:col-span-1">
+                    
+                    {/* Rating Trends Section (Moved First for Mobile, Ordered Last for Desktop) */}
+                    <div className="lg:col-span-1 lg:order-last">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Rating Trends</h2>
@@ -205,12 +141,11 @@ const Dashboard: React.FC = () => {
                                             </linearGradient>
                                         </defs>
 
-                                        {/* Grid lines: using a neutral gray that works on both, slightly visible */}
                                         <CartesianGrid strokeDasharray="3 3" stroke="#9ca3af" opacity={0.2} vertical={false} />
                                         
                                         <XAxis
                                             dataKey="month"
-                                            tick={{ fontSize: 12, fill: "#9CA3AF" }} // Gray-400 works on both backgrounds
+                                            tick={{ fontSize: 12, fill: "#9CA3AF" }}
                                             axisLine={false}
                                             tickLine={false}
                                         />
@@ -224,14 +159,13 @@ const Dashboard: React.FC = () => {
                                         <Tooltip
                                             contentStyle={{
                                                 backgroundColor: "white", 
-                                                // Kept white for contrast in both modes, or you can check theme state if available
                                                 borderRadius: "8px",
                                                 border: "1px solid #e5e7eb",
                                                 boxShadow: "0px 2px 8px rgba(0,0,0,0.1)",
                                                 padding: "8px 12px",
-                                                color: "#111827" // Always dark text inside the white tooltip
+                                                color: "#111827" 
                                             }}
-                                            formatter={(value: any) =>
+                                            formatter={(value: number) =>
                                                 typeof value === "number"
                                                     ? [`⭐ ${value.toFixed(1)}`, "Rating"]
                                                     : ["No Data", ""]
@@ -270,6 +204,58 @@ const Dashboard: React.FC = () => {
 
                         </div>
                     </div>
+
+                    {/* Bookings Timeline Section (Appears Second on Mobile, First on Desktop) */}
+                    <div className="lg:col-span-2">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Bookings Timeline</h2>
+                                <button className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                    <Eye className="w-4 h-4" />
+                                    <span onClick={() => navigate('/provider/providerBookingManagement')} >View All</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {dashboardData.length > 0 ? (
+                                    dashboardData.map((booking) => (
+                                        <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md dark:hover:shadow-gray-900/50 transition-all duration-300">
+                                            <div className="flex items-start space-x-4">
+                                                <img
+                                                    src={getCloudinaryUrl(booking.image)}
+                                                    alt={booking.service}
+                                                    className="w-16 h-16 rounded-xl object-cover bg-gray-100 dark:bg-gray-700"
+                                                />
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                                                                {booking.service}
+                                                            </h4>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                                {booking.client}
+                                                            </p>
+                                                        </div>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`} >
+                                                            {booking.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                        {booking.category}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))) : (
+                                    <div>
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No bookings found.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

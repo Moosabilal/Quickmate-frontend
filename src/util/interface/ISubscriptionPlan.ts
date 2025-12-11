@@ -91,6 +91,6 @@ export type ActiveModalState = {
   type: ModalActionType;
   plan?: IPlan;
   details?: Omit<IUpgradeCostResponse, 'order' | 'newPlan'>;
-  order?: any; 
+  order?: IRazorpayOrder; 
   newPlan?: IPlan;
 }

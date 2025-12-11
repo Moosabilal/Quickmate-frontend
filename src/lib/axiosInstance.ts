@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from './config';
 import { authService } from '../services/authService';
+import { Store } from '@reduxjs/toolkit';
 import { logout } from '../features/auth/authSlice';
 
 const axiosInstance = axios.create({
@@ -9,7 +10,7 @@ const axiosInstance = axios.create({
 
 });
 
-export const setupInterceptors = (store: any) => {
+export const setupInterceptors = (store: Store) => {
 
 axiosInstance.interceptors.request.use(
   (config) => {

@@ -1,3 +1,4 @@
+import { TooltipProps } from "recharts";
 import { IProviderProfile } from "./IProvider";
 
 export interface ChartDataPoint {
@@ -81,4 +82,10 @@ export interface IProviderFullDetails {
         name: string;
         price: number;
     } | null;
+}
+
+export interface CustomTooltipProps extends TooltipProps<number, string> {
+  prefix?: string;
+  payload?: { name: string; value: number | string; }[];
+  label?: string;
 }

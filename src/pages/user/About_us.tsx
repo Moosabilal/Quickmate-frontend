@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
+import { isAxiosError } from 'axios';
 
 const AboutPage: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -23,9 +24,14 @@ const AboutPage: React.FC = () => {
             const response = await authService.contactUsSubmission(formData);
             toast.success(response.message);
             setFormData({ name: '', email: '', message: '' });
-        } catch (err: any) {
-            // Handle error appropriately, maybe toast.error
-            toast.error(err.message || "Failed to submit form.");
+        } catch (err) {
+            let errorMessage = "Failed to submit form.";
+            if (isAxiosError(err) && err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+            toast.error(errorMessage);
         }
     };
 

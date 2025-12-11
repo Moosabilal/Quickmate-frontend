@@ -10,7 +10,7 @@ import {
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
 import { AddFundsModal } from '../../components/AddWithdrawFund';
-import { TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
+import { ITransaction, TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
 
 const inr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
@@ -22,8 +22,8 @@ const Wallet: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openAdd, setOpenAdd] = useState(false);
   const [balance, setBalance] = useState(0);
-  const [addOrWithdraw, setAddOrWithdraw] = useState<string>('')
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [addOrWithdraw, setAddOrWithdraw] = useState<string>('');
+  const [transactions, setTransactions] = useState<ITransaction[]>([]);
   const [filters, setFilters] = useState<WalletFilter>({});
   const [totalPages, setTotalPages] = useState(1);
 
@@ -47,6 +47,7 @@ const Wallet: React.FC = () => {
     ).toString();
 
     const res = await walletService.getWallet(query);
+    console.log("Wallet data:", res.data.transactions);
     setTotalPages(res.data.totalPages);
     setBalance(res.data.wallet.balance);
     setTransactions(res.data.transactions);

@@ -8,7 +8,7 @@ export interface ChatbotMessage {
     isError?: boolean;
     timestamp?: Date;
     id?: string;
-    options?: any[];
+    options?: ChatOption[];
 }
 
 export interface ChatMessageProps {
@@ -49,9 +49,9 @@ export interface IChatbotResponse {
     payload?: {
         orderId: string;
         amount: number;
-        bookingData: any; 
+        bookingData: IBookingRequest; 
     },
-    options?: any[];
+    options?: ChatOption[];
 }
 
 export interface IChatPaymentVerify {
@@ -59,4 +59,22 @@ export interface IChatPaymentVerify {
   razorpay_payment_id: string;
   razorpay_signature: string;
   bookingData: IBookingRequest;
+}
+
+export type ChatOption = string | {
+    id?: string;
+    index?: number;
+    label?: string;
+    street?: string;
+    city?: string;
+    name?: string;
+    price?: number;
+    rating?: number;
+};
+
+export interface IChatHistoryMessage {
+    _id: string;
+    role: 'user' | 'model';
+    text: string;
+    createdAt: string;
 }

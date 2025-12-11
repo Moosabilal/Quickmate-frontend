@@ -43,3 +43,15 @@ export interface Props {
   status: TransactionStatus;
 };
 
+export interface ITransaction {
+  _id: string;
+  walletId: string;
+  transactionType: 'credit' | 'debit';
+  source: string;
+  remarks: string;
+  description?: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}

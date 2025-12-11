@@ -20,7 +20,7 @@ import { authService } from '../../services/authService';
 
 const Sidebar = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // New State for Mobile Menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
@@ -30,8 +30,6 @@ const Sidebar = () => {
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
     { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/profile/wallet' },
     { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/chat' },
-    // { name: 'Calendar', icon: <MdOutlineCalendarMonth className="w-5 h-5" />, path: '/profile/calendar' },
-    // { name: 'Notifications', icon: <MdOutlineNotificationsNone className="w-5 h-5" />, path: '/profile/notifications' },
   ];
 
   const serviceProviderItem = {
@@ -65,8 +63,8 @@ const Sidebar = () => {
   return (
     <>
       <button
-        onClick={() => setIsMobileMenuOpen(true)}
-        className="lg:hidden fixed top-24 left-4 z-40 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed bottom-6 right-6 z-50 p-4 bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 transition-all duration-300 hover:scale-110 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
         aria-label="Open Menu"
       >
         <MdMenu className="w-6 h-6" />

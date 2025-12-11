@@ -1,5 +1,5 @@
 import React, { useState, MouseEvent } from 'react';
-import { DayPicker, DateRange, Modifiers } from 'react-day-picker';
+import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { format, addDays } from 'date-fns';
 import { DateOverride, TimeSlot, LeavePeriod, EditDateModalProps } from '../../util/interface/IProvider';
@@ -99,14 +99,14 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
     });
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700 transition-colors duration-300">
             <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Single Day Adjustments</h2>
-                <p className="text-sm text-gray-500 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Single Day Adjustments</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                     Select a date to set specific busy times or mark the entire day as unavailable.
                 </p>
 
-                <div onClickCapture={handleCalendarClick}>
+                <div onClickCapture={handleCalendarClick} className="text-gray-900 dark:text-gray-200">
                     <DayPicker
                         mode="single"
                         selected={selectedDate || undefined}
@@ -122,16 +122,24 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                 <style>{`
                     .day-overridden { font-weight: bold; color: #4f46e5; background-color: #e0e7ff; }
                     .day-leave { color: #f87171 !important; background-color: #fee2e2 !important; text-decoration: line-through; }
+                    
+                    /* Dark Mode Overrides */
+                    .dark .day-overridden { color: #818cf8; background-color: #312e81; }
+                    .dark .day-leave { color: #fca5a5 !important; background-color: #7f1d1d !important; }
+                    .dark .rdp-day_disabled { color: #4b5563; }
+                    .dark .rdp-caption_label { color: #e5e7eb; }
+                    .dark .rdp-nav_button { color: #e5e7eb; }
+                    .dark .rdp-head_cell { color: #9ca3af; }
                 `}</style>
             </div>
 
             <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Add Leave / Vacation</h2>
-                <p className="text-sm text-gray-500 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Add Leave / Vacation</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                     Select a start and end date on the calendar below to block off an extended period.
                 </p>
 
-                <div onClickCapture={handleCalendarClick}>
+                <div onClickCapture={handleCalendarClick} className="text-gray-900 dark:text-gray-200">
                     <DayPicker
                         mode="range"
                         selected={selectedRange}
@@ -143,8 +151,8 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                         styles={{ day: { transition: 'all 0.2s ease' } }}
                         footer={
                             selectedRange?.from && (
-                                <div className="mt-4 pt-4 border-t space-y-4">
-                                    <p className="text-sm text-gray-600 text-center">
+                                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
                                         Selected Period: <strong>{format(selectedRange.from, 'PP')}</strong>
                                         {selectedRange.to && ` - ${format(selectedRange.to, 'PP')}`}
                                     </p>
@@ -154,12 +162,12 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                                             value={leaveReason}
                                             onChange={(e) => setLeaveReason(e.target.value)}
                                             placeholder="Reason for leave (e.g., Vacation)"
-                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
+                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
                                         <button
                                             onClick={handleAddLeavePeriod}
                                             disabled={!selectedRange.to}
-                                            className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                            className="px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 transition-colors"
                                         >
                                             Add
                                         </button>
@@ -171,27 +179,29 @@ export const DateOverrides: React.FC<DateOverridesProps> = ({
                 </div>
 
                 {leavePeriods.length > 0 && (
-                    <div className="mt-6 pt-6 border-t">
-                        <h3 className="text-md font-semibold text-gray-800 mb-3">Current Leave Periods</h3>
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3">Current Leave Periods</h3>
                         <ul className="space-y-2">
                             {leavePeriods.map((period, index) => (
                                 <li
                                     key={index}
-                                    className="flex items-center justify-between bg-red-50 p-3 rounded-md border border-red-200"
+                                    className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-900/50"
                                 >
-                                    <span className="text-sm text-red-800 font-medium">
-                                        <CalendarX2 className="inline w-4 h-4 mr-2 text-red-600" />
+                                    <span className="text-sm text-red-800 dark:text-red-200 font-medium">
+                                        <CalendarX2 className="inline w-4 h-4 mr-2 text-red-600 dark:text-red-400" />
                                         {format(new Date(period.from.replace(/-/g, '/')), 'MMM d, yyyy')} -{' '}
                                         {format(new Date(period.to.replace(/-/g, '/')), 'MMM d, yyyy')}
                                         {period.reason && (
-                                            <span className="italic text-red-600 ml-1">
+                                            <span className="italic text-red-600 dark:text-red-400 ml-1">
                                                 ({period.reason})
                                             </span>
                                         )}
                                     </span>
                                     <button
+                                        type="button"
+                                        aria-label='remove leave period'
                                         onClick={() => handleRemoveLeavePeriod(index)}
-                                        className="p-1 text-red-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-100"
+                                        className="p-1 text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-200 transition-colors rounded-full hover:bg-red-100 dark:hover:bg-red-900/40"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -236,20 +246,20 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-fadeInUp">
-                <div className="flex items-center justify-between pb-4 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 backdrop-blur-sm transition-opacity">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 animate-fadeInUp border dark:border-gray-700">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Edit Availability for {format(date, 'MMMM d, yyyy')}
                     </h3>
-                    <button onClick={onClose} className="p-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                    <button type="button" onClick={onClose} aria-label='close' className="p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                         <X size={20} />
                     </button>
                 </div>
 
                 <div className="space-y-6 py-6">
-                    <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
-                        <label htmlFor="unavailable-toggle" className="font-medium text-gray-700 select-none">
+                    <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg transition-colors">
+                        <label htmlFor="unavailable-toggle" className="font-medium text-gray-700 dark:text-gray-200 select-none">
                             Unavailable all day
                         </label>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -260,50 +270,52 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
                                 onChange={e => handleUnavailableToggle(e.target.checked)}
                                 className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-300 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 dark:peer-checked:bg-indigo-500"></div>
                         </label>
                     </div>
 
                     <div>
-                        <label htmlFor="reason-input" className="text-sm font-medium text-gray-700">Reason / Note (optional)</label>
+                        <label htmlFor="reason-input" className="text-sm font-medium text-gray-700 dark:text-gray-300">Reason / Note (optional)</label>
                         <input
                             id="reason-input"
                             type="text"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="e.g., Personal work, event, etc."
-                            className="mt-1 w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
+                            className="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
 
                     {!isUnavailable && (
                         <div>
-                            <h4 className="font-medium text-gray-700 mb-3">Add busy time slots</h4>
-                            <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+                            <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-3">Add busy time slots</h4>
+                            <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                 {busySlots.map((slot, index) => (
                                     <div key={index} className="flex items-center gap-2">
                                         <select
                                             value={slot.start}
                                             onChange={e => handleSlotTimeChange(index, 'start', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm focus:ring-1 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none"
                                         >
                                             {timeOptions.map(time => (
                                                 <option key={`start-${time}`} value={time}>{time}</option>
                                             ))}
                                         </select>
-                                        <span className="text-gray-500">-</span>
+                                        <span className="text-gray-500 dark:text-gray-400">-</span>
                                         <select
                                             value={slot.end}
                                             onChange={e => handleSlotTimeChange(index, 'end', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm focus:ring-1 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none"
                                         >
                                             {timeOptions.map(time => (
                                                 <option key={`end-${time}`} value={time}>{time}</option>
                                             ))}
                                         </select>
                                         <button
+                                            type="button"
+                                            aria-label='remove timeSlot'
                                             onClick={() => handleRemoveSlot(index)}
-                                            className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-100"
+                                            className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             <X size={18} />
                                         </button>
@@ -312,7 +324,7 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
                             </div>
                             <button
                                 onClick={handleAddSlot}
-                                className="flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:text-indigo-800 mt-4"
+                                className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-800 dark:hover:text-indigo-300 mt-4 transition-colors"
                             >
                                 <PlusCircle size={16} /> Add busy slot
                             </button>
@@ -320,16 +332,16 @@ const EditDateModal: React.FC<EditDateModalProps> = ({ date, onClose, onSave, in
                     )}
                 </div>
 
-                <div className="pt-4 border-t flex justify-end gap-3">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold"
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={() => onSave(date, isUnavailable, busySlots, reason)}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold"
+                        className="px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 font-semibold transition-colors"
                     >
                         Save
                     </button>

@@ -107,7 +107,7 @@ export interface RegistrationFormTouched {
 
 export interface IRazorpayOrder {
   id: string;
-  entity: "order";
+  entity: string;
   amount: number;
   amount_paid: number;
   amount_due: number;

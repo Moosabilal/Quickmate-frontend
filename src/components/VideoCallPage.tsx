@@ -22,6 +22,8 @@ const VideoCallPage: React.FC = () => {
     isInitiator?: boolean
   }) || { name: 'Video Call' };
 
+  console.log('VideoCallPage state:',  name );
+
       useEffect(() => {
     if (incomingCall) {
       setIncomingCall(incomingCall);

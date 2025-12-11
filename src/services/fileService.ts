@@ -1,4 +1,5 @@
 import axiosInstance from "../lib/axiosInstance";
+import { isAxiosError } from "axios";
 
 export const fileService = {
     uploadChatFile: async (file: File): Promise<{ url: string }> => {
@@ -33,17 +34,19 @@ export const fileService = {
 
             console.log('File upload successful:', response.data);
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error uploading file:", error);
 
             let errorMessage = 'Failed to upload file';
 
-            if (error.response?.data?.message) {
+            if (isAxiosError(error)) {
+              if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.message) {
-                errorMessage = error.message;
-            } else if (error.code === 'ECONNABORTED') {
+              } else if (error.code === 'ECONNABORTED') {
                 errorMessage = 'Upload timeout - please try again';
+              }
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
             }
 
             throw new Error(errorMessage);

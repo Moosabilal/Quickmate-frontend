@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bot } from 'lucide-react';
-import { ChatMessageProps } from '../../util/interface/IChatBot';
+import { ChatMessageProps, ChatOption } from '../../util/interface/IChatBot';
 
 const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) => void }> = ({ chat, onOptionClick }) => {
     if (chat.hideInChat) {
@@ -8,20 +8,19 @@ const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) =
     }
 
     const isUser = chat.role === 'user';
-
-    const handleOptionClick = (option: any, index?: number) => {
+ 
+    const handleOptionClick = (option: ChatOption, index?: number) => {
         if (!option) return;
         
-        // We check if the option is an address or a provider to construct the message
-        if (option.label && option.street) { // It's an address
-            onOptionClick(`Select option ${option.index}`);
-        } else if (option.name && option.price) { // It's a provider
+        if (typeof option === 'object' && option.label && option.street) {
+            onOptionClick(`Select option ${index}`);
+        } else if (typeof option === 'object' && option.name && option.price) {
             if (chat.options) {
                 onOptionClick(`Select option ${chat.options.indexOf(option) + 1}`);
             }
-        } else if (typeof option === 'string') { // It's a time slot
+        } else if (typeof option === 'string') {
             onOptionClick(option);
-        } else if (option.name) { // It's a service suggestion
+        } else if (option.name) {
             onOptionClick(option.name);
         }
     };
@@ -47,17 +46,15 @@ const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) =
                 {chat.options && chat.options.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {chat.options.map((option, index) => {
-                            // Time Slot Buttons
                             if (typeof option === 'string') {
                                 return (
-                                    <button key={index} onClick={() => handleOptionClick(option)} className="px-3 py-1.5 text-sm bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <button type='button' key={index} onClick={() => handleOptionClick(option)} className="px-3 py-1.5 text-sm bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                         {option}
                                     </button>
                                 );
                             }
-                            // Address or Provider Buttons (full width)
                             return (
-                                <button key={option.id || index} onClick={() => handleOptionClick(option, index)} className="w-full text-left px-3 py-2 text-sm bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type='button' key={option.id || index} onClick={() => handleOptionClick(option, index + 1)} className="w-full text-left px-3 py-2 text-sm bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     {option.label && option.street ? (
                                         <>
                                             <span className="font-semibold">{option.index}. {option.label}</span>

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import { useCallStore } from "../app/callStore";
 import { getCloudinaryDownloadUrl, getCloudinaryUrl } from "../util/cloudinary";
+import { useAppSelector } from "../hooks/useAppSelector";
 
 export default function BookingChatVideo({
   currentUserId,
@@ -20,12 +21,13 @@ export default function BookingChatVideo({
   name?: string,
   incomingCall?: {
     joiningId: string;
-    offer: RTCSessionDescription;
+    offer: RTCSessionDescriptionInit;
     fromUserId: string;
     fromUserName?: string;
   },
   isInitiator?: boolean
 }) {
+  const { user } = useAppSelector(state => state.auth);
   const [input, setInput] = useState("");
   const navigate = useNavigate();
 
@@ -46,7 +48,7 @@ export default function BookingChatVideo({
     toggleVideo,
     isAudioMuted,
     isVideoOff,
-  } = useBookingChatVideo(currentUserId, joiningId);
+  } = useBookingChatVideo(currentUserId, joiningId, user?.name || 'Unknown');
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -287,8 +289,6 @@ export default function BookingChatVideo({
 
   if (mode === 'video') {
     return (
-      // Video background usually stays dark even in light mode for better contrast, 
-      // but we ensure the controls and text are responsive.
       <div className="relative flex flex-col h-full w-full bg-gray-900 text-white items-center justify-center overflow-hidden">
         <video
           ref={remoteVideoRef}
@@ -297,7 +297,6 @@ export default function BookingChatVideo({
           className="absolute top-0 left-0 w-full h-full object-cover"
         />
 
-        {/* Local video: Responsive sizing (w-28 mobile, w-48 desktop) */}
         <video
           ref={localVideoRef}
           autoPlay

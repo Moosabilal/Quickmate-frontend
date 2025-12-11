@@ -3,7 +3,7 @@ import { categoryService } from '../../services/categoryService';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ICategoryFormCombinedData, IserviceResponse } from '../../util/interface/ICategory';
 import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, Phone, FileText } from 'lucide-react'; // Updated Icons
+import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, Phone, FileText, Loader2, AlertTriangle } from 'lucide-react'; 
 import ProviderPopup from './ProviderPopupPage';
 import AddressPopup from '../../components/user/AddressPopup';
 import { IBackendProvider } from '../../util/interface/IProvider';
@@ -14,11 +14,10 @@ import { PaymentMethod, paymentVerificationRequest } from '../../util/interface/
 import { IAddress } from '../../util/interface/IAddress';
 import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
-const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
-import { CalendarModal } from '../../components/user/CalendarModal'
+import { CalendarModal } from '../../components/user/CalendarModal';
+import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
 
-declare var Razorpay: any;
-
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const ServiceDetailsPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth)
@@ -145,6 +144,16 @@ const ServiceDetailsPage: React.FC = () => {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
 
+     if (!selectedAddress || !selectedProvider || !fullName || !phone) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    if(!/^\d{10}$/.test(phone)) {
+      toast.warn("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
     await fetchWallet()
 
     if (paymentMethod === PaymentMethod.WALLET) {
@@ -178,7 +187,7 @@ const ServiceDetailsPage: React.FC = () => {
 
     const orderResponse = await bookingService.confirmPayment(Number(amount))
 
-    var options = {
+    const options: RazorpayOptions = {
       "key": paymentKey,
       amount: Number(amount) * 100,
       currency: 'INR',
@@ -186,9 +195,10 @@ const ServiceDetailsPage: React.FC = () => {
       "description": "Service Booking Payment",
       "image": "https://example.com/your_logo",
       "order_id": orderResponse.id,
-      handler: async function (paymentResponse: any) {
+      handler: async function (paymentResponse: RazorpayResponse) {
         try {
           const bookingRes = await handleSubmit(e);
+          console.log('the booking res', bookingRes)
           if (!bookingRes?.bookingId) {
             toast.error("Booking failed before payment verification.");
             return;
@@ -227,10 +237,10 @@ const ServiceDetailsPage: React.FC = () => {
       "theme": {
         "color": "#3057b0ff"
       }
-    };
-    var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response: { error: { reason: any; metadata: { order_id: any; }; }; }) {
-      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
+    } as RazorpayOptions;
+    const rzp1 = new window.Razorpay(options);
+    rzp1.on('payment.failed', function (response: RazorpayPaymentFailedResponse) {
+      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata?.order_id}`);
     });
     rzp1.open();
     e.preventDefault();
@@ -244,6 +254,13 @@ const ServiceDetailsPage: React.FC = () => {
       toast.error("Please complete all required fields.");
       return;
     }
+
+    if(!/^\d{10}$/.test(phone)) {
+      toast.warn("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    
 
     const bookingPayload = {
       userId: user?.id,
@@ -262,26 +279,27 @@ const ServiceDetailsPage: React.FC = () => {
       return await bookingService.createBooking(bookingPayload);
     } catch (err) {
       console.error("Booking failed:", err);
-      toast.error("Failed to confirm booking. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Booking failed. Please try again.");
     }
   };
 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-lg text-gray-600 mt-4 animate-pulse">Loading service details...</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
+        <Loader2 className="w-16 h-16 text-blue-600 dark:text-blue-400 animate-spin" />
+        <p className="text-lg text-gray-600 dark:text-gray-300 mt-4 animate-pulse">Loading service details...</p>
       </div>
     );
   }
 
   if (error || !serviceDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-         <div className="bg-red-50 p-6 rounded-lg border border-red-200 text-center">
-            <h2 className="text-2xl font-bold text-red-700 mb-2">Oops!</h2>
-            <p className="text-lg text-red-600">{error || 'Service not found.'}</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
+         <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800 text-center">
+            <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-2" />
+            <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-2">Oops!</h2>
+            <p className="text-lg text-red-600 dark:text-red-300">{error || 'Service not found.'}</p>
             <button onClick={() => window.history.back()} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Go Back</button>
          </div>
       </div>
@@ -293,21 +311,21 @@ const ServiceDetailsPage: React.FC = () => {
   const isStep3Complete = isStep2Complete && !!selectedProvider;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
       
-      <div className="relative h-96 w-full bg-gray-900">
+      <div className="relative h-80 sm:h-96 w-full bg-gray-900">
         <img
             src={getCloudinaryUrl(serviceDetails.iconUrl || '')}
             alt={serviceDetails.name}
             className="w-full h-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent dark:from-gray-900"></div>
         <div className="absolute inset-0 flex flex-col justify-end container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
              <button onClick={() => window.history.back()} className="absolute top-8 left-4 sm:left-8 flex items-center text-white/80 hover:text-white transition-colors group bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <ChevronRight className="w-5 h-5 rotate-180 mr-1 group-hover:-translate-x-1 transition-transform" /> Back
              </button>
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">{serviceDetails.name}</h1>
-            <p className="text-lg sm:text-xl text-white/90 max-w-3xl drop-shadow leading-relaxed">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">{serviceDetails.name}</h1>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl drop-shadow leading-relaxed">
                 {serviceDetails.description || 'Experience top-tier service from our verified professionals.'}
             </p>
         </div>
@@ -318,25 +336,25 @@ const ServiceDetailsPage: React.FC = () => {
 
           <div className="w-full lg:w-2/3 space-y-10">
             
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                  <FileText className="w-6 h-6 mr-2 text-blue-600" /> About This Service
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sm:p-8 border border-transparent dark:border-gray-700 transition-colors">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                  <FileText className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400" /> About This Service
               </h2>
-              <div className="prose prose-blue max-w-none text-gray-600 leading-relaxed">
+              <div className="prose prose-blue dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 leading-relaxed">
                   <p>{serviceDetails.description}</p>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
               </div>
             </div>
 
             {relatedServices.length > 0 && (
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">You Might Also Like</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">You Might Also Like</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {relatedServices.map((service) => (
                             <Link 
                                 to={`/service-detailsPage/${service.id}`} 
                                 key={service.id}
-                                className="group block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                                className="group block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-2xl dark:hover:shadow-gray-900/30 transition-all duration-300 border border-gray-100 dark:border-gray-700"
                             >
                                 <div className="flex h-32">
                                     <div className="w-1/3 overflow-hidden relative">
@@ -348,13 +366,13 @@ const ServiceDetailsPage: React.FC = () => {
                                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
                                     </div>
                                     <div className="w-2/3 p-4 flex flex-col justify-center">
-                                        <h3 className="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                                        <h3 className="font-bold text-lg text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                                             {service.name}
                                         </h3>
-                                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                                             Explore reliable providers for {service.name.toLowerCase()}.
                                         </p>
-                                        <span className="mt-3 text-sm font-semibold text-blue-600 flex items-center group/btn">
+                                        <span className="mt-3 text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center group/btn">
                                             View Service <ChevronRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
                                         </span>
                                     </div>
@@ -367,65 +385,77 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
 
           <div className="w-full lg:w-1/3">
-            <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-8 border border-gray-100">
-                <div className="mb-6 pb-4 border-b border-gray-100 text-center">
-                    <h2 className="text-2xl font-bold text-gray-900">Book Service</h2>
-                    <p className="text-gray-500 text-sm mt-1">Complete the steps to schedule.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sticky top-24 border border-gray-100 dark:border-gray-700 transition-colors">
+                <div className="mb-6 pb-4 border-b border-gray-100 dark:border-gray-700 text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Book Service</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Complete the steps to schedule.</p>
                 </div>
 
                 <form className="space-y-5">
-                    <div className={`p-4 rounded-xl border transition-all duration-300 ${isStep1Complete ? 'border-green-500 bg-green-50/30' : 'border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-white hover:shadow-sm'}`}>
-                        <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center justify-between">
-                            <span className="flex items-center"><MapPin className={`w-5 h-5 mr-2 ${isStep1Complete ? 'text-green-600' : 'text-blue-600'}`} /> 1. Location</span>
-                            {isStep1Complete && <CheckCircle className="w-5 h-5 text-green-600" />}
+                    <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                        isStep1Complete 
+                        ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                        : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'
+                    }`}>
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                            <span className="flex items-center"><MapPin className={`w-5 h-5 mr-2 ${isStep1Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 1. Location</span>
+                            {isStep1Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
                         </h3>
-                        <button type="button" onClick={() => setAddressPopup(true)} className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all ${selectedAddress ? "bg-white border-green-200 text-gray-900 font-medium shadow-sm" : "bg-white border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 border-dashed border-2"}`}>
+                        <button type="button" onClick={() => setAddressPopup(true)} className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all ${selectedAddress ? "bg-white dark:bg-gray-700 border-green-200 dark:border-green-800 text-gray-900 dark:text-white font-medium shadow-sm" : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 border-dashed border-2"}`}>
                             {selectedAddress ? (
-                                <div className='flex items-center'><MapPin className="w-4 h-4 mr-2 text-green-600 flex-shrink-0" /> <span className="truncate">{selectedAddress.label}: {selectedAddress.street}, {selectedAddress.city}</span></div>
+                                <div className='flex items-center'><MapPin className="w-4 h-4 mr-2 text-green-600 dark:text-green-400 flex-shrink-0" /> <span className="truncate">{selectedAddress.label}: {selectedAddress.street}, {selectedAddress.city}</span></div>
                             ) : "Select your address"}
                         </button>
                     </div>
 
-                    <div className={`p-4 rounded-xl border transition-all duration-300 ${isStep2Complete ? 'border-green-500 bg-green-50/30' : 'border-gray-200 bg-gray-50/50'} ${!isStep1Complete ? 'opacity-60 pointer-events-none' : 'hover:border-blue-400 hover:bg-white hover:shadow-sm'}`}>
-                        <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center justify-between">
-                            <span className="flex items-center"><Calendar className={`w-5 h-5 mr-2 ${isStep2Complete ? 'text-green-600' : 'text-blue-600'}`} /> 2. Date & Time</span>
-                            {isStep2Complete && <CheckCircle className="w-5 h-5 text-green-600" />}
+                    <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                        isStep2Complete 
+                        ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                        : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30'
+                    } ${!isStep1Complete ? 'opacity-60 pointer-events-none' : 'hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'}`}>
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                            <span className="flex items-center"><Calendar className={`w-5 h-5 mr-2 ${isStep2Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 2. Date & Time</span>
+                            {isStep2Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
                         </h3>
                         {selectedDate && selectedTime ? (
-                             <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm flex justify-between items-center">
+                             <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-green-200 dark:border-green-800 shadow-sm flex justify-between items-center">
                                 <div>
-                                    <p className="font-medium text-green-800 text-sm flex items-center"><Calendar className="w-4 h-4 mr-2" /> {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                                    <p className="text-green-700 text-sm mt-1 flex items-center"><Clock className="w-4 h-4 mr-2" /> {selectedTime}</p>
+                                    <p className="font-medium text-green-800 dark:text-green-300 text-sm flex items-center"><Calendar className="w-4 h-4 mr-2" /> {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                                    <p className="text-green-700 dark:text-green-400 text-sm mt-1 flex items-center"><Clock className="w-4 h-4 mr-2" /> {selectedTime}</p>
                                 </div>
-                                <button type="button" onClick={() => setShowCalendar(true)} className="text-xs text-green-600 hover:text-green-800 underline font-medium">Change</button>
+                                <button type="button" onClick={() => setShowCalendar(true)} className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 underline font-medium">Change</button>
                             </div>
                         ) : (
-                            <button type="button" onClick={() => setShowCalendar(true)} disabled={!selectedAddress} className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md text-sm font-semibold flex items-center justify-center">
+                            <button type="button" onClick={() => setShowCalendar(true)} disabled={!selectedAddress} className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md text-sm font-semibold flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Calendar className="w-4 h-4 mr-2" /> Check Availability
                             </button>
                         )}
                     </div>
 
                     {isStep2Complete && (
-                        <div className={`p-4 rounded-xl border transition-all duration-300 ${isStep3Complete ? 'border-green-500 bg-green-50/30' : 'border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-white hover:shadow-sm'}`}>
-                            <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center justify-between">
-                                <span className="flex items-center"><User className={`w-5 h-5 mr-2 ${isStep3Complete ? 'text-green-600' : 'text-blue-600'}`} /> 3. Provider</span>
-                                {isStep3Complete && <CheckCircle className="w-5 h-5 text-green-600" />}
+                        <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                            isStep3Complete 
+                            ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                            : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'
+                        }`}>
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                                <span className="flex items-center"><User className={`w-5 h-5 mr-2 ${isStep3Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 3. Provider</span>
+                                {isStep3Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
                             </h3>
                             {selectedProvider ? (
-                                <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <img src={getCloudinaryUrl(selectedProvider.profilePhoto)} alt={selectedProvider.fullName} className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" />
+                                            <img src={getCloudinaryUrl(selectedProvider.profilePhoto)} alt={selectedProvider.fullName} className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600 shadow-sm" />
                                             <div>
-                                                <p className="font-semibold text-gray-900 text-sm">{selectedProvider.fullName}</p>
-                                                <div className="flex items-center gap-2 text-xs text-gray-600 mt-0.5">
-                                                    <span className="flex items-center bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full"><Star className="w-3 h-3 fill-amber-500 text-amber-500 mr-1" />{selectedProvider.rating}</span>
-                                                    <span className="font-medium text-green-700">₹{selectedProvider.price}</span>
+                                                <p className="font-semibold text-gray-900 dark:text-white text-sm">{selectedProvider.fullName}</p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                                                    <span className="flex items-center bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-full"><Star className="w-3 h-3 fill-amber-500 text-amber-500 mr-1" />{selectedProvider.rating}</span>
+                                                    <span className="font-medium text-green-700 dark:text-green-400">₹{selectedProvider.price}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="button" onClick={() => setProviderPopup(true)} className="text-xs text-green-600 hover:text-green-800 underline font-medium">Change</button>
+                                        <button type="button" onClick={() => setProviderPopup(true)} className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 underline font-medium">Change</button>
                                     </div>
                                 </div>
                             ) : (
@@ -437,26 +467,47 @@ const ServiceDetailsPage: React.FC = () => {
                     )}
 
                     {isStep3Complete && (
-                        <div className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-400">
-                            <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center"><FileText className="w-5 h-5 mr-2 text-blue-600" /> 4. Final Details</h3>
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500">
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center"><FileText className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" /> 4. Final Details</h3>
                             <div className="space-y-4 mb-6">
                                 <div className="relative">
-                                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                    <input type="text" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your Name" className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 focus:bg-white" />
+                                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                                    <input 
+                                        type="text" 
+                                        id="fullName" 
+                                        value={fullName} 
+                                        onChange={(e) => setFullName(e.target.value)} 
+                                        placeholder="Your Name" 
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                    />
                                 </div>
                                 <div className="relative">
-                                    <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                    <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone Number" className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 focus:bg-white" />
+                                    <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                                    <input 
+                                        type="tel" 
+                                        id="phone" 
+                                        value={phone} 
+                                        onChange={(e) => setPhone(e.target.value)} 
+                                        placeholder="Phone Number" 
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                    />
                                 </div>
-                                <textarea id="instructions" rows={2} value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Special instructions (optional)..." className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all text-sm bg-gray-50 focus:bg-white" />
+                                <textarea 
+                                    id="instructions" 
+                                    rows={2} 
+                                    value={instructions} 
+                                    onChange={(e) => setInstructions(e.target.value)} 
+                                    placeholder="Special instructions (optional)..." 
+                                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                />
                             </div>
 
-                            <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center"><CreditCard className="w-5 h-5 mr-2 text-blue-600" /> Payment Method</h3>
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center"><CreditCard className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" /> Payment Method</h3>
                             <div className="space-y-2 mb-6">
                                 {paymentOptions.map((method) => (
-                                    <label key={method.value} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${paymentMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                        <input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod === method.value} onChange={() => setPaymentMethod(method.value)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
-                                        <span className="ml-3 text-sm font-medium text-gray-900">{method.label}</span>
+                                    <label key={method.value} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${paymentMethod === method.value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                                        <input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod === method.value} onChange={() => setPaymentMethod(method.value)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600" />
+                                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200">{method.label}</span>
                                     </label>
                                 ))}
                             </div>

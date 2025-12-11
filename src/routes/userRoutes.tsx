@@ -14,7 +14,7 @@ const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/user/Register'));
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
-const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
+const ProfileSettings = lazy(() => import('../pages/user/ProfileSetting'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
 const BookingHistory = lazy(() => import('../pages/user/BookingHistory'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))

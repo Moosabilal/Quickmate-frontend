@@ -87,7 +87,12 @@ export const providerService = {
   }) => {
     try {
       console.log('the type of reaign', typeof filters.rating, typeof filters.status)
-      const queryParams = new URLSearchParams(filters as any).toString();
+      const queryParams = new URLSearchParams(
+        Object.entries(filters).reduce((acc, [key, value]) => {
+          if (value !== undefined) acc[key] = String(value);
+          return acc;
+        }, {} as Record<string, string>)
+      ).toString();
       const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderList?${queryParams}`);
       return response.data;
     } catch (error) {
@@ -108,7 +113,7 @@ export const providerService = {
 
   getState: async (lat: number, lng: number) => {
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       return data;

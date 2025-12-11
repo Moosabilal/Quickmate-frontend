@@ -1,10 +1,11 @@
-import { MapPin, X } from "lucide-react";
+import { MapPin, X, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
 import { AddressPopupProps, IAddress } from "../../util/interface/IAddress";
 import { toast } from "react-toastify";
 import { bookingService } from "../../services/bookingService";
+import { isAxiosError } from "axios";
 
 const AddressPopup: React.FC<AddressPopupProps> = ({
   addressPopup,
@@ -53,8 +54,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     return null;
   }
 
-
-
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -63,24 +62,44 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     setLoading(true);
     setError(null);
 
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+          const { accuracy } = position.coords;
 
-          console.log('the lat and lang', lat, lng)
+          console.log(`Accuracy: ${accuracy} meters`);
+
+          // if (accuracy > 5000) {
+          //   setLoading(false);
+          //   setError("Location signal is too weak (IP-based). Please enter your address manually.");
+          //   toast.warn("We could not pinpoint your exact location.");
+          //   return;
+          // }
+          let lat = position.coords.latitude;
+          let lng = position.coords.longitude;
+          lat = 12.733242
+          lng = 74.895929
+
+          console.log("Accuracy: ", position.coords.accuracy);
 
           if (serviceId) {
             const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
 
             if (!withinRange) {
               setError("No service provider found at your location. Please select a different address.");
-              return; 
+              return;
             }
           }
 
           const locationData = await providerService.getState(lat, lng);
+
+          console.log('the location data is', locationData);
 
           const newAddress: IAddress = {
             label: "Current Location",
@@ -102,24 +121,39 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           const response = await addressService.createAddress(newAddress);
           handleAddressConfirm(response, radius);
 
-        } catch (err: any) {
+        } catch (err) {
           console.error("An error occurred while fetching current location:", err);
-          setError(err.message || "Failed to process current location. Please try again.");
+          let message = "Failed to process current location. Please try again.";
+          if (isAxiosError(err) && err.response?.data?.message) {
+            message = err.response.data.message;
+          } else if (err instanceof Error) {
+            message = err.message;
+          }
+          setError(message);
         } finally {
           setLoading(false);
         }
       },
       (error) => {
-        console.error("Geolocation error:", error);
-        toast.error("Unable to retrieve your location. Please check your browser's location permissions.");
         setLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error("Location permission denied. Please enable it in your browser settings.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("Location information is unavailable. Try moving to an open area.");
+            break;
+          case error.TIMEOUT:
+            toast.error("The request to get user location timed out.");
+            break;
+          default:
+            toast.error("An unknown error occurred.");
+        }
+        console.error("Geolocation error:", error);
       },
-      { enableHighAccuracy: true }
+      options
     );
   };
-
-
-
 
   const handleAddressConfirmWithCheck = async (address: IAddress) => {
     if (!address.locationCoords) {
@@ -142,7 +176,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         setError((error as Error).message || 'An unexpected error occurred.');
       }
     }
-
   };
 
   const saveAddressAndFetch = async () => {
@@ -191,23 +224,23 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         toast.error('Something went wrong. Please try again.');
       }
     }
-
   }
 
   useEffect(() => {
     if (!addressPopup) return;
-
     fetchAddress()
   }, [addressPopup])
 
   if (!addressPopup) return null;
 
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white flex justify-between items-center">
-          <h3 className="text-xl font-bold">Select Address</h3>
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
+
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 p-4 sm:p-5 text-white flex justify-between items-center sticky top-0 z-10">
+          <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <MapPin className="w-5 h-5" /> Select Address
+          </h3>
           <button
             type="button"
             aria-label="close"
@@ -220,111 +253,133 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6 space-y-6">
-          <div>
-            <div>
-              {error && <p className="text-red-600 mb-2">{error}</p>}
+
+        <div className="p-5 sm:p-6 space-y-6">
+
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded-lg">
+              {error}
             </div>
-            {serviceId &&  <><div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <label className="block text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Search Radius: {radius} km
-                </label>
-                <input
-                  type="range"
-                  min={1}
-                  max={25}
-                  value={radius}
-                  title="Search Radius Slider"
-                  aria-label="Search Radius Slider"
-                  onChange={(e) => setRadius(Number(e.target.value))}
-                  className="flex-1 accent-indigo-600"
-                />
-                <input
-                  type="number"
-                  min={1}
-                  max={25}
-                  value={radius}
-                  title="Search Radius Input"
-                  aria-label="Search Radius Input"
-                  onChange={(e) => setRadius(Number(e.target.value))}
-                  className="w-16 px-2 py-1 border rounded-md text-center"
-                />
+          )}
+
+          {serviceId && (
+
+            <div>
+              <div className="flex flex-col gap-5 mb-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    Search Radius: <span className="font-bold text-indigo-600 dark:text-indigo-400">{radius} km</span>
+                  </label>
+                  <div className="flex-1 flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={1}
+                      max={25}
+                      value={radius}
+                      onChange={(e) => setRadius(Number(e.target.value))}
+                      className="flex-1 accent-indigo-600 h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <input
+                      type="number"
+                      min={1}
+                      max={25}
+                      value={radius}
+                      onChange={(e) => setRadius(Number(e.target.value))}
+                      className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-center text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                    Saved Addresses
+                  </label>
+                  <button
+                    onClick={handleCurrentLocation}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+                    {loading ? 'Locating...' : 'Use Current Location'}
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <label className="block text-base font-semibold text-gray-700 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Select Address
-                </label>
+
+              <div className="space-y-3 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1">
+                {mockAddresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 group ${selectedAddress?.id === address.id
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500'
+                      : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    onClick={() => handleAddressConfirmWithCheck(address)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-1 p-1.5 rounded-full ${selectedAddress?.id === address.id
+                        ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
+                        }`}>
+                        <MapPin className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm">{address.label}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
+                          {address.street}, {address.city}, {address.state} {address.zip}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
                 <button
-                  onClick={handleCurrentLocation}
-                  className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                  onClick={() => setShowAddAddress(!showAddAddress)}
+                  className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  {loading ? 'fetching your address...' : '📍 Use Current Location'}
+                  <span>+</span> Add New Address
                 </button>
               </div>
-
             </div>
+          )}
 
 
-            <div className="space-y-3">
-              {mockAddresses.map((address) => (
-                <div
-                  key={address.id}
-                  className={`p-3 border rounded-xl cursor-pointer transition-all duration-200 ${selectedAddress?.id === address.id
-                    ? 'bg-indigo-50 border-indigo-300'
-                    : 'bg-white border-gray-200 hover:bg-gray-50'
-                    }`}
-                  onClick={() => handleAddressConfirmWithCheck(address)}
-                >
-                  <p className="font-medium text-gray-900">{address.label}</p>
-                  <p className="text-sm text-gray-600">
-                    {address.street}, {address.city}, {address.state} {address.zip}
-                  </p>
-                </div>
-              ))}
-              <button
-                onClick={() => setShowAddAddress(true)}
-                className="w-full px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors"
-              >
-                + Add New Address
-              </button>
-            </div></>}
-          </div>
           {showAddAddress && (
-            <div className="border-t pt-4">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">Add New Address</h4>
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 animate-in slide-in-from-top-2">
+              <h4 className="text-md font-semibold text-gray-800 dark:text-white mb-4">New Address Details</h4>
               <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Address Label (e.g., Home, Work)"
-                  value={newAddress.label}
-                  onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.label ? "border-red-500" : "border-gray-300"}`}
-                />
-                {validationErrors.label && <p className="text-red-500 text-sm">{validationErrors.label}</p>}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Address Label (e.g., Home, Work)"
+                    value={newAddress.label}
+                    onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                    className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 ${validationErrors.label ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
+                  />
+                  {validationErrors.label && <p className="text-red-500 text-xs mt-1 ml-1">{validationErrors.label}</p>}
+                </div>
 
-                <input
-                  type="text"
-                  placeholder="Street Address"
-                  value={newAddress.street}
-                  onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.street ? "border-red-500" : "border-gray-300"}`}
-                />
-                {validationErrors.street && <p className="text-red-500 text-sm">{validationErrors.street}</p>}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Street Address"
+                    value={newAddress.street}
+                    onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                    className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 ${validationErrors.street ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
+                  />
+                  {validationErrors.street && <p className="text-red-500 text-xs mt-1 ml-1">{validationErrors.street}</p>}
+                </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="flex flex-col">
                     <input
                       type="text"
                       placeholder="City"
                       value={newAddress.city}
                       onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.city ? "border-red-500" : "border-gray-300"}`}
+                      className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder-gray-400 dark:placeholder-gray-500 ${validationErrors.city ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
                     />
                     {validationErrors.city && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
+                      <p className="text-red-500 text-xs mt-1 ml-1">{validationErrors.city}</p>
                     )}
                   </div>
 
@@ -334,10 +389,10 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                       placeholder="State"
                       value={newAddress.state}
                       onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.state ? "border-red-500" : "border-gray-300"}`}
+                      className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder-gray-400 dark:placeholder-gray-500 ${validationErrors.state ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
                     />
                     {validationErrors.state && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
+                      <p className="text-red-500 text-xs mt-1 ml-1">{validationErrors.state}</p>
                     )}
                   </div>
 
@@ -347,19 +402,19 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                       placeholder="ZIP Code"
                       value={newAddress.zip}
                       onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none ${validationErrors.zip ? "border-red-500" : "border-gray-300"}`}
+                      className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder-gray-400 dark:placeholder-gray-500 ${validationErrors.zip ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
                     />
                     {validationErrors.zip && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.zip}</p>
+                      <p className="text-red-500 text-xs mt-1 ml-1">{validationErrors.zip}</p>
                     )}
                   </div>
                 </div>
 
                 <button
                   onClick={saveAddressAndFetch}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition duration-200"
+                  className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30 font-medium mt-2"
                 >
-                  Save Address
+                  Save & Confirm Address
                 </button>
               </div>
             </div>
@@ -370,4 +425,4 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   );
 };
 
-export default AddressPopup
+export default AddressPopup;

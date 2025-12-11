@@ -27,32 +27,32 @@ const statusMap = {
         label: "Verified",
         icon: <CheckCircle className="w-5 h-5 text-white" />,
         badgeColor: "bg-green-500",
-        text: "text-green-800",
-        bg: "bg-green-100",
+        text: "text-green-800 dark:text-green-300",
+        bg: "bg-green-100 dark:bg-green-900/30",
         iconSmall: <CheckCircle className="w-3 h-3 mr-1" />,
     },
     Pending: {
         label: "Pending",
         icon: <Clock className="w-5 h-5 text-white" />,
         badgeColor: "bg-yellow-500",
-        text: "text-yellow-800",
-        bg: "bg-yellow-100",
+        text: "text-yellow-800 dark:text-yellow-300",
+        bg: "bg-yellow-100 dark:bg-yellow-900/30",
         iconSmall: <Clock className="w-3 h-3 mr-1" />,
     },
     Rejected: {
         label: "Rejected",
         icon: <XCircle className="w-5 h-5 text-white" />,
         badgeColor: "bg-red-500",
-        text: "text-red-800",
-        bg: "bg-red-100",
+        text: "text-red-800 dark:text-red-300",
+        bg: "bg-red-100 dark:bg-red-900/30",
         iconSmall: <XCircle className="w-3 h-3 mr-1" />,
     },
     Suspended: {
         label: "Suspended",
         icon: <Ban className="w-5 h-5 text-white" />,
         badgeColor: "bg-gray-500",
-        text: "text-gray-800",
-        bg: "bg-gray-100",
+        text: "text-gray-800 dark:text-gray-300",
+        bg: "bg-gray-100 dark:bg-gray-700",
         iconSmall: <Ban className="w-3 h-3 mr-1" />,
     },
 };
@@ -98,8 +98,6 @@ const ProviderProfile: React.FC = () => {
         };
     };
 
-
-
     useEffect(() => {
         if (provider && Object.keys(provider).length > 0) {
             setProviderDetails(provider);
@@ -116,8 +114,6 @@ const ProviderProfile: React.FC = () => {
             }
         }
     }, [provider]);
-
-
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -267,7 +263,7 @@ const ProviderProfile: React.FC = () => {
         }
     };
 
-    const handleInputChange = (field: string, value: any) => {
+    const handleInputChange = (field: string, value: string) => {
         setEditedDetails(prev => ({
             ...prev,
             [field]: value
@@ -289,11 +285,11 @@ const ProviderProfile: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-950 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-6">
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border dark:border-gray-700 transition-colors duration-300">
                             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -336,26 +332,26 @@ const ProviderProfile: React.FC = () => {
                             </div>
                             <div className="p-8 space-y-8">
                                 <section>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                                        <User className="w-6 h-6 mr-3 text-blue-600" />
+                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-6 flex items-center">
+                                        <User className="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400" />
                                         Basic Information
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="bg-slate-50 rounded-xl p-4">
-                                            <label className="text-sm font-medium text-slate-500 mb-1 block">Name</label>
+                                        <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 transition-colors">
+                                            <label className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1 block">Name</label>
                                             {isEditing ? (
                                                 <input
                                                     type="text"
                                                     value={editedDetails.fullName || ''}
                                                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                 />
                                             ) : (
-                                                <p className="text-slate-800 font-semibold">{providerDetails?.fullName}</p>
+                                                <p className="text-slate-800 dark:text-gray-200 font-semibold">{providerDetails?.fullName}</p>
                                             )}
                                         </div>
-                                        <div className="bg-slate-50 rounded-xl p-4">
-                                            <label className="text-sm font-medium text-slate-500 mb-1 block flex items-center">
+                                        <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 transition-colors">
+                                            <label className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1 block flex items-center">
                                                 <Phone className="w-4 h-4 mr-1" />
                                                 Phone
                                             </label>
@@ -364,14 +360,14 @@ const ProviderProfile: React.FC = () => {
                                                     type="tel"
                                                     value={editedDetails.phoneNumber || ''}
                                                     onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                 />
                                             ) : (
-                                                <p className="text-slate-800 font-semibold">{providerDetails?.phoneNumber}</p>
+                                                <p className="text-slate-800 dark:text-gray-200 font-semibold">{providerDetails?.phoneNumber}</p>
                                             )}
                                         </div>
-                                        <div className="bg-slate-50 rounded-xl p-4 md:col-span-2">
-                                            <label className="text-sm font-medium text-slate-500 mb-1 block flex items-center">
+                                        <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 md:col-span-2 transition-colors">
+                                            <label className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1 block flex items-center">
                                                 <Mail className="w-4 h-4 mr-1" />
                                                 Email
                                             </label>
@@ -380,24 +376,24 @@ const ProviderProfile: React.FC = () => {
                                                     type="email"
                                                     value={editedDetails.email || ''}
                                                     onChange={(e) => handleInputChange('email', e.target.value)}
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                 />
                                             ) : (
-                                                <p className="text-slate-800 font-semibold">{providerDetails?.email}</p>
+                                                <p className="text-slate-800 dark:text-gray-200 font-semibold">{providerDetails?.email}</p>
                                             )}
                                         </div>
                                     </div>
                                 </section>
 
                                 <section>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                                        <Award className="w-6 h-6 mr-3 text-blue-600" />
+                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-6 flex items-center">
+                                        <Award className="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400" />
                                         Service Area
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                                        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
-                                            <label className="text-sm font-medium text-purple-600 mb-2 block flex items-center">
+                                        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800 transition-all">
+                                            <label className="text-sm font-medium text-purple-600 dark:text-purple-300 mb-2 block flex items-center">
                                                 <MapPin className="w-4 h-4 mr-1" />
                                                 Service Area District
                                             </label>
@@ -407,21 +403,21 @@ const ProviderProfile: React.FC = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => setIsMapOpen(true)}
-                                                        className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm"
+                                                        className="px-4 py-2 bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-200 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/60 transition text-sm border border-transparent dark:border-purple-700"
                                                     >
                                                         {currentLocation
                                                             ? `Selected: (${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)})`
                                                             : 'Select Location from Map'}
                                                     </button>
                                                     {address && (
-                                                        <p className="mt-2 text-purple-800 text-sm font-semibold" >Area: {address}</p>
+                                                        <p className="mt-2 text-purple-800 dark:text-purple-200 text-sm font-semibold" >Area: {address}</p>
                                                     )}
                                                 </>
                                             ) : (
                                                 <>
-                                                    <p className="text-lg font-semibold text-purple-700">{address}</p>
+                                                    <p className="text-lg font-semibold text-purple-700 dark:text-purple-200">{address}</p>
                                                     {currentLocation && (
-                                                        <p className="text-sm text-purple-600 mt-1">
+                                                        <p className="text-sm text-purple-600 dark:text-purple-300/80 mt-1">
                                                             Coordinates: {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}
                                                         </p>
                                                     )}
@@ -432,8 +428,8 @@ const ProviderProfile: React.FC = () => {
                                 </section>
 
                                 <section>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-6">Profile Photo</h2>
-                                    <div className="flex items-start space-x-6 p-6 bg-slate-50 rounded-xl">
+                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-6">Profile Photo</h2>
+                                    <div className="flex items-start space-x-6 p-6 bg-slate-50 dark:bg-gray-700/50 rounded-xl transition-colors">
                                         <div className="relative">
                                             <img
                                                 src={
@@ -442,7 +438,7 @@ const ProviderProfile: React.FC = () => {
                                                         : getCloudinaryUrl(providerDetails?.profilePhoto || '')
                                                 }
                                                 alt={providerDetails?.fullName}
-                                                className="w-24 h-24 rounded-2xl shadow-lg object-cover"
+                                                className="w-24 h-24 rounded-2xl shadow-lg object-cover bg-gray-200 dark:bg-gray-600"
                                             />
                                             {providerDetails?.status && statusMap[providerDetails.status as keyof typeof statusMap] && (
                                                 <div
@@ -453,7 +449,7 @@ const ProviderProfile: React.FC = () => {
                                             )}
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-slate-800 mb-1">{providerDetails?.fullName}</h3>
+                                            <h3 className="text-xl font-bold text-slate-800 dark:text-gray-100 mb-1">{providerDetails?.fullName}</h3>
                                             {providerDetails?.status && (
                                                 <span
                                                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-3 ${statusMap[providerDetails.status as keyof typeof statusMap]?.bg} ${statusMap[providerDetails.status as keyof typeof statusMap]?.text}`}
@@ -476,19 +472,23 @@ const ProviderProfile: React.FC = () => {
                                                                 }));
                                                             }
                                                         }}
-                                                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                                        className="block w-full text-sm text-slate-500 dark:text-gray-400 
+                                                        file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 
+                                                        file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 
+                                                        dark:file:bg-blue-900/30 dark:file:text-blue-300
+                                                        hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50"
                                                     />
-                                                    <p className="text-xs text-slate-500">Upload a new profile photo (JPG, PNG, max 5MB)</p>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-500">Upload a new profile photo (JPG, PNG, max 5MB)</p>
                                                 </div>
                                             ) : (
-                                                <p className="text-sm text-slate-500">You can change your profile photo in profile settings</p>
+                                                <p className="text-sm text-slate-500 dark:text-gray-400">You can change your profile photo in profile settings</p>
                                             )}
                                         </div>
                                         <div>
                                             {providerDetails?.status === ProviderStatus.InActive && (
                                                 <Link
                                                     to="/provider-registration"
-                                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800"
                                                 >
                                                     Re-Apply
                                                 </Link>
@@ -499,18 +499,18 @@ const ProviderProfile: React.FC = () => {
                                 </section>
 
                                 <section>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                                        <FileText className="w-6 h-6 mr-3 text-blue-600" />
+                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-6 flex items-center">
+                                        <FileText className="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400" />
                                         Verification Documents
                                     </h2>
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
+                                        <div className="flex items-center justify-between p-6 bg-white dark:bg-gray-800 border-2 border-slate-100 dark:border-gray-700 rounded-xl hover:border-blue-200 dark:hover:border-blue-500 transition-colors">
                                             <div className="flex items-center space-x-4">
-                                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                                    <FileText className="w-6 h-6 text-blue-600" />
+                                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                                    <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-semibold text-slate-800">Aadhaar/ID Proof</h3>
+                                                    <h3 className="font-semibold text-slate-800 dark:text-gray-200">Aadhaar/ID Proof</h3>
                                                     {/* <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                         <CheckCircle className="w-3 h-3 mr-1" />
                                                         Verified
@@ -529,14 +529,17 @@ const ProviderProfile: React.FC = () => {
                                                                         }));
                                                                     }
                                                                 }}
-                                                                className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700"
+                                                                className="text-xs text-slate-500 dark:text-gray-400 
+                                                                file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 
+                                                                file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700
+                                                                dark:file:bg-blue-900/30 dark:file:text-blue-300"
                                                             />
                                                             {editedDetails.aadhaarIdProofFile &&
                                                                 editedDetails.aadhaarIdProofFile.type.startsWith("image/") && (
                                                                     <img
                                                                         src={URL.createObjectURL(editedDetails.aadhaarIdProofFile)}
                                                                         alt="Aadhaar Preview"
-                                                                        className="mt-1 w-48 rounded-lg border border-gray-300 shadow"
+                                                                        className="mt-1 w-48 rounded-lg border border-gray-300 dark:border-gray-600 shadow"
                                                                     />
                                                                 )}
                                                         </div>
@@ -544,7 +547,7 @@ const ProviderProfile: React.FC = () => {
                                                 </div>
                                             </div>
                                             <button
-                                                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
+                                                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                                                 onClick={() => {
                                                     const imageUrl = editedDetails.aadhaarIdProofFile
                                                         ? URL.createObjectURL(editedDetails.aadhaarIdProofFile)
@@ -565,10 +568,12 @@ const ProviderProfile: React.FC = () => {
             </div>
 
             {isModalOpen && selectedImage && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-6 max-w-3xl w-full mx-4 relative">
+                <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-3xl w-full mx-4 relative border dark:border-gray-700">
                         <button
-                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 z-10"
+                            type='button'
+                            aria-label='close model'
+                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white z-10 p-2 bg-white/50 dark:bg-gray-700/50 rounded-full"
                             onClick={closeModal}
                         >
                             <X className="w-6 h-6" />
@@ -584,23 +589,25 @@ const ProviderProfile: React.FC = () => {
 
 
             {isMapOpen && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-4xl h-[600px] rounded-lg shadow-xl relative">
-                        <div className="flex justify-between items-center p-4 border-b">
-                            <h2 className="text-lg font-semibold">Select Service Location</h2>
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 w-full max-w-4xl h-[600px] rounded-lg shadow-xl relative border dark:border-gray-700 flex flex-col">
+                        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Select Service Location</h2>
                             <button
+                                type="button"
+                                aria-label='open map model'
                                 onClick={() => setIsMapOpen(false)}
-                                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="h-[calc(600px-73px)] w-full">
+                        <div className="flex-1 w-full relative">
                             <MapContainer
                                 center={currentLocation ? [currentLocation.lat, currentLocation.lng] : mapCenter}
                                 zoom={currentLocation ? 10 : 5}
-                                className="h-full w-full rounded-b-lg"
+                                className="h-full w-full rounded-b-lg z-0"
                             >
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -53,6 +53,8 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
             <p className="text-lg" style={{ color: '#dbeafe' }}>Unlock premium features with our flexible subscription options</p>
           </div>
           <button
+            aria-label="Close Modal"
+            type="button"
             onClick={onClose}
             className="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center transition-colors text-white text-xl font-light hover:bg-white hover:bg-opacity-30"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector'; 
 import { toggleTheme } from '../features/theme/ThemeSlice'; 
+import { Moon, Sun } from 'lucide-react';
 
 const ThemeToggle = () => {
   const dispatch = useAppDispatch();
@@ -26,7 +27,7 @@ const ThemeToggle = () => {
       className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none"
       aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`} 
     >
-      {currentTheme === 'light' ? '🌙' : '☀️'}
+      {currentTheme === 'light' ? <Moon /> : <Sun/>}
     </button>
   );
 };

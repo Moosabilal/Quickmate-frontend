@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, Search, Eye, CheckCircle, XCircle, PlayCircle, X } from 'lucide-react';
+import { Calendar, Clock, Search, Eye, X } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { BookingStatus, IBookingHistoryPage, IBookingStatusCounts } from '../../util/interface/IBooking';
 import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
+import { getStatusColor } from '../../components/getStatusColor';
+import { getStatusIcon } from '../../components/BookingStatusIcon';
 
 const BookingHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BookingStatus>(BookingStatus.All);
@@ -20,6 +22,7 @@ const BookingHistory: React.FC = () => {
     [BookingStatus.IN_PROGRESS]: 0,
     [BookingStatus.COMPLETED]: 0,
     [BookingStatus.CANCELLED]: 0,
+    [BookingStatus.EXPIRED]: 0,
   });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -35,6 +38,8 @@ const BookingHistory: React.FC = () => {
           debouncedSearchTerm,
           status || ''
         );
+
+        console.log('the response is', response.data);
 
         setBookings(response.data);
         setTabCounts(response.counts);
@@ -64,40 +69,10 @@ const BookingHistory: React.FC = () => {
     { id: BookingStatus.IN_PROGRESS, label: 'In Progress', count: tabCounts[BookingStatus.IN_PROGRESS] },
     { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: tabCounts[BookingStatus.CONFIRMED] },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: tabCounts[BookingStatus.COMPLETED] },
-    { id: BookingStatus.CANCELLED, label: 'Canceled', count: tabCounts[BookingStatus.CANCELLED] }
+    { id: BookingStatus.CANCELLED, label: 'Canceled', count: tabCounts[BookingStatus.CANCELLED] },
+    { id: BookingStatus.EXPIRED, label: 'Expired', count: tabCounts[BookingStatus.EXPIRED] } // --- NEW TAB ---
+
   ];
-
-  const getStatusColor = (status: BookingStatus) => {
-    switch (status) {
-      case BookingStatus.COMPLETED:
-        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
-      case BookingStatus.CONFIRMED:
-        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800';
-      case BookingStatus.CANCELLED:
-        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
-      case BookingStatus.IN_PROGRESS:
-        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
-      case BookingStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
-    }
-  };
-
-  const getStatusIcon = (status: BookingStatus) => {
-    switch (status) {
-      case BookingStatus.COMPLETED:
-        return <CheckCircle className="w-4 h-4" />;
-      case BookingStatus.CONFIRMED:
-        return <Clock className="w-4 h-4" />;
-      case BookingStatus.CANCELLED:
-        return <XCircle className="w-4 h-4" />;
-      case BookingStatus.IN_PROGRESS:
-        return <PlayCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-gray-900 font-sans transition-colors duration-300">
@@ -212,7 +187,7 @@ const BookingHistory: React.FC = () => {
 
                         <div className="text-left sm:text-right">
                           <p className="text-sm text-gray-500 dark:text-gray-400 mb-0.5">Total Amount</p>
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{booking.price.toLocaleString()}</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{booking.price}</p>
                         </div>
                       </div>
 

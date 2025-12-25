@@ -56,9 +56,12 @@ const Register = () => {
         if (!emailRegex.test(email.trim())) {
             return 'Please enter a valid email address';
         }
+        if(email.split('@')[0].length < 3){
+            return 'Email address is too short'
+        }
         if (email.length > 254) {
             return 'Email address is too long';
-        }
+        }   
         return undefined;
     };
 

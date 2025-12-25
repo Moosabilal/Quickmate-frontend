@@ -9,6 +9,7 @@ export interface IPlan {
   id?: string;          
   _id?: string;       
   name: string;
+  description?: string;
   price: number | null; 
   durationInDays: number | null;
   features: string[];
@@ -20,6 +21,7 @@ export interface IPlan {
 export interface ISubscriptionPlan {
   _id: string;
   name: string;
+  description?: string;
   price: number;
   durationInDays: number;
   features: string[];

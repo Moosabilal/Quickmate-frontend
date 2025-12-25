@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 import { UserTableRowSkeleton } from '../../components/admin/UserTableRowSkeleton';
+import BlockReasonModal from '../../components/BlockReasonModal';
 
 const USERS_PER_PAGE = 6;
 
@@ -27,14 +28,16 @@ const AdminUsersPage = () => {
   const [totalUsers, setTotalUsers] = useState(0)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
+  const [showBlockReasonModal, setShowBlockReasonModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false)
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const response = await authService.getUserWithAllDetails({
           page: currentPage,
@@ -49,7 +52,7 @@ const AdminUsersPage = () => {
         toast.error(`${error}`);
         console.error('Failed to fetch users:', error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -81,24 +84,35 @@ const AdminUsersPage = () => {
 
   const getAvatarColor = (index: number) => {
     const colors = [
-      'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300', 
-      'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300', 
-      'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300', 
-      'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300', 
-      'bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300', 
+      'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
+      'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
+      'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300',
+      'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300',
+      'bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300',
       'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300'
     ];
     return colors[index % colors.length];
   };
 
   const handleDeleteCancel = () => {
+    setShowBlockReasonModal(false)
     setShowDeleteModal(false);
     setUserToBlock(null);
   };
 
-  const handleStatus = async () => {
+  const onActionClick = () => {
+    if (!userToBlock) return
+    if (userToBlock.isVerified) {
+      setShowBlockReasonModal(true);
+    } else {
+      handleStatus()
+    }
+  };
+
+  const handleStatus = async (reason?: string) => {
+    setButtonLoading(true)
     try {
-      const updatedUser = await authService.updateUser(userToBlock?.id || '');
+      const updatedUser = await authService.updateUser(userToBlock?.id || '', reason);
 
       setUsers(prevUsers =>
         prevUsers.map(user =>
@@ -109,28 +123,28 @@ const AdminUsersPage = () => {
       if (currentUser?.id === userToBlock?.id) {
         dispatch(updateProfile({ user: updatedUser }));
       }
+      setShowBlockReasonModal(false)
       setShowDeleteModal(false);
       setUserToBlock(null);
       toast.success(`User ${updatedUser.isVerified ? 'unblocked' : 'blocked'} successfully`);
     } catch (error) {
       console.error('Error updating user status:', error);
       toast.error("Failed to update user status");
+    } finally {
+      setButtonLoading(false)
     }
   };
 
   return (
-    // Main Container: slate-50 / gray-700
     <div className="flex h-screen bg-slate-50 dark:bg-gray-700 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8">
-          
-          {/* Header */}
+
           <div className="mb-8">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Users</h2>
             <p className="text-slate-500 dark:text-slate-300 mt-1">Manage user accounts and access controls</p>
           </div>
 
-          {/* Filters Card: white / gray-800 */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 p-5 mb-6 transition-colors">
             <div className="flex flex-col sm:flex-row gap-4 justify-between">
               <div className="relative flex-1 max-w-md">
@@ -159,7 +173,6 @@ const AdminUsersPage = () => {
             </div>
           </div>
 
-          {/* Table Card: white / gray-800 */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 overflow-hidden transition-colors">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -209,11 +222,10 @@ const AdminUsersPage = () => {
                               View
                             </button>
                             <button
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                user.isVerified 
-                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40' 
+                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${user.isVerified
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
                                   : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40'
-                              }`}
+                                }`}
                               onClick={() => {
                                 setUserToBlock(user)
                                 setShowDeleteModal(true)
@@ -242,7 +254,6 @@ const AdminUsersPage = () => {
               </table>
             </div>
 
-            {/* Pagination Footer: gray-50 / gray-700/50 */}
             <div className="px-6 py-4 border-t border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-700/30">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -260,19 +271,33 @@ const AdminUsersPage = () => {
           </div>
         </main>
       </div>
-      
+
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
-        onConfirm={handleStatus}
+        onConfirm={onActionClick}
         itemType={DeleteConfirmationTypes.PROFILE}
         itemName={userToBlock?.name || ''}
         itemDetails={userToBlock ? `${userToBlock.email}` : ''}
+        isLoading={buttonLoading}
         customMessage={`Are you sure you want to ${userToBlock?.isVerified ? 'block' : 'unblock'} this user?`}
         additionalInfo={userToBlock?.isVerified ? "This action will prevent the user from logging in." : "This will restore the user's access."}
         titleProp={userToBlock?.isVerified ? 'Block User' : 'Unblock User'}
         confirmTextProp={userToBlock?.isVerified ? 'Block User' : 'Unblock User'}
       />
+
+      {showBlockReasonModal && 
+      <BlockReasonModal
+        isOpen={showBlockReasonModal}
+        onClose={handleDeleteCancel}
+        onConfirm={handleStatus}
+        confirmButtonText='Block'
+        label='Reason for blocking'
+        title="Block User"
+        subTitle="This action will prevent the user from logging in."
+        placeholder="Please describe why this user is being blocked..."
+        isLoading={buttonLoading}
+      />}
     </div>
   );
 };

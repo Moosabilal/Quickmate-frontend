@@ -9,8 +9,6 @@ import { toast } from 'react-toastify';
 import { MapPin } from 'lucide-react';
 import { IProviderFormState } from '../../util/interface/IProvider';
 
-
-
 export const LocationSelector = ({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
     useMapEvents({
         click(e) {
@@ -161,7 +159,7 @@ const ProviderRegistration: React.FC = () => {
 
     const renderInputField = (label: string, id: keyof IProviderFormState, type: string = 'text', placeholder?: string, rows?: number, min?: number) => (
         <div className="mb-6">
-            <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
+            <label htmlFor={id as string} className="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
                 {label}
             </label>
             {type === 'textarea' ? (
@@ -172,7 +170,7 @@ const ProviderRegistration: React.FC = () => {
                     value={formData[id] as string}
                     onChange={handleChange}
                     rows={rows}
-                    className={`w-full px-4 py-3 border ${errors[id] ? 'border-red-500' : 'border-gray-200'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white`}
+                    className={`w-full px-4 py-3 border ${errors[id] ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                 />
             ) : (
                 <input
@@ -183,7 +181,7 @@ const ProviderRegistration: React.FC = () => {
                     value={formData[id] as string | number}
                     onChange={handleChange}
                     min={min}
-                    className={`w-full px-4 py-3 border ${errors[id] ? 'border-red-500' : 'border-gray-200'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white`}
+                    className={`w-full px-4 py-3 border ${errors[id] ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                 />
             )}
             {errors[id] && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors[id]}</p>}
@@ -193,11 +191,11 @@ const ProviderRegistration: React.FC = () => {
 
     const renderFileUploadField = (label: string, subLabel: string, id: keyof IProviderFormState, fileRef: React.RefObject<HTMLInputElement | null>, optional?: boolean) => (
         <div className="mb-6">
-            <label htmlFor={id as string} className="block text-gray-700 text-sm font-semibold mb-2">
-                {label} {optional && <span className="text-gray-400 text-xs">(Optional)</span>}
+            <label htmlFor={id as string} className="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
+                {label} {optional && <span className="text-gray-400 dark:text-gray-500 text-xs">(Optional)</span>}
             </label>
             <div
-                className={`w-full p-8 border-2 border-dashed ${errors[id] ? 'border-red-500' : 'border-gray-200'} rounded-xl text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-white`}
+                className={`w-full p-8 border-2 border-dashed ${errors[id] ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'} rounded-xl text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800`}
                 onClick={() => fileRef.current?.click()}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(id, e)}
@@ -211,11 +209,11 @@ const ProviderRegistration: React.FC = () => {
                     accept="image/*,.pdf"
                 />
                 <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                <p className="text-gray-700 font-semibold">{formData[id] ? (formData[id] as File).name : `Add ${label}`}</p>
-                <p className="text-gray-500 text-sm mt-1">{subLabel}</p>
+                <p className="text-gray-700 dark:text-gray-200 font-semibold">{formData[id] ? (formData[id] as File).name : `Add ${label}`}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{subLabel}</p>
                 <button
                     type="button"
-                    className="mt-4 px-6 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300"
+                    className="mt-4 px-6 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-sm font-semibold rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300"
                 >
                     Upload
                 </button>
@@ -225,10 +223,10 @@ const ProviderRegistration: React.FC = () => {
                             <img
                                 src={URL.createObjectURL(formData[id] as File)}
                                 alt="Uploaded Preview"
-                                className="mx-auto h-40 object-contain rounded-lg shadow-sm border border-gray-200"
+                                className="mx-auto h-40 object-contain rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
                             />
                         ) : (
-                            <div className="flex items-center justify-center text-sm text-gray-600">
+                            <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-300">
                                 <DocumentIcon className="h-5 w-5 mr-2" />
                                 <span>{(formData[id] as File).name} uploaded</span>
                             </div>
@@ -242,10 +240,10 @@ const ProviderRegistration: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+            <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-                    <p className="mt-4 text-lg text-gray-700 font-medium">Saving...</p>
+                    <p className="mt-4 text-lg text-gray-700 dark:text-gray-300 font-medium">Saving...</p>
                 </div>
             </div>
         );
@@ -254,26 +252,26 @@ const ProviderRegistration: React.FC = () => {
     const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
             <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
-                <div className="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto border border-gray-100">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center tracking-tight">Provider Registration</h1>
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg max-w-4xl mx-auto border border-gray-100 dark:border-gray-700 transition-colors duration-300">
+                    <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-10 text-center tracking-tight">Provider Registration</h1>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-700">Personal Information</h2>
+                            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Personal Information</h2>
                             {renderInputField("Full Name", "fullName", "text", "Enter your full name")}
                             {renderInputField("Phone Number", "phoneNumber", "tel", "Enter your phone number")}
                             {renderInputField("Email", "email", "email", "Enter your email")}
                         </div>
 
-                        <hr className="my-8 border-gray-200" />
+                        <hr className="my-8 border-gray-200 dark:border-gray-700" />
 
                         <div className="space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-700">Service Details</h2>
+                            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Service Details</h2>
 
                             <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                                <label className="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
                                     <span className="flex items-center">
                                         <MapPin className="w-4 h-4 mr-1" />
                                         Service Location
@@ -283,14 +281,14 @@ const ProviderRegistration: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsMapOpen(true)}
-                                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm"
+                                    className="px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition text-sm"
                                 >
                                     {formData.serviceLocation
                                         ? `Selected: (${formData.serviceLocation.lat.toFixed(4)}, ${formData.serviceLocation.lng.toFixed(4)})`
                                         : 'Select Location from Map'}
                                 </button>
                                 {address && (
-                                    <p className="mt-2 text-purple-800 text-sm font-semibold" >Area: {address}</p>
+                                    <p className="mt-2 text-purple-800 dark:text-purple-400 text-sm font-semibold" >Area: {address}</p>
                                 )}
                                 {errors.serviceLocation && (
                                     <p className="text-red-500 text-xs mt-2 animate-pulse">
@@ -302,7 +300,7 @@ const ProviderRegistration: React.FC = () => {
                         </div>
         
 
-                        <hr className="my-8 border-gray-200" />
+                        <hr className="my-8 border-gray-200 dark:border-gray-700" />
 
                         <div className="space-y-6">
                             {renderFileUploadField("Aadhaar/ID Proof", "Upload your ID proof", "aadhaarIdProof", aadhaarIdProofRef)}
@@ -316,16 +314,16 @@ const ProviderRegistration: React.FC = () => {
                                     id="agreeTerms"
                                     checked={formData.agreeTerms}
                                     onChange={handleChange}
-                                    className={`form-checkbox h-5 w-5 ${errors.agreeTerms ? 'text-red-500' : 'text-blue-500'} rounded focus:ring-blue-500 border-gray-200`}
+                                    className={`form-checkbox h-5 w-5 ${errors.agreeTerms ? 'text-red-500' : 'text-blue-500'} rounded focus:ring-blue-500 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700`}
                                 />
-                                <span className="ml-2 text-gray-700 text-sm font-medium">
-                                    I agree to the <a href="#" className="text-blue-500 hover:underline">Terms & Conditions</a> and <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>
+                                <span className="ml-2 text-gray-700 dark:text-gray-300 text-sm font-medium">
+                                    I agree to the <a href="#" className="text-blue-500 dark:text-blue-400 hover:underline">Terms & Conditions</a> and <a href="#" className="text-blue-500 dark:text-blue-400 hover:underline">Privacy Policy</a>
                                 </span>
                             </label>
                             {errors.agreeTerms && <p className="text-red-500 text-xs mt-2 animate-pulse">{errors.agreeTerms}</p>}
                             <button
                                 type="submit"
-                                className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
                                 disabled={!formData.agreeTerms}
                             >
                                 Submit Registration
@@ -337,11 +335,11 @@ const ProviderRegistration: React.FC = () => {
 
             {isMapOpen && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
-                        <h2 className="text-lg font-semibold p-4 border-b">Select Service Location</h2>
+                    <div className="bg-white dark:bg-gray-800 w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative transition-colors duration-300">
+                        <h2 className="text-lg font-semibold p-4 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">Select Service Location</h2>
                         <button
                             onClick={() => setIsMapOpen(false)}
-                            className="absolute top-3 right-4 text-xl hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center"
+                            className="absolute top-3 right-4 text-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                         >
                             ×
                         </button>

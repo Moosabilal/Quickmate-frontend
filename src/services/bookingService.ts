@@ -83,9 +83,9 @@ export const bookingService = {
     }
   },
 
-  updateBookingStatus: async (id: string, status: BookingStatus) => {
+  updateBookingStatus: async (id: string, status: BookingStatus, role?: string) => {
     try {
-      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingStatus/${id}`, { status });
+      const response = await axiosInstance.patch(`${BOOKING_URL}/updateBookingStatus/${id}`, { status, role });
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to update booking status.");

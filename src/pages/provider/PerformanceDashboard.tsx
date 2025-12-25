@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle, BarChart2, Briefcase } from 'lucide-react';
 import { providerService } from '../../services/providerService';
 import { RatingTrendChart } from '../../components/provider/RatingTrendChart'; 
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { IProviderPerformance, } from '../../util/interface/IProvider';
 
 const PerformanceDashboard = () => {
@@ -187,7 +186,7 @@ const PerformanceDashboard = () => {
                                     <div key={index} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
                                         <div className="flex items-start gap-4">
                                             <img 
-                                                src={review.avatar ? getCloudinaryUrl(review.avatar) : '/profileImage.png'} 
+                                                src={review.avatar ? review.avatar : '/profileImage.png'} 
                                                 alt={`${review.name}'s avatar`} 
                                                 className="w-10 h-10 rounded-full object-cover bg-gray-200 dark:bg-gray-600 border border-gray-100 dark:border-gray-600" 
                                             />

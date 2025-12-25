@@ -4,10 +4,10 @@ import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2 } from 'lucide
 import { categoryService } from '../../services/categoryService';
 import { providerService } from '../../services/providerService';
 import type { ICategoryResponse, IserviceResponse } from '../../util/interface/ICategory';
+import { authService } from '../../services/authService';
 import type { IFeaturedProviders } from '../../util/interface/IProvider';
 import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { ChatbotMessage } from '../../util/interface/IChatBot';
 import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/IChatBot';
@@ -108,6 +108,8 @@ const Home: React.FC = () => {
     const [unreadCount, setUnreadCount] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isMobile, setIsMobile] = useState<boolean>(false);
+    const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; type: 'service' | 'provider'; image?: string }>>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     const user = useAppSelector((state) => state.auth.user);
 
@@ -210,6 +212,47 @@ const Home: React.FC = () => {
         };
         initChat();
     }, [user?.id]);
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchQuery.trim().length > 1) {
+                try {
+                    const response = await authService.searchResources(searchQuery);
+                    console.log('the response', response)
+                    const serviceSuggestions = response.services.map((s: any) => ({
+                        id: s._id || s.id,
+                        name: s.title || s.name,
+                        type: 'service',
+                        image: s.iconUrl
+                    }));
+                    const providerSuggestions = response.providers.map((p: any) => ({
+                        id: p._id || p.id,
+                        name: p.fullName || p.name,
+                        type: 'provider',
+                        image: p.profilePhoto || p.profilePicture
+                    }));
+                    setSuggestions([...serviceSuggestions, ...providerSuggestions]);
+                    setShowSuggestions(true);
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
+
+    const handleSuggestionClick = useCallback((suggestion: { id: string, type: string }) => {
+        if (suggestion.type === 'service') {
+            navigate(`/service-detailsPage/${suggestion.id}`);
+        } else {
+            navigate(`/providers/${suggestion.id}`);
+        }
+        setShowSuggestions(false);
+    }, [navigate]);
 
     const generateBotResponse = useCallback(async (history: ChatbotMessage[]): Promise<void> => {
         if (!sessionId) {
@@ -358,10 +401,12 @@ const Home: React.FC = () => {
 
     const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            toast.success(`Search query:, ${searchQuery}`);
+        if (suggestions.length > 0) {
+            handleSuggestionClick(suggestions[0]);
+        } else if (searchQuery.trim()) {
+            toast.info(`No matching services found for: ${searchQuery}`);
         }
-    }, [searchQuery]);
+    }, [searchQuery, suggestions, handleSuggestionClick]);
 
     const handleRetry = useCallback((): void => {
         window.location.reload();
@@ -412,14 +457,39 @@ const Home: React.FC = () => {
                             onSubmit={handleSearchSubmit}
                             className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto"
                         >
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="What service are you looking for?"
-                                className="p-3 rounded-lg w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 outline-none transition-shadow"
-                                aria-label="Search for services"
-                            />
+                            <div className="relative w-full">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="What service are you looking for?"
+                                    className="p-3 rounded-lg w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 outline-none transition-shadow"
+                                    aria-label="Search for services"
+                                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                />
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-b-lg z-50 mt-1 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 text-left">
+                                        {suggestions.map((suggestion) => (
+                                            <div
+                                                key={`${suggestion.type}-${suggestion.id}`}
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                                className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                            >
+                                                <img
+                                                    src={suggestion.image! || 'https://via.placeholder.com/40'}
+                                                    alt={suggestion.name}
+                                                    className="w-10 h-10 rounded-full object-cover mr-3"
+                                                />
+                                                <div>
+                                                    <p className="font-medium text-gray-800 dark:text-gray-200 text-sm">{suggestion.name}</p>
+                                                    <p className="text-xs text-gray-500 capitalize">{suggestion.type}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <button
                                 type="submit"
                                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 whitespace-nowrap"
@@ -446,7 +516,7 @@ const Home: React.FC = () => {
                                 >
                                     <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
                                         <img
-                                            src={getCloudinaryUrl(category.iconUrl) || 'https://via.placeholder.com/64?text=Category'}
+                                            src={category.iconUrl || 'https://via.placeholder.com/64?text=Category'}
                                             alt={`${category.name} category icon`}
                                             className="rounded-full w-24 h-24 object-cover"
                                         />
@@ -472,7 +542,7 @@ const Home: React.FC = () => {
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <img
-                                        src={service.iconUrl ? getCloudinaryUrl(service.iconUrl) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
+                                        src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
                                         alt={`${service.name} service`}
                                         className="w-full h-48 object-cover"
                                     />
@@ -508,7 +578,7 @@ const Home: React.FC = () => {
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <img
-                                        src={service.iconUrl ? getCloudinaryUrl(service.iconUrl) : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
+                                        src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
                                         alt={`${service.name} service`}
                                         className="w-full h-48 object-cover"
                                     />
@@ -545,7 +615,7 @@ const Home: React.FC = () => {
                                         className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
                                         <img
-                                            src={getCloudinaryUrl(provider.profilePhoto)}
+                                            src={provider.profilePhoto}
                                             alt={`${provider.fullName} profile`}
                                             className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
                                         />

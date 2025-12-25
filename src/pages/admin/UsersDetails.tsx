@@ -6,15 +6,20 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { authService } from '../../services/authService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { IUserDetailsResponse } from '../../util/interface/IUser';
 import { StatusBadge } from '../../components/admin/UserStatusBadge';
 import { StatCard } from '../../components/admin/UserStatCard';
+import BlockReasonModal from '../../components/BlockReasonModal';
+import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
+import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
 const UserDetailsPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const [user, setUser] = useState<IUserDetailsResponse | null>(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showBlockReasonModal, setShowBlockReasonModal] = useState(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [buttonLoading, setButtonLoading] = useState(false)
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
@@ -41,15 +46,37 @@ const UserDetailsPage: React.FC = () => {
         fetchUserDetails();
     }, [userId]);
 
+    const handleDeleteCancel = () => {
+        setShowBlockReasonModal(false)
+        setShowDeleteModal(false);
+    };
+
+    const onActionClick = () => {
+        if (!user) return
+        if (user.isActive) {
+            setShowBlockReasonModal(true);
+        } else {
+            handleToggleStatus()
+        }
+    };
+
     const handleToggleStatus = async () => {
+        setButtonLoading(true)
+
         if (!user) return;
         try {
-            setUser(prevUser => prevUser ? { ...prevUser, isActive: !prevUser.isActive } : null);
             await authService.updateUser(user.id);
+            setUser(prevUser => prevUser ? { ...prevUser, isActive: !prevUser.isActive } : null);
+            setShowDeleteModal(false);
+            setShowBlockReasonModal(false)
+
+
         } catch (err) {
             setUser(prevUser => prevUser ? { ...prevUser, isActive: !prevUser.isActive } : null);
             alert("Failed to update user status.");
             console.error(err);
+        } finally {
+            setButtonLoading(false)
         }
     };
 
@@ -91,7 +118,7 @@ const UserDetailsPage: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-slate-200 dark:border-gray-600/50 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors duration-300">
                     <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                         <img
-                            src={user.avatarUrl ? getCloudinaryUrl(user.avatarUrl) : '/profileImage.png'}
+                            src={user.avatarUrl ? user.avatarUrl : '/profileImage.png'}
                             alt={user.name}
                             className="w-24 h-24 rounded-full border-4 border-indigo-200 dark:border-indigo-900/50 object-cover"
                         />
@@ -107,14 +134,14 @@ const UserDetailsPage: React.FC = () => {
                     <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
                         {user.isActive ? (
                             <button
-                                onClick={handleToggleStatus}
+                                onClick={() => setShowDeleteModal(true)}
                                 className="w-full md:w-auto px-6 py-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-transparent dark:border-red-800/50 font-semibold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors flex items-center justify-center gap-2">
                                 <Ban className="w-5 h-5" />
                                 <span>Block User</span>
                             </button>
                         ) : (
                             <button
-                                onClick={handleToggleStatus}
+                                onClick={() => setShowDeleteModal(true)}
                                 className="w-full md:w-auto px-6 py-3 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-transparent dark:border-green-800/50 font-semibold rounded-lg hover:bg-green-200 dark:hover:bg-green-900/40 transition-colors flex items-center justify-center gap-2">
                                 <ShieldCheck className="w-5 h-5" />
                                 <span>Unblock User</span>
@@ -232,6 +259,32 @@ const UserDetailsPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <DeleteConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={handleDeleteCancel}
+                onConfirm={onActionClick}
+                itemType={DeleteConfirmationTypes.PROFILE}
+                itemName={user?.name || ''}
+                itemDetails={user ? `${user.email}` : ''}
+                isLoading={buttonLoading}
+                customMessage={`Are you sure you want to ${user?.isActive ? 'block' : 'unblock'} this user?`}
+                additionalInfo={user?.isActive ? "This action will prevent the user from logging in." : "This will restore the user's access."}
+                titleProp={user?.isActive ? 'Block User' : 'Unblock User'}
+                confirmTextProp={user?.isActive ? 'Block User' : 'Unblock User'}
+            />
+
+            {showBlockReasonModal &&
+                <BlockReasonModal
+                    isOpen={showBlockReasonModal}
+                    onClose={handleDeleteCancel}
+                    onConfirm={handleToggleStatus}
+                    confirmButtonText='Block'
+                    label='Reason for Blocking'
+                    title="Block User"
+                    subTitle="This action will prevent the user from logging in."
+                    placeholder="Please describe why this user is being blocked..."
+                    isLoading={buttonLoading}
+                />}
         </div>
     );
 };

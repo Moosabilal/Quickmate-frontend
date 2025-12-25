@@ -126,9 +126,10 @@ export const providerService = {
     }
   },
 
-  updateProviderStatus: async (id: string, newStatus: string) => {
+  updateProviderStatus: async (id: string, newStatus: string, reason?: string) => {
     try {
-      const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, { newStatus });
+      console.log('the backend reason', reason)
+      const response = await axiosInstance.patch(`${PROVIDER_URL}/updateProviderStatus/${id}`, { newStatus, reason });
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to update provider status.");

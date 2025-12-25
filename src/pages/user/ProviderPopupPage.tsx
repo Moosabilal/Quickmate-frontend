@@ -2,7 +2,6 @@ import { Award, Star, X, MapPin, Phone, Mail, Calendar, Filter, IndianRupee, Arr
 import { DaySchedule, IBackendProvider, ProviderPopupProps } from '../../util/interface/IProvider';
 import React, { useCallback, useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { FilterParams } from '../../util/interface/IProvider';
 import { isAxiosError } from 'axios';
@@ -89,9 +88,9 @@ const ProviderPopup = ({
     }
   }, [serviceId, selectedTime, getProvider, filters]); 
 
-  const handleApplyFilters = () => {
-    getProvider(filters);
-  };
+  // const handleApplyFilters = () => {
+  //   getProvider(filters);
+  // };
 
   const handleClearFilters = () => {
     setFilters(initialFilters);
@@ -111,8 +110,6 @@ const ProviderPopup = ({
     <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4 animate-in fade-in duration-200">
       <div className="w-full h-full md:h-[85vh] max-w-6xl bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-colors">
         
-        {/* LEFT PANEL: Provider List */}
-        {/* On mobile, hidden if a provider is selected */}
         <div className={`w-full md:w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 ${selectedProvider ? 'hidden md:flex' : 'flex h-full'}`}>
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 p-4 text-white shrink-0">
             <div className="flex items-center justify-between">
@@ -153,7 +150,6 @@ const ProviderPopup = ({
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-4 space-y-3">
-              {/* Filters Section */}
               <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'}`}>
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                   <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Filter Options</h4>
@@ -183,12 +179,12 @@ const ProviderPopup = ({
                   </div>
 
                   <div className="flex gap-3 mt-4">
-                    <button
+                    {/* <button
                       onClick={handleApplyFilters}
                       className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
                       Apply
-                    </button>
+                    </button> */}
                     <button
                       onClick={handleClearFilters}
                       className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
@@ -199,7 +195,6 @@ const ProviderPopup = ({
                 </div>
               </div>
 
-              {/* Provider List */}
               {allProviders.length > 0 ? (
                 allProviders.map((provider) => (
                   <div
@@ -214,7 +209,7 @@ const ProviderPopup = ({
                     <div className="flex items-center gap-4">
                       <div className="relative shrink-0">
                         <img
-                          src={getCloudinaryUrl(provider.profilePhoto)}
+                          src={provider.profilePhoto}
                           alt={provider.fullName}
                           className="w-14 h-14 rounded-full object-cover border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
                         />
@@ -260,12 +255,9 @@ const ProviderPopup = ({
           </div>
         </div>
 
-        {/* RIGHT PANEL: Provider Details */}
-        {/* On mobile, hidden if NO provider is selected. On desktop, shows placeholder if none selected */}
         <div className={`w-full md:w-1/2 bg-white dark:bg-gray-800 flex flex-col h-full ${selectedProvider ? 'flex' : 'hidden md:flex'}`}>
           <div className="bg-gradient-to-r from-green-600 to-green-700 dark:from-green-700 dark:to-green-800 p-4 text-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
-                {/* Back button for Mobile */}
                 <button 
                     aria-label="Back to Provider List"
                     type='button'
@@ -289,11 +281,10 @@ const ProviderPopup = ({
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {selectedProvider ? (
               <div className="p-6 space-y-6">
-                {/* Header Info */}
                 <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-6">
                   <div className="relative inline-block">
                     <img
-                        src={getCloudinaryUrl(selectedProvider.profilePhoto)}
+                        src={selectedProvider.profilePhoto}
                         alt={selectedProvider.fullName}
                         className="w-24 h-24 rounded-full object-cover border-4 border-green-50 dark:border-green-900/30 shadow-md bg-gray-100 dark:bg-gray-700"
                     />
@@ -318,7 +309,6 @@ const ProviderPopup = ({
                     </button>
                   </div>
 
-                  {/* Reviews Dropdown */}
                   {showReviews && (
                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl mt-4 text-left border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
                       <h5 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">User Reviews</h5>
@@ -328,7 +318,7 @@ const ProviderPopup = ({
                             <div key={idx} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                  <img src={getCloudinaryUrl(review.userImg)} alt="" className="w-6 h-6 rounded-full object-cover bg-gray-200" />
+                                  <img src={review.userImg} alt="" className="w-6 h-6 rounded-full object-cover bg-gray-200" />
                                   <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">{review.userName}</span>
                                 </div>
                                 <div className="flex gap-0.5">
@@ -348,7 +338,6 @@ const ProviderPopup = ({
                   )}
                 </div>
 
-                {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
                     <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
@@ -372,7 +361,6 @@ const ProviderPopup = ({
                   </div>
                 </div>
 
-                {/* Details List */}
                 <div className="space-y-4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                   <div className="flex gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 dark:text-gray-500 mt-0.5 shrink-0" />

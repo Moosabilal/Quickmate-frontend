@@ -12,7 +12,6 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
 import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
@@ -24,9 +23,11 @@ import html2canvas from 'html2canvas';
 import { getStatusColor } from '../../components/getStatusColor';
 import { getStatusIcon } from '../../components/BookingStatusIcon';
 import { isAxiosError } from 'axios';
+import { useAppSelector } from '../../hooks/useAppSelector';
 
 const BookingDetails: React.FC = () => {
   const navigate = useNavigate();
+  const userRole = useAppSelector((state) => state.auth.user?.role);
   const { id } = useParams<{ id: string }>();
   const [booking, setBooking] = useState<IBookingConfirmationPage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +80,7 @@ const BookingDetails: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      const { message } = await bookingService.updateBookingStatus(bookingToDelete.id, BookingStatus.CANCELLED);
+      const { message } = await bookingService.updateBookingStatus(bookingToDelete.id, BookingStatus.CANCELLED, userRole);
       toast.info(message);
       setBooking((prev) => prev ? { ...prev, status: BookingStatus.CANCELLED } : prev);
       setShowDeleteModal(false);
@@ -240,7 +241,7 @@ const BookingDetails: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <img
-                      src={getCloudinaryUrl(booking.serviceImage!)}
+                      src={booking.serviceImage!}
                       alt={booking.serviceName}
                       crossOrigin="anonymous"
                       className="w-16 h-16 rounded-xl object-cover border-2 border-white/20"
@@ -310,7 +311,7 @@ const BookingDetails: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
-                      src={getCloudinaryUrl(booking.providerImage!)}
+                      src={booking.providerImage!}
                       alt={booking.providerName}
                       crossOrigin="anonymous"
                       className="w-16 h-16 rounded-2xl object-cover"

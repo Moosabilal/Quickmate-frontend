@@ -130,7 +130,7 @@ const ProviderSubscriptionPage: React.FC = () => {
   const handleConfirmAction = async () => {
     if (!modalConfig) return;
 
-    if (modalConfig.type === 'upgrade' && modalConfig.details && modalConfig.newPlan) {
+    if (modalConfig.type === 'upgrade' && modalConfig.details && modalConfig.newPlan && modalConfig.order) {
       handlePayment(modalConfig.order, modalConfig.newPlan, "Upgrade successful!");
       setModalConfig(null);
       return;
@@ -285,6 +285,9 @@ const ProviderSubscriptionPage: React.FC = () => {
                 <h3 className="text-4xl font-bold mt-4">₹{currentPlanDetails.price}
                   <span className="text-lg font-normal opacity-90"> / {currentPlanDetails.durationInDays} days</span>
                 </h3>
+                {currentPlanDetails.description && (
+                  <p className="text-blue-100 mt-2 text-sm sm:text-base max-w-xl">{currentPlanDetails.description}</p>
+                )}
               </div>
               <CheckCircle className="w-16 h-16 text-white/30" />
             </div>
@@ -303,7 +306,7 @@ const ProviderSubscriptionPage: React.FC = () => {
 
       <div>
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-          {currentSubscription?.status === 'ACTIVE' ? 'Upgrade or Change Your Plan' : 'Choose a Plan'}
+          {currentSubscription?.status === 'ACTIVE' ? 'Upgrade or Change Your Plan' : allPlans.length !== 0 ? 'Choose a Plan' : 'No Plans Available'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {otherPlans.map(plan => {
@@ -319,6 +322,11 @@ const ProviderSubscriptionPage: React.FC = () => {
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
                   <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">₹{plan.price}</p>
                   <p className="text-gray-500 dark:text-gray-400 text-sm">/ {plan.durationInDays} days</p>
+                  {plan.description && (
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-3 px-2 line-clamp-2">
+                      {plan.description}
+                    </p>
+                  )}
                 </div>
                 <ul className="flex-grow space-y-2 mb-6">
                   {plan.features.map((feature, i) => (

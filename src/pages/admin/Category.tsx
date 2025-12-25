@@ -108,6 +108,7 @@ const CategoryCommissionManagement = () => {
                 return;
             }
             await categoryService.updateCategory(categoryId, formData);
+            toast.success('Status updated successfully')
 
             setCategories(prevCategories =>
                 prevCategories.map(cat =>
@@ -135,6 +136,10 @@ const CategoryCommissionManagement = () => {
                 setError("Category not found for commission status update.");
                 return;
             }
+            if (categoryToUpdate.commissionType === CommissionTypes.NONE) {
+                toast.info(`Set a commission type for '${categoryToUpdate.name}' before activating the commission rule.`);
+                return;
+            }
 
             const isActivating = !currentCommissionStatus;
             if (isActivating && !categoryToUpdate.status) {
@@ -155,6 +160,7 @@ const CategoryCommissionManagement = () => {
             }
 
             await categoryService.updateCategory(categoryId, formData);
+            toast.success('Status updated successfully')
 
             setCategories(prevCategories =>
                 prevCategories.map(cat =>
@@ -218,7 +224,6 @@ const CategoryCommissionManagement = () => {
                     <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-slate-900 dark:text-white">Category & Commission Management</h1>
                     <p className="text-slate-500 dark:text-slate-300 mb-8">Manage service categories, subcategories, and commission rules for the platform.</p>
 
-                    {/* Category Management Section - gray-800 */}
                     <section className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 mb-8 transition-colors">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Category Management</h2>
@@ -255,6 +260,22 @@ const CategoryCommissionManagement = () => {
                                     ) : (
                                         categories.map((category) => (
                                             <tr key={category.id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">
+                                                    <div className="flex items-center">
+                                                        {category.iconUrl ? (
+                                                            <img
+                                                                src={category.iconUrl}
+                                                                alt={category.name}
+                                                                className="h-10 w-10 rounded-full object-cover mr-3 shadow-sm border border-gray-200 dark:border-gray-600"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 mr-3 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold uppercase border border-gray-200 dark:border-gray-600">
+                                                                {category.name.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                        <span>{category.name}</span>
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{category.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-300">{category.subCategoriesCount ?? 0} Subcategories</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -324,7 +345,6 @@ const CategoryCommissionManagement = () => {
                         </div>
                     </section>
 
-                    {/* Commission Rules Section - gray-800 */}
                     <section className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 mb-8 transition-colors">
                         <h2 className="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Commission Rules</h2>
 
@@ -347,6 +367,22 @@ const CategoryCommissionManagement = () => {
                                     ) : (
                                         categories.map((category) => (
                                             <tr key={category.id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">
+                                                    <div className="flex items-center">
+                                                        {category.iconUrl ? (
+                                                            <img
+                                                                src={category.iconUrl}
+                                                                alt={category.name}
+                                                                className="h-10 w-10 rounded-full object-cover mr-3 shadow-sm border border-gray-200 dark:border-gray-600"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 mr-3 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold uppercase border border-gray-200 dark:border-gray-600">
+                                                                {category.name.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                        <span>{category.name}</span>
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{category.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-300">
                                                     {category.commissionType === "Percentage"
@@ -393,7 +429,6 @@ const CategoryCommissionManagement = () => {
                         </div>
                     </section>
 
-                    {/* Earnings Summary Section - gray-800 */}
                     <section className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 mb-8 transition-colors">
                         <h2 className="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Earnings Summary</h2>
                         {summaryLoading ? (

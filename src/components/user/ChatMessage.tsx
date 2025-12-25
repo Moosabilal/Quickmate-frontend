@@ -8,10 +8,10 @@ const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) =
     }
 
     const isUser = chat.role === 'user';
- 
+
     const handleOptionClick = (option: ChatOption, index?: number) => {
         if (!option) return;
-        
+
         if (typeof option === 'object' && option.label && option.street) {
             onOptionClick(`Select option ${index}`);
         } else if (typeof option === 'object' && option.name && option.price) {
@@ -73,14 +73,17 @@ const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) =
                         })}
 
                         {/* Add "Add New Address" button if options are addresses */}
-                        {chat.options[0]?.label && chat.options[0]?.street && (
-                            <button
-                                onClick={() => onOptionClick("NAVIGATE_PROFILE_ADDRESS")}
-                                className="w-full text-center px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                + Add New Address
-                            </button>
-                        )}
+                        {chat.options[0] &&
+                            typeof chat.options[0] !== 'string' &&
+                            chat.options[0].label &&
+                            chat.options[0].street && (
+                                <button
+                                    onClick={() => onOptionClick("NAVIGATE_PROFILE_ADDRESS")}
+                                    className="w-full text-center px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    + Add New Address
+                                </button>
+                            )}
                     </div>
                 )}
             </div>

@@ -27,6 +27,7 @@ export interface ICategory extends Document {
 
 export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
     id: string;
+    _id?: string
     parentId?: string | null; 
     createdAt: string; 
     updatedAt: string;

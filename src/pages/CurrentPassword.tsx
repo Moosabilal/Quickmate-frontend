@@ -10,7 +10,6 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { authService } from '../services/authService';
-import { toast } from 'react-toastify';
 
 const CurrentPasswordPage = () => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -50,7 +49,7 @@ const CurrentPasswordPage = () => {
 
             const response = await authService.forgotPassword(email, currentPassword);
             setMessage(response.message);
-            toast.info(response.message)
+            setCurrentPassword('');
         } catch (error) {
             if(error instanceof Error){
                 setError(error.message);

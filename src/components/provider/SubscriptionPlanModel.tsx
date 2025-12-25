@@ -146,6 +146,11 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
                         </svg>
                         {plan.durationInDays} days
                       </div>
+                      {plan.description && (
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mt-4 px-2 line-clamp-2">
+                          {plan.description}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3 mb-8">

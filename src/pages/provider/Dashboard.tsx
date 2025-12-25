@@ -17,9 +17,8 @@ import {
 } from "recharts";
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { StatCard } from '../../components/provider/StatusCard';
-import { Booking, IDashboardResponse, IDashboardStatus, RatingHistoryPoint, Stats } from '../../util/interface/IProvider';
+import { IDashboardResponse, IDashboardStatus, RatingHistoryPoint } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 import { getStatusColor } from '../../components/getStatusColor';
 
@@ -30,9 +29,9 @@ const Dashboard: React.FC = () => {
     const [dashboardStat, setDashboardStat] = useState<IDashboardStatus | null>(null);
 
     const [dashboard, setDashboard] = useState<{
-        dashboardData: Booking[];
-        dashboardStat: Stats;
-    }>({ dashboardData: [], dashboardStat: {} as Stats });
+        dashboardData: IDashboardResponse[];
+        dashboardStat: IDashboardStatus;
+    }>({ dashboardData: [], dashboardStat: {} as IDashboardStatus });
 
     const navigate = useNavigate()
 
@@ -109,7 +108,6 @@ const Dashboard: React.FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
-                    {/* Rating Trends Section (Moved First for Mobile, Ordered Last for Desktop) */}
                     <div className="lg:col-span-1 lg:order-last">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
                             <div className="flex items-center justify-between mb-4">
@@ -205,7 +203,6 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Bookings Timeline Section (Appears Second on Mobile, First on Desktop) */}
                     <div className="lg:col-span-2">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
                             <div className="flex items-center justify-between mb-6">
@@ -222,7 +219,7 @@ const Dashboard: React.FC = () => {
                                         <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md dark:hover:shadow-gray-900/50 transition-all duration-300">
                                             <div className="flex items-start space-x-4">
                                                 <img
-                                                    src={getCloudinaryUrl(booking.image)}
+                                                    src={booking.image}
                                                     alt={booking.service}
                                                     className="w-16 h-16 rounded-xl object-cover bg-gray-100 dark:bg-gray-700"
                                                 />

@@ -4,7 +4,6 @@ import {
   Search, Eye, IndianRupee, X, Loader2
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { bookingService } from '../../services/bookingService';
 import { useNavigate } from 'react-router-dom';
 import { BookingStatus, IBookingStatusCounts } from '../../util/interface/IBooking';
@@ -16,6 +15,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { getStatusColor } from '../../components/getStatusColor';
 import { getStatusIcon } from '../../components/BookingStatusIcon';
 import { isAxiosError } from 'axios';
+import { ProviderStatus } from '../../util/interface/IProvider';
 
 const ProviderBookingManagementPage: React.FC = () => {
   const [bookings, setBookings] = useState<IProviderBookingManagement[]>([]);
@@ -88,25 +88,37 @@ const ProviderBookingManagementPage: React.FC = () => {
   }, [provider.id, debouncedSearch, activeTab]);
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
+    if (provider.status !== ProviderStatus.Active) {
+      if (provider.status === ProviderStatus.Pending) {
+        toast.info("Please wait for admin approval before managing jobs.");
+      } else if (provider.status === ProviderStatus.Suspended) {
+        toast.error("Your account is suspended. Please contact admin to resolve this.");
+      } else if (provider.status === ProviderStatus.InActive) {
+        toast.error("Your account has been rejected. Please contact admin.");
+      } else {
+        toast.error("Your account is not active. Action denied.");
+      }
+      return;
+    }
 
     const currentBooking = bookings.find(b => b.id === bookingId);
 
     if (newStatus === BookingStatus.IN_PROGRESS && currentBooking) {
-      
+
       const dateTimeString = `${currentBooking.date} ${currentBooking.time}`;
       const scheduledTime = new Date(dateTimeString);
       const now = new Date();
 
       if (isNaN(scheduledTime.getTime())) {
-          toast.error("Invalid booking date format. Cannot start job.");
-          return;
+        toast.error("Invalid booking date format. Cannot start job.");
+        return;
       }
 
       const diffInMinutes = (scheduledTime.getTime() - now.getTime()) / (1000 * 60);
 
       if (diffInMinutes > 5) {
-          toast.warning(`You can only start the job 5 minutes before the scheduled time (${currentBooking.time}).`);
-          return; 
+        toast.warning(`You can only start the job 5 minutes before the scheduled time (${currentBooking.time}).`);
+        return;
       }
     }
 
@@ -289,7 +301,7 @@ const ProviderBookingManagementPage: React.FC = () => {
                         <div className="flex items-start space-x-4 w-full">
                           <div className="relative flex-shrink-0">
                             <img
-                              src={booking.customerImage ? getCloudinaryUrl(booking.customerImage) : '/profileImage.png'}
+                              src={booking.customerImage ? booking.customerImage : '/profileImage.png'}
                               alt={booking.customerName}
                               className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-white dark:border-gray-700 shadow-sm object-cover"
                             />
@@ -321,10 +333,10 @@ const ProviderBookingManagementPage: React.FC = () => {
                               <div className="flex items-center space-x-2 sm:col-span-2">
                                 <IndianRupee className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                                 <span className="font-semibold text-slate-900 dark:text-white">{booking.payment}</span>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ml-2 ${booking.paymentStatus === 'Paid' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                {/* <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ml-2 ${booking.paymentStatus === 'Paid' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                                   }`}>
                                   {booking.paymentStatus}
-                                </span>
+                                </span> */}
                               </div>
                             </div>
                           </div>
@@ -444,7 +456,7 @@ const ProviderBookingManagementPage: React.FC = () => {
             <div className="p-6 space-y-6">
               <div className="flex items-center space-x-4">
                 <img
-                  src={selectedBooking.customerImage ? getCloudinaryUrl(selectedBooking.customerImage) : '/profileImage.png'}
+                  src={selectedBooking.customerImage ? selectedBooking.customerImage : '/profileImage.png'}
                   alt={selectedBooking.customerName}
                   className="w-14 h-14 rounded-full object-cover border border-slate-200 dark:border-gray-600"
                 />
@@ -476,10 +488,10 @@ const ProviderBookingManagementPage: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Payment</label>
+                    {/* <label className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Payment</label>
                     <span className={`inline-flex mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${selectedBooking.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
                       {selectedBooking.paymentStatus}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>

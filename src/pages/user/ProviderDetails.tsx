@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, Award, CheckCircle, Briefcase } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { providerService } from '../../services/providerService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { IProviderProfile, DaySchedule, IServiceDetails } from '../../util/interface/IProvider';
 import { isAxiosError } from 'axios';
 
@@ -127,7 +126,7 @@ const ProviderDetailsPage: React.FC = () => {
             <div className="relative">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-2xl">
                 <img
-                  src={getCloudinaryUrl(provider.profilePhoto)}
+                  src={provider.profilePhoto}
                   alt={provider.fullName}
                   className="w-full h-full object-cover"
                 />

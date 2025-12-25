@@ -114,6 +114,13 @@ const ServiceManagementPage: React.FC = () => {
             newErrors.categoryId = 'Category is required';
         }
 
+        if (formData.priceUnit === 'PerService') {
+            const [hours, minutes] = (formData.duration || '00:00').split(':').map(Number);
+            if ((hours * 60 + minutes) < 15) {
+                newErrors.duration = 'Duration must be at least 15 minutes';
+            }
+        }
+
         if (!formData.price || formData.price <= 0) {
             newErrors.price = 'Price must be greater than 0';
         }
@@ -208,7 +215,7 @@ const ServiceManagementPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-                
+
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
                     <button
                         type="button"
@@ -396,6 +403,7 @@ const ServiceManagementPage: React.FC = () => {
                                             })}
                                         </select>
                                     </div>
+                                    {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
                                 </div>
                             )}
 

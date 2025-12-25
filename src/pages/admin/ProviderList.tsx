@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { providerService } from '../../services/providerService';
 import Pagination from '../../components/admin/Pagination';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { ProviderList, ProviderStatus } from '../../util/interface/IProvider';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -10,6 +9,7 @@ import { Search, Filter, Eye, MapPin, Star, Briefcase } from 'lucide-react';
 import { TableRowSkeleton } from '../../components/admin/ProviderTableRowSkeleton';
 import { isAxiosError } from 'axios';
 import { MobileCardSkeleton } from '../../components/admin/ProviderMobileCardSkeleton';
+import BlockReasonModal from '../../components/BlockReasonModal';
 
 const PROVIDER_PER_PAGE = 4;
 
@@ -20,8 +20,14 @@ const AdminProvidersPage: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProviders, setTotalProviders] = useState(0);
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    providerId: string;
+    newStatus: ProviderStatus;
+  } | null>(null);
+  const [showBlockReasonModal, setShowBlockReasonModal] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState('');
+  const [buttonLoading, setButtonLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -82,30 +88,63 @@ const AdminProvidersPage: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (providerId: string, newStatus: ProviderStatus) => {
+  const handleStatusSelect = (providerId: string, newStatus: ProviderStatus) => {
+    if (newStatus === ProviderStatus.InActive || newStatus === ProviderStatus.Suspended) {
+      setPendingStatusChange({ providerId, newStatus });
+      setShowBlockReasonModal(true);
+    } else {
+      confirmStatusChange(providerId, newStatus);
+    }
+  };
+
+  const confirmStatusChange = async (providerId: string, newStatus: ProviderStatus, reason?: string) => {
+    setButtonLoading(true)
     try {
-      const res = await providerService.updateProviderStatus(providerId, newStatus);
+      const res = await providerService.updateProviderStatus(providerId, newStatus, reason);
       setProviders((prev) =>
         prev.map((p) => (p.id === providerId ? { ...p, status: newStatus } : p))
       );
+      setShowBlockReasonModal(false)
       toast.success(res.message || 'Status Updated Successfully');
     } catch (err) {
       console.error('Failed to update status:', err);
       toast.error('Failed to update provider status.');
+    } finally {
+      setButtonLoading(false)
     }
   };
+
+  const handleModalConfirm = (reason: string) => {
+    if (pendingStatusChange) {
+      confirmStatusChange(pendingStatusChange.providerId, pendingStatusChange.newStatus, reason);
+    }
+  };
+
+  const getModalConfig = () => {
+    if (!pendingStatusChange) return {};
+    const isReject = pendingStatusChange.newStatus === ProviderStatus.InActive;
+    return {
+      title: isReject ? "Reject Provider" : "Suspend Provider",
+      label: isReject ? "Reason for Rejection" : "Reason for Suspension",
+      btnText: isReject ? "Confirm Rejection" : "Confirm Suspension",
+      subTitle: `This will mark the provider as ${isReject ? 'rejected' : 'suspended'}.`,
+      placeholder: `Please explain why this provider is being ${isReject ? 'rejected' : 'suspended'}...`
+    };
+  };
+
+  const modalConfig = getModalConfig();
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-700 flex transition-colors duration-300">
       <div className="flex-1 flex flex-col w-full">
         <main className="p-4 md:p-8 w-full max-w-[100vw] overflow-hidden">
-          
+
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Providers</h1>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600/50 mb-6 flex flex-col md:flex-row flex-wrap gap-4 transition-colors">
-            
+
             <div className="w-full md:flex-grow md:min-w-[200px] relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -196,7 +235,7 @@ const AdminProvidersPage: React.FC = () => {
                       <tr key={provider.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <img
-                            src={provider.profilePhoto ? getCloudinaryUrl(provider.profilePhoto): '/profileImage.png'}
+                            src={provider.profilePhoto ? provider.profilePhoto : '/profileImage.png'}
                             alt={provider.fullName}
                             className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                           />
@@ -207,12 +246,12 @@ const AdminProvidersPage: React.FC = () => {
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                           {provider.serviceOffered && provider.serviceOffered.length > 0 ? (
                             <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                {provider.serviceOffered.slice(0, 2).map((service, index) => (
+                              {provider.serviceOffered.slice(0, 2).map((service, index) => (
                                 <span key={index} className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">{service}</span>
-                                ))}
-                                {provider.serviceOffered.length > 2 && (
+                              ))}
+                              {provider.serviceOffered.length > 2 && (
                                 <span className="text-xs text-gray-400">+{provider.serviceOffered.length - 2} more</span>
-                                )}
+                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400 italic text-xs">No service listed</span>
@@ -240,7 +279,7 @@ const AdminProvidersPage: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <select
                               value={provider.status}
-                              onChange={(e) => handleStatusChange(provider.id, e.target.value as ProviderStatus)}
+                              onChange={(e) => handleStatusSelect(provider.id, e.target.value as ProviderStatus)}
                               className="text-xs px-2 py-1.5 border rounded-lg cursor-pointer
                                          bg-gray-50 dark:bg-gray-700 
                                          text-gray-900 dark:text-white 
@@ -253,7 +292,7 @@ const AdminProvidersPage: React.FC = () => {
                                 </option>
                               ))}
                             </select>
-                            
+
                             <button
                               onClick={() => navigate(`/admin/providers/${provider.id}`)}
                               className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
@@ -283,9 +322,9 @@ const AdminProvidersPage: React.FC = () => {
 
           <div className="md:hidden space-y-4">
             {isLoading ? (
-               <>
-                 {[...Array(3)].map((_, i) => <MobileCardSkeleton key={i} />)}
-               </>
+              <>
+                {[...Array(3)].map((_, i) => <MobileCardSkeleton key={i} />)}
+              </>
             ) : error ? (
               <div className="text-center text-red-500 py-8">{error}</div>
             ) : providers.length > 0 ? (
@@ -293,17 +332,17 @@ const AdminProvidersPage: React.FC = () => {
                 <div key={provider.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-4 mb-3">
                     <img
-                      src={provider.profilePhoto ? getCloudinaryUrl(provider.profilePhoto) : '/profileImage.png'}
+                      src={provider.profilePhoto ? provider.profilePhoto : '/profileImage.png'}
                       alt={provider.fullName}
                       className="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 dark:text-white truncate">{provider.fullName}</h3>
-                          <div className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
-                              <span>{provider.rating ?? '--'}</span>
-                              <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                          </div>
+                        <h3 className="font-bold text-gray-900 dark:text-white truncate">{provider.fullName}</h3>
+                        <div className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                          <span>{provider.rating ?? '--'}</span>
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         <MapPin className="w-3 h-3" />
@@ -311,20 +350,20 @@ const AdminProvidersPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mb-4">
                     <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 mb-2">
-                        <Briefcase className="w-3.5 h-3.5" />
-                        <span className="font-medium">Services:</span>
+                      <Briefcase className="w-3.5 h-3.5" />
+                      <span className="font-medium">Services:</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                        {provider.serviceOffered && provider.serviceOffered.length > 0 ? (
-                            provider.serviceOffered.slice(0, 3).map((service, idx) => (
-                                <span key={idx} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-[10px] rounded border border-blue-100 dark:border-blue-800">
-                                    {service}
-                                </span>
-                            ))
-                        ) : <span className="text-xs text-gray-400 italic">No services listed</span>}
+                      {provider.serviceOffered && provider.serviceOffered.length > 0 ? (
+                        provider.serviceOffered.slice(0, 3).map((service, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-[10px] rounded border border-blue-100 dark:border-blue-800">
+                            {service}
+                          </span>
+                        ))
+                      ) : <span className="text-xs text-gray-400 italic">No services listed</span>}
                     </div>
                   </div>
 
@@ -332,25 +371,25 @@ const AdminProvidersPage: React.FC = () => {
                     <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full border ${getStatusClasses(provider.status ?? 'N/A')}`}>
                       {provider.status}
                     </span>
-                    
+
                     <div className="flex items-center gap-2">
-                        <select
-                            value={provider.status}
-                            onChange={(e) => handleStatusChange(provider.id, e.target.value as ProviderStatus)}
-                            className="text-xs px-2 py-1.5 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 outline-none"
-                        >
-                            {Object.values(ProviderStatus).map((status) => (
-                                <option key={status} value={status}>{status}</option>
-                            ))}
-                        </select>
-                        <button
-                            type="button"
-                            aria-label="View Details"
-                            onClick={() => navigate(`/admin/providers/${provider.id}`)}
-                            className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg"
-                        >
-                            <Eye className="w-4 h-4" />
-                        </button>
+                      <select
+                        value={provider.status}
+                        onChange={(e) => handleStatusSelect(provider.id, e.target.value as ProviderStatus)}
+                        className="text-xs px-2 py-1.5 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 outline-none"
+                      >
+                        {Object.values(ProviderStatus).map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        aria-label="View Details"
+                        onClick={() => navigate(`/admin/providers/${provider.id}`)}
+                        className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -361,7 +400,7 @@ const AdminProvidersPage: React.FC = () => {
               </div>
             )}
           </div>
-            
+
           <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600/50 px-4 py-3 transition-colors">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -381,6 +420,22 @@ const AdminProvidersPage: React.FC = () => {
 
         </main>
       </div>
+      {showBlockReasonModal &&
+        <BlockReasonModal
+          isOpen={showBlockReasonModal}
+          onClose={() => {
+            setShowBlockReasonModal(false);
+            setPendingStatusChange(null);
+          }}
+          onConfirm={handleModalConfirm}
+          isLoading={buttonLoading}
+          title={modalConfig.title}
+          label={modalConfig.label}
+          confirmButtonText={modalConfig.btnText}
+          subTitle={modalConfig.subTitle}
+          placeholder={modalConfig.placeholder}
+          emailNote="Note: This reason will be sent to the provider via email."
+        />}
     </div>
   );
 };

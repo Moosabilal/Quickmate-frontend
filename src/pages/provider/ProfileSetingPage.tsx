@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { User, Phone, Mail, MapPin, Clock, FileText, Award, CheckCircle, XCircle, Ban, Eye, Edit3, X, Save } from 'lucide-react';
 import { providerService } from '../../services/providerService';
 import { IEditedProviderProfile, IProviderProfile, ProviderStatus } from '../../util/interface/IProvider';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
@@ -74,6 +73,7 @@ const ProviderProfile: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth)
 
     console.log('the user', user)
+    console.log('the provider', provider)
     const [providerDetails, setProviderDetails] = useState<Partial<IProviderProfile>>({});
     const [editedDetails, setEditedDetails] = useState<IEditedProviderProfile>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,6 +138,7 @@ const ProviderProfile: React.FC = () => {
     }, [formData.serviceLocation, providerDetails.serviceLocation]);
 
     useEffect(() => {
+        console.log('formDataToSend changed', formDataToSend, hasChangesToSend);
         const sendFormData = async () => {
             if (!formDataToSend || !hasChangesToSend) return;
 
@@ -147,7 +148,7 @@ const ProviderProfile: React.FC = () => {
                 toast.success('Profile updated successfully!');
             } catch (error) {
                 toast.error(`Error updating provider:, ${error}`);
-                toast.error('Error updating profile. Please try again.');
+                console.error('Error updating profile. Please try again.');
             } finally {
                 setIsSaving(false);
                 setIsEditing(false);
@@ -190,6 +191,20 @@ const ProviderProfile: React.FC = () => {
     };
 
     const handleSave = async () => {
+        console.log('edited details', editedDetails)
+        if(!editedDetails.fullName || !editedDetails.email || !editedDetails.phoneNumber){
+            toast.error('Name, Email, and Phone Number are required fields.');
+            return;
+        }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedDetails.email)){
+            toast.error('Please enter a valid email address.');
+            return;
+        }
+        if(!/^[0-9]{10}$/.test(editedDetails.phoneNumber)){
+            toast.error('Please enter a valid phone number.');
+            return;
+        }
+
         setIsSaving(true);
         try {
             const formDataToSend = new FormData();
@@ -435,7 +450,7 @@ const ProviderProfile: React.FC = () => {
                                                 src={
                                                     editedDetails.profilePhotoFile
                                                         ? URL.createObjectURL(editedDetails.profilePhotoFile)
-                                                        : getCloudinaryUrl(providerDetails?.profilePhoto || '')
+                                                        : providerDetails?.profilePhoto || ''
                                                 }
                                                 alt={providerDetails?.fullName}
                                                 className="w-24 h-24 rounded-2xl shadow-lg object-cover bg-gray-200 dark:bg-gray-600"
@@ -551,7 +566,7 @@ const ProviderProfile: React.FC = () => {
                                                 onClick={() => {
                                                     const imageUrl = editedDetails.aadhaarIdProofFile
                                                         ? URL.createObjectURL(editedDetails.aadhaarIdProofFile)
-                                                        : getCloudinaryUrl(providerDetails?.aadhaarIdProof || '');
+                                                        : providerDetails?.aadhaarIdProof || '';
                                                     openModal(imageUrl);
                                                 }}
                                             >

@@ -17,7 +17,7 @@ const RegistrationOTPVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { email: registrationEmail, role, bookingId, newStatus } = (location.state as LocationState) || {};
+  const { email: registrationEmail, role, bookingId, newStatus, updateProfileData } = (location.state as LocationState) || {};
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -90,15 +90,48 @@ const RegistrationOTPVerification = () => {
     }
 
     try {
-      if (role === "Customer") {
+      if (updateProfileData) {
+        console.log('update provile data', updateProfileData)
         await authService.verifyRegistrationOtp(registrationEmail, otp);
+        
+        const formData = new FormData();
+        formData.append('name', updateProfileData.name);
+        formData.append('email', updateProfileData.email);
+        if (updateProfileData.profilePicture) {
+            formData.append('profilePicture', updateProfileData.profilePicture);
+        }
+        const data = await authService.updateProfile(formData);
+        dispatch(updateProfile({ user: data }));
+        toast.success('Profile updated Successfully');
+        navigate('/profile');
+        return;
+      }
+
+      if (role === "Customer") {
+        console.log('registration email', registrationEmail)
+        await authService.verifyRegistrationOtp(registrationEmail, otp);
+        // if(updateProfileData){
+        //   const data = await authService.updateProfile(updateProfileData)
+        //   console.log('data', data)
+        //   toast.success('Profile updated Successfully')
+        //   navigate('/profile')
+        //   return
+        // }
         toast.success('Account verified successfully! You can now log in.');
         navigate('/login', { replace: true });
       } else if (role === "ServiceProvider") {
-        const { user, provider, message } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+        console.log('provider registration email', registrationEmail)
+        const { user, provider } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+        // if(updateProfileData){
+        //   const data = await authService.updateProfile(updateProfileData)
+        //   console.log('data', data)
+        //   toast.success('Profile updated Successfully')
+        //   return
+        // }
+        console.log('Verified user and provider:', { user, provider });
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
-        toast.success(message);
+        toast.success('Account successfully verified!');
         navigate(`/provider/providerProfile/${user.id}`, { replace: true });
       } else if (bookingId && newStatus) {
         const email = registrationEmail
@@ -192,7 +225,7 @@ const RegistrationOTPVerification = () => {
 
         {registrationEmail && (
           <p className="text-center text-gray-700 dark:text-gray-300 mb-4">
-            A 6-digit OTP has been sent to **{registrationEmail}**.
+            A 6-digit OTP has been sent to **{updateProfileData?.email || registrationEmail}**.
           </p>
         )}
 

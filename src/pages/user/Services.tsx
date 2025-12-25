@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Pagination from '../../components/user/Pagination';
 import { categoryService } from '../../services/categoryService';
 import { IserviceResponse } from '../../util/interface/ICategory';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Search, ArrowUpRight, Frown } from 'lucide-react';
@@ -78,7 +77,7 @@ const ServicesPage: React.FC = () => {
                 placeholder="Search for 'Plumbing', 'Cleaning'..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full py-3 px-4 text-lg bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full py-3 px-4 text-lg bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               {searchTerm && (
                 <button 
@@ -109,7 +108,7 @@ const ServicesPage: React.FC = () => {
               >
                 <div className="relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700 mb-3 sm:mb-4">
                   <img
-                    src={getCloudinaryUrl(service.iconUrl || '')}
+                    src={service.iconUrl || ''}
                     alt={service.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"

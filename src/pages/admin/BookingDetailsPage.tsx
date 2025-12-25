@@ -6,7 +6,6 @@ import {
     FileText, Phone, Mail, ShieldCheck
 } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { IBookingDetailData } from '../../util/interface/IBooking';
 import { getStatusColor } from '../../components/getStatusColor';
@@ -187,7 +186,7 @@ const BookingDetailsPage: React.FC = () => {
                             </h3>
                             <div className="flex items-center gap-4 mb-6">
                                 <img
-                                    src={user.image ? getCloudinaryUrl(user.image) : '/profileImage.png'}
+                                    src={user.image ? user.image : '/profileImage.png'}
                                     alt={user.name}
                                     className="w-16 h-16 rounded-full object-cover border-4 border-blue-50 dark:border-blue-900/30 shadow-sm"
                                 />
@@ -222,7 +221,7 @@ const BookingDetailsPage: React.FC = () => {
                             </h3>
                             <div className="flex items-center gap-4 mb-6">
                                 <img
-                                    src={getCloudinaryUrl(provider.image)}
+                                    src={provider.image}
                                     alt={provider.name}
                                     className="w-16 h-16 rounded-full object-cover border-4 border-purple-50 dark:border-purple-900/30 shadow-sm"
                                 />

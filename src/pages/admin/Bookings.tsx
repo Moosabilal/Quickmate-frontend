@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useDebounce } from '../../hooks/useDebounce';
 import { StatusBadge } from '../../components/admin/BookingStatusBadge';
 import { useNavigate } from 'react-router-dom';
@@ -135,11 +134,10 @@ const BookingLogsPage: React.FC = () => {
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     <img 
-                                                        src={booking.userAvatar ? getCloudinaryUrl(booking.userAvatar) : '/profileImage.png'} 
+                                                        src={booking.userAvatar ? booking.userAvatar : '/profileImage.png'} 
                                                         alt={booking.userName} 
                                                         className="w-8 h-8 rounded-full object-cover bg-slate-200 dark:bg-gray-600"
                                                     />
-                                                    {/* Removed 'truncate' and 'max-w' to allow full name display */}
                                                     <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
                                                         {booking.userName}
                                                     </span>

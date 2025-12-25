@@ -5,7 +5,6 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
 import ThemeToggle from '../ThemeToggle';
 import { authService } from '../../services/authService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { Link, useNavigate } from 'react-router-dom';
@@ -69,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                   className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200 focus:outline-none group"
                 >
                   <img 
-                    src={user?.profilePicture ? getCloudinaryUrl(user?.profilePicture) : '/profileImage.png'} 
+                    src={user?.profilePicture ? user?.profilePicture : '/profileImage.png'} 
                     alt="Profile" 
                     className="w-10 h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-blue-500 transition-all object-cover" 
                   />

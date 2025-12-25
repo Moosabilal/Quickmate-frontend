@@ -29,6 +29,12 @@ export interface LocationState {
   role?: string;
   bookingId?: string;
   newStatus?: BookingStatus;
+  updateProfileData?: {
+    name: string,
+    email: string,
+    profilePicture: string | File | null
+  }
+  displayEmail?: string;
 }
 
 export interface IBookingRequest {

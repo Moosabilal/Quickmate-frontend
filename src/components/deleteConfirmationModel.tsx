@@ -13,7 +13,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   customMessage,
   additionalInfo,
   confirmTextProp,
-  titleProp
+  titleProp,
 }) => {
   if (!isOpen) return null;
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ICategoryFormCombinedData, IserviceResponse } from '../../util/interface/ICategory';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, Phone, FileText, Loader2, AlertTriangle } from 'lucide-react'; 
 import ProviderPopup from './ProviderPopupPage';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -47,7 +46,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
-  const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
 
   const paymentOptions = [
@@ -66,15 +64,14 @@ const ServiceDetailsPage: React.FC = () => {
   const fetchWallet = async () => {
     try {
       const res = await walletService.getWallet()
-      console.log('the res', res.data.wallet.balance)
-      setWalletBalance(res.data.wallet.balance)
+      return res.data.wallet.balance
     } catch (error) {
       if(error instanceof Error){
         toast.error(error.message)
       } else {
         toast.error('Failed to fetch wallet balance')
       }
-      setWalletBalance(0)
+      return 0
     }
   }
 
@@ -154,10 +151,10 @@ const ServiceDetailsPage: React.FC = () => {
       return;
     }
 
-    await fetchWallet()
+    const currentBalance = await fetchWallet()
 
     if (paymentMethod === PaymentMethod.WALLET) {
-      if (walletBalance < Number(selectedProvider?.price)) {
+      if (currentBalance < Number(selectedProvider?.price)) {
         toast.info('Insufficient balance in wallet')
         return;
       }
@@ -315,7 +312,7 @@ const ServiceDetailsPage: React.FC = () => {
       
       <div className="relative h-80 sm:h-96 w-full bg-gray-900">
         <img
-            src={getCloudinaryUrl(serviceDetails.iconUrl || '')}
+            src={serviceDetails.iconUrl || ''}
             alt={serviceDetails.name}
             className="w-full h-full object-cover opacity-60"
         />
@@ -359,7 +356,7 @@ const ServiceDetailsPage: React.FC = () => {
                                 <div className="flex h-32">
                                     <div className="w-1/3 overflow-hidden relative">
                                         <img 
-                                            src={getCloudinaryUrl(service.iconUrl || '')} 
+                                            src={service.iconUrl || ''} 
                                             alt={service.name} 
                                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                                         />
@@ -446,7 +443,7 @@ const ServiceDetailsPage: React.FC = () => {
                                 <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <img src={getCloudinaryUrl(selectedProvider.profilePhoto)} alt={selectedProvider.fullName} className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600 shadow-sm" />
+                                            <img src={selectedProvider.profilePhoto} alt={selectedProvider.fullName} className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600 shadow-sm" />
                                             <div>
                                                 <p className="font-semibold text-gray-900 dark:text-white text-sm">{selectedProvider.fullName}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 mt-0.5">

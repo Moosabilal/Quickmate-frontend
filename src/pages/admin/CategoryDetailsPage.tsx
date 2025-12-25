@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
 import { CommissionTypes, ICategoryDetailsPageData } from '../../util/interface/ICategory';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { Loader2, ArrowLeft, Edit, Power } from 'lucide-react';
 import { isAxiosError } from 'axios';
@@ -107,6 +106,10 @@ const CategoryDetailsPage: React.FC = () => {
                 setError("subCategory not found for commission status update.");
                 return;
             }
+            if(subCategoryToUpdate.commissionType === CommissionTypes.NONE){
+                toast.info(`Set a commission type for '${subCategoryToUpdate.name}' before activating the commission rule.`);
+                return;
+            }
 
             const isActivating = !currentCommissionStatus;
             if (isActivating && !subCategoryToUpdate.status) {
@@ -200,12 +203,10 @@ const CategoryDetailsPage: React.FC = () => {
     const { name, description, iconUrl, status, commissionStatus, commissionType, commissionValue } = categoryDetails;
 
     return (
-        // Main Container: slate-50 / dark:gray-700
         <div className="flex h-screen bg-slate-50 dark:bg-gray-700 text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <div className="flex-1 flex flex-col overflow-hidden">
                 <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
                     
-                    {/* Top Detail Card - dark:bg-gray-800 */}
                     <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 p-6 sm:p-8 transition-colors">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
@@ -223,7 +224,7 @@ const CategoryDetailsPage: React.FC = () => {
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                                 {iconUrl ? (
                                     <img
-                                        src={getCloudinaryUrl(iconUrl)}
+                                        src={iconUrl}
                                         alt={`${name} icon`}
                                         className="w-24 h-24 object-cover rounded-2xl shadow-md border border-slate-100 dark:border-gray-600"
                                     />
@@ -267,7 +268,6 @@ const CategoryDetailsPage: React.FC = () => {
                             </div>
                         </section>
 
-                        {/* Subcategories Section */}
                         <section className="mb-8">
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -302,7 +302,7 @@ const CategoryDetailsPage: React.FC = () => {
                                                 <tr key={sub.id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {sub.iconUrl ? (
-                                                            <img src={getCloudinaryUrl(sub.iconUrl)} alt={`${sub.name} icon`} className="w-10 h-10 object-cover rounded-lg border border-slate-100 dark:border-gray-600" />
+                                                            <img src={sub.iconUrl} alt={`${sub.name} icon`} className="w-10 h-10 object-cover rounded-lg border border-slate-100 dark:border-gray-600" />
                                                         ) : (
                                                             <div className="w-10 h-10 bg-slate-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">No Img</div>
                                                         )}
@@ -350,7 +350,6 @@ const CategoryDetailsPage: React.FC = () => {
                             )}
                         </section>
 
-                        {/* Commission Rules Section */}
                         <section>
                             <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Commission Rules</h2>
                             {(!subCategories || subCategories.length === 0) ? (

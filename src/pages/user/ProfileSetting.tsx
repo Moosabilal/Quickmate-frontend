@@ -3,13 +3,13 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import React, { useEffect, useState } from 'react';
 import { authService } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
 import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
+import { Loader2 } from 'lucide-react';
 
 
 
@@ -29,7 +29,7 @@ const ProfileSetting: React.FC = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
     const [addressPopup, setAddressPopup] = useState(false);
-
+    const [editLoading, setEditLoading] = useState(false);
 
     const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
     const [addressList, setAddressList] = useState<IAddress[]>([]);
@@ -71,6 +71,24 @@ const ProfileSetting: React.FC = () => {
     console.log('the providpiicture', profilePicture, editingProfilePicture)
 
     const handleSaveChanges = async () => {
+        if (editingName.trim() === '') {
+            toast.error('Name cannot be empty');
+            return;
+        } else if (editingName.trim().length < 3) {
+            toast.error('Name must be at least 3 characters long');
+            return;
+        } else if (editingName.trim().length > 20) {
+            toast.error('Name must not exceed 20 characters');
+            return;
+        }
+        if (editingEmail.trim() === '') {
+            toast.error('Email cannot be empty');
+            return;
+        }
+        if (editingEmail.trim().split('@')[0].length < 3) {
+            toast.error('Email address is too short')
+        }
+        setEditLoading(true)
         try {
             const formData = new FormData();
             formData.append('name', editingName);
@@ -79,6 +97,18 @@ const ProfileSetting: React.FC = () => {
                 formData.append('profilePicture', editingProfilePicture);
             } else if (typeof editingProfilePicture === 'string' && editingProfilePicture) {
                 formData.append('profilePicture', editingProfilePicture);
+            }
+            console.log('the pattern', editingEmail, typeof editingEmail, email, typeof email)
+            if (editingEmail.trim() !== email) {
+                try {
+                    const result = await authService.generateOtp(editingEmail)
+                    console.log('the result of otop', result)
+                    navigate('/verify-otp', { state: { email: user?.email, displayEmail: editingEmail, role: user?.role, updateProfileData: { name: editingName, email: editingEmail, profilePicture: editingProfilePicture } } });
+                    return
+
+                } catch (error) {
+                    console.log(error)
+                }
             }
             const updatedData = await authService.updateProfile(formData);
 
@@ -97,6 +127,8 @@ const ProfileSetting: React.FC = () => {
                 toast.error('Something went wrong. Please try again.');
             }
 
+        } finally {
+            setEditLoading(false)
         }
     };
 
@@ -195,7 +227,7 @@ const ProfileSetting: React.FC = () => {
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                         title="Full Name"
                                         placeholder="Enter your full name"
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -211,9 +243,13 @@ const ProfileSetting: React.FC = () => {
                                 <div className="flex space-x-4 mt-4">
                                     <button
                                         onClick={handleSaveChanges}
-                                        className="px-8 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                        disabled={editLoading}
+                                        className="px-8 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        Save Changes
+                                        {editLoading ?
+                                            (<><Loader2 className="h-4 w-4 animate-spin" />
+                                                Saving...</>) :
+                                            'Save Changes'}
                                     </button>
                                     <button
                                         onClick={handleCancel}
@@ -230,7 +266,7 @@ const ProfileSetting: React.FC = () => {
                                 <img
                                     src={
                                         editingProfilePicture && typeof editingProfilePicture === 'string'
-                                            ? getCloudinaryUrl(editingProfilePicture)
+                                            ? editingProfilePicture
                                             : editingProfilePicture instanceof File
                                                 ? URL.createObjectURL(editingProfilePicture)
                                                 : '/profileImage.png'
@@ -284,7 +320,7 @@ const ProfileSetting: React.FC = () => {
                         </div>
                         <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                             <img
-                                src={typeof profilePicture === 'string' && profilePicture ? getCloudinaryUrl(profilePicture) : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : '/profileImage.png'}
+                                src={typeof profilePicture === 'string' && profilePicture ? profilePicture : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : '/profileImage.png'}
                                 alt="Profile"
                                 className="w-28 h-28 rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
                             />

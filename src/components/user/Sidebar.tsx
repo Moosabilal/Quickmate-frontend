@@ -13,7 +13,6 @@ import {
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { authService } from '../../services/authService';
@@ -100,7 +99,7 @@ const Sidebar = () => {
           <div className="text-center mb-8">
             <div className="relative inline-block">
               <img
-                src={user.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png'}
+                src={user.profilePicture ? user.profilePicture : '/profileImage.png'}
                 alt={user.name || 'User'}
                 className="w-20 h-20 rounded-full border-4 border-white dark:border-gray-700 shadow-lg object-cover mx-auto"
               />

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { IFeaturedProviders } from '../../util/interface/IProvider';
 import { providerService } from '../../services/providerService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import Pagination from '../../components/user/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -75,7 +74,7 @@ const ProvidersPage: React.FC = () => {
                 placeholder="Search by name (e.g., John Doe)..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full py-3 px-4 text-lg bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full py-3 px-4 text-lg bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
              </div>
           </div>
@@ -95,7 +94,7 @@ const ProvidersPage: React.FC = () => {
               >
                 <div className="relative aspect-[4/4] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700 mb-3 sm:mb-5">
                   <img
-                    src={getCloudinaryUrl(provider.profilePhoto)}
+                    src={provider.profilePhoto}
                     alt={provider.fullName}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"

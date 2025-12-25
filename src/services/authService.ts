@@ -96,6 +96,15 @@ export const authService = {
     }
   },
 
+  generateOtp: async (email: string) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/generateOtp`, { email })
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, 'Failed to generate OTP')
+    }
+  },
+
   getUserWithAllDetails: async ({
     page,
     limit,
@@ -117,10 +126,9 @@ export const authService = {
     }
   },
 
-  updateUser: async (userId: string) => {
+  updateUser: async (userId: string, reason?: string) => {
     try {
-      console.log('the userId is', userId)
-      const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`);
+      const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`, {reason});
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to update user information.");
@@ -153,4 +161,16 @@ export const authService = {
       handleAxiosError(error, "Failed to fetch user details for admin.");
     }
   },
+
+  async searchResources(query: string) {
+    try {
+      const response = await axiosInstance.get('/auth/search-resources', {
+        params: { query }
+      });
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to get, Please try again later")
+    }
+  }
+
 };

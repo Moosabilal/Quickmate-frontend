@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { getCloudinaryUrl } from '../util/cloudinary';
 import { IProviderForChatListPage } from '../util/interface/IProvider';
 import { providerService } from '../services/providerService';
 import { socket } from '../util/socket';
@@ -169,7 +168,7 @@ const ChatSidebar: React.FC = () => {
               >
                 <div className="relative flex-shrink-0">
                     <img
-                    src={chatPartner.profilePicture ? getCloudinaryUrl(chatPartner.profilePicture) : '/profileImage.png'}
+                    src={chatPartner.profilePicture ? chatPartner.profilePicture : '/profileImage.png'}
                     alt={chatPartner.name}
                     className="w-12 h-12 rounded-full object-cover bg-gray-200 dark:bg-gray-600 border border-gray-200 dark:border-gray-600"
                     />

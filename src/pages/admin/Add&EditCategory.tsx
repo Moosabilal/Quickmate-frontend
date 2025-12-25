@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService } from '../../services/categoryService';
 import { CommissionTypes, ICategoryFormCombinedData, ICategoryFormData } from '../../util/interface/ICategory';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { Loader2, UploadCloud, X, AlertCircle } from 'lucide-react';
 import { isAxiosError } from 'axios';
@@ -91,12 +90,16 @@ const CategoryForm: React.FC = () => {
             errors.name = "Name is required.";
         } else if (formData.name.length < 3) {
             errors.name = "Name must be at least 3 characters.";
+        } else if (formData.name.length > 30) {
+            errors.name = "Name must not exceed 30 characters.";
         }
 
         if (!formData.description){
             errors.description = "Description is needed"
         } else if (formData.description.length < 5) {
             errors.description = "Description must be at least 5 characters."
+        } else if (formData.description.length > 200) {
+            errors.description = "Description must not exceed 200 characters."
         }
 
         if (
@@ -196,9 +199,10 @@ const CategoryForm: React.FC = () => {
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} updated successfully!`);
             } else {
                 const response = await categoryService.createCategory(data);
+                console.log('the response after adding', response)
                 toast.success(`${isSubCategoryMode ? 'Subcategory' : 'Category'} created successfully!`);
 
-                const newEntityId = response?.id;
+                const newEntityId = response?._id;
                 if (newEntityId && submitAction === 'addSubcategory' && !isSubCategoryMode) {
                     navigate(`/admin/subcategories/new/${newEntityId}`);
                     return;
@@ -331,7 +335,7 @@ const CategoryForm: React.FC = () => {
                                             <>
                                                 <div className="relative w-full h-full flex items-center justify-center p-4">
                                                     <img 
-                                                        src={iconPreview.startsWith("blob:") ? iconPreview : getCloudinaryUrl(iconPreview)} 
+                                                        src={iconPreview.startsWith("blob:") ? iconPreview : iconPreview} 
                                                         alt="Icon Preview" 
                                                         className="max-h-full max-w-full object-contain rounded-lg shadow-sm" 
                                                     />

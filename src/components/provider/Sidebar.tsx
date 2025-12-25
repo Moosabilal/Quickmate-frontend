@@ -13,7 +13,6 @@ import {
   X 
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
@@ -87,7 +86,7 @@ const Sidebar = () => {
           <div className="text-center mb-8">
             <div className="relative inline-block">
               <img
-                src={provider.profilePhoto ? getCloudinaryUrl(provider?.profilePhoto) : '/profileImage.png'}
+                src={provider.profilePhoto ? provider?.profilePhoto : '/profileImage.png'}
                 alt="Profile"
                 className="w-20 h-20 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover mx-auto"
               />

@@ -59,100 +59,122 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       toast.error("Geolocation is not supported by your browser");
       return;
     }
+
     setLoading(true);
     setError(null);
 
+    // --- 1. Define the Success Handler (Used for both attempts) ---
+    const handleSuccess = async (position: GeolocationPosition) => {
+      try {
+        const { accuracy, latitude, longitude } = position.coords;
+        console.log(`Location acquired! Accuracy: ${accuracy} meters`);
+
+        // NOTE: You had hardcoded coordinates in your snippet.
+        // I have commented them out so the real location is used. 
+        // Uncomment them only for testing.
+        let lat = latitude;
+        let lng = longitude;
+        lat = 12.733242; 
+        lng = 74.895929;
+        const dddd = await providerService.getState(lat, lng);
+        console.log('the location', dddd)
+
+        if (serviceId) {
+          const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
+
+          if (!withinRange) {
+            setError("No service provider found at your location. Please select a different address.");
+            return;
+          }
+        }
+
+        const locationData = await providerService.getState(lat, lng);
+        console.log('Location data:', locationData);
+
+        const newAddress: IAddress = {
+          label: "Current Location",
+          street:
+            locationData?.address?.road ||
+            locationData?.address?.neighbourhood ||
+            locationData?.address?.county ||
+            "",
+          city:
+            locationData?.address?.village ||
+            locationData?.address?.town ||
+            locationData?.address?.city ||
+            "",
+          state: locationData?.address?.state || "",
+          zip: locationData?.address?.postcode || "",
+          locationCoords: `${lat},${lng}`,
+        };
+
+        const response = await addressService.createAddress(newAddress);
+        handleAddressConfirm(response, radius);
+
+      } catch (err) {
+        console.error("An error occurred while processing location:", err);
+        let message = "Failed to process current location. Please try again.";
+        if (isAxiosError(err) && err.response?.data?.message) {
+          message = err.response.data.message;
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // --- 2. Define the Error Handler with Retry Logic ---
+    const handleError = (error: GeolocationPositionError) => {
+      // If error is TIMEOUT (Code 3) and we were using High Accuracy, TRY AGAIN with Low Accuracy
+      if (error.code === 3) {
+        console.warn("High accuracy GPS timed out. Retrying with network location...");
+        toast.info("GPS signal weak, switching to network location...");
+
+        navigator.geolocation.getCurrentPosition(
+          handleSuccess, // Use the same success handler
+          (retryError) => {
+             // If it fails again, show the final error
+             setLoading(false);
+             toast.error("Unable to retrieve location. Please enter address manually.");
+             console.error("Retry failed:", retryError);
+          },
+          {
+            enableHighAccuracy: false, // Low accuracy is much faster (Wi-Fi/Cell)
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+        return; // Exit here so we don't trigger the switch below
+      }
+
+      // Standard Error Handling for other errors (Permission denied, etc.)
+      setLoading(false);
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          toast.error("Location permission denied. Please enable it in browser settings.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          toast.error("Location unavailable. Try moving to an open area.");
+          break;
+        case error.TIMEOUT:
+          toast.error("Location request timed out. Please enter address manually.");
+          break;
+        default:
+          toast.error("An unknown location error occurred.");
+      }
+      console.error("Geolocation error:", error);
+    };
+
+    // --- 3. Start the Initial Request (High Accuracy) ---
     const options = {
       enableHighAccuracy: true,
-      timeout: 10000,
+      timeout: 20000, // Increased to 20 seconds to give GPS a chance
       maximumAge: 0
     };
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { accuracy } = position.coords;
-
-          console.log(`Accuracy: ${accuracy} meters`);
-
-          // if (accuracy > 5000) {
-          //   setLoading(false);
-          //   setError("Location signal is too weak (IP-based). Please enter your address manually.");
-          //   toast.warn("We could not pinpoint your exact location.");
-          //   return;
-          // }
-          let lat = position.coords.latitude;
-          let lng = position.coords.longitude;
-          lat = 12.733242
-          lng = 74.895929
-
-          console.log("Accuracy: ", position.coords.accuracy);
-
-          if (serviceId) {
-            const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
-
-            if (!withinRange) {
-              setError("No service provider found at your location. Please select a different address.");
-              return;
-            }
-          }
-
-          const locationData = await providerService.getState(lat, lng);
-
-          console.log('the location data is', locationData);
-
-          const newAddress: IAddress = {
-            label: "Current Location",
-            street:
-              locationData?.address?.road ||
-              locationData?.address?.neighbourhood ||
-              locationData?.address?.county ||
-              "",
-            city:
-              locationData?.address?.village ||
-              locationData?.address?.town ||
-              locationData?.address?.city ||
-              "",
-            state: locationData?.address?.state || "",
-            zip: locationData?.address?.postcode || "",
-            locationCoords: `${lat},${lng}`,
-          };
-
-          const response = await addressService.createAddress(newAddress);
-          handleAddressConfirm(response, radius);
-
-        } catch (err) {
-          console.error("An error occurred while fetching current location:", err);
-          let message = "Failed to process current location. Please try again.";
-          if (isAxiosError(err) && err.response?.data?.message) {
-            message = err.response.data.message;
-          } else if (err instanceof Error) {
-            message = err.message;
-          }
-          setError(message);
-        } finally {
-          setLoading(false);
-        }
-      },
-      (error) => {
-        setLoading(false);
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            toast.error("Location permission denied. Please enable it in your browser settings.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            toast.error("Location information is unavailable. Try moving to an open area.");
-            break;
-          case error.TIMEOUT:
-            toast.error("The request to get user location timed out.");
-            break;
-          default:
-            toast.error("An unknown error occurred.");
-        }
-        console.error("Geolocation error:", error);
-      },
-      options
-    );
+    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, options);
   };
 
   const handleAddressConfirmWithCheck = async (address: IAddress) => {

@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { toast } from 'react-toastify';
 import { serviceService } from '../../services/serviceService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import SubscriptionPlansModal from '../../components/provider/SubscriptionPlanModel';
@@ -28,6 +27,7 @@ const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 const ProviderServicesPage: React.FC = () => {
 
     const { provider } = useAppSelector(state => state.provider)
+    console.log('the providersdddd', provider)
 
     const [services, setServices] = useState<IService[]>([])
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -52,6 +52,7 @@ const ProviderServicesPage: React.FC = () => {
                 const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan('');
                 setSubscriptionPlans(subscriptionResponse);
             } catch (error) {
+                console.log('the errororrr111', error)
                 let errorMessage = "Something went wrong while fetching data";
                 if (isAxiosError(error) && error.response?.data?.message) {
                     errorMessage = error.response.data.message;
@@ -101,7 +102,7 @@ const ProviderServicesPage: React.FC = () => {
                 return;
             }
 
-            const serviceLimit = currentPlan.features.find(f => f.includes("max service limit"));
+            const serviceLimit = currentPlan.features.find(f => f.includes("Max service limit"));
             if (serviceLimit) {
                 const maxServices = parseInt(serviceLimit.match(/\d+/)?.[0] || "0", 10);
                 if (services.length >= maxServices) {
@@ -248,7 +249,6 @@ const ProviderServicesPage: React.FC = () => {
             <div className="flex flex-col">
                 <div className="flex-1 p-4 sm:p-6 lg:p-8">
                     <div className="max-w-7xl mx-auto">
-                        {/* Header Section */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">Services</h1>
@@ -267,7 +267,6 @@ const ProviderServicesPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Services Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
                             {services && services.length > 0 ? (
                                 services.map((service) => (
@@ -275,10 +274,9 @@ const ProviderServicesPage: React.FC = () => {
                                         key={service.id}
                                         className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg dark:hover:shadow-gray-900/50 transition-all duration-300 group"
                                     >
-                                        {/* Image Section */}
                                         <div className="aspect-video relative overflow-hidden">
                                             <img
-                                                src={getCloudinaryUrl(service.serviceImage)}
+                                                src={service.serviceImage}
                                                 alt={service.title}
                                                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                             />
@@ -289,7 +287,6 @@ const ProviderServicesPage: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Content Section */}
                                         <div className="p-5 sm:p-6">
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex-1 pr-4">
@@ -319,7 +316,6 @@ const ProviderServicesPage: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Action Buttons */}
                                             <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                                 <button
                                                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
@@ -340,7 +336,6 @@ const ProviderServicesPage: React.FC = () => {
                                     </div>
                                 ))
                             ) : (
-                                /* Empty State */
                                 <div className="col-span-full text-center py-12 sm:py-16 px-4">
                                     <div className="mb-8 flex justify-center">
                                         <div className="relative">

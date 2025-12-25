@@ -8,7 +8,6 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { providerService } from '../../services/providerService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { IProviderFullDetails } from '../../util/interface/IAdmin';
 import { isAxiosError } from 'axios';
@@ -54,6 +53,7 @@ const ProviderDetailsPage: React.FC = () => {
   if (!data) return null;
 
   const { profile, services, bookings, stats, currentPlan } = data;
+  console.log('the booking of the provider', bookings)
   const { availability } = profile; 
 
   return (
@@ -90,7 +90,7 @@ const ProviderDetailsPage: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-slate-100 dark:border-gray-600/50 transition-colors duration-300">
                     <div className="flex flex-col items-center text-center -mt-16 mb-6">
                         <div className="relative">
-                            <img src={getCloudinaryUrl(profile.profilePhoto)} alt={profile.fullName} className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md bg-slate-200 dark:bg-gray-700" />
+                            <img src={profile.profilePhoto} alt={profile.fullName} className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md bg-slate-200 dark:bg-gray-700" />
                             <div className="absolute bottom-1 right-1 bg-yellow-400 p-1.5 rounded-full border-2 border-white dark:border-gray-800 shadow-sm"><Star className="w-4 h-4 text-white fill-white" /></div>
                         </div>
                         <div className="mt-3">
@@ -125,15 +125,16 @@ const ProviderDetailsPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-4">
                                 <div><p className="text-slate-400 text-xs uppercase font-bold tracking-wider">Current Plan</p>
                                 <p className="text-xl font-bold mt-1 tracking-tight">
-                                    {currentPlan ? currentPlan.name : "Active Plan"}
+                                    {currentPlan ? currentPlan.name : "No Active Plan"}
                                 </p>
                                 </div>
                                 <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${profile.subscription.status === 'ACTIVE' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}`}>{profile.subscription.status}</div>
                             </div>
+                            {profile.subscription.status === 'ACTIVE' && 
                             <div className="space-y-1 text-sm text-slate-300 font-medium">
                                 <p>Start: <span className="text-white ml-1">{new Date(profile.subscription.startDate).toLocaleDateString()}</span></p>
                                 <p>End: <span className="text-white ml-2">{new Date(profile.subscription.endDate).toLocaleDateString()}</span></p>
-                            </div>
+                            </div>}
                         </div>
                      ) : <div className="p-4 bg-slate-50 dark:bg-gray-700/30 rounded-xl text-center text-slate-500 dark:text-gray-400 italic text-sm">No active subscription</div>}
                 </div>
@@ -268,7 +269,7 @@ const ProviderDetailsPage: React.FC = () => {
                                 {bookings.length > 0 ? (
                                     bookings.map(booking => (
                                         <tr key={booking._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
-                                            <td className="px-6 py-4 text-slate-600 dark:text-gray-300">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4 text-slate-600 dark:text-gray-300">{new Date(booking.scheduledDate).toLocaleDateString()}</td>
                                             <td className="px-6 py-4 font-medium text-slate-800 dark:text-gray-200">{booking.customerName}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -295,7 +296,7 @@ const ProviderDetailsPage: React.FC = () => {
                         <FileText className="w-5 h-5 text-orange-500 dark:text-orange-400" /> Documents
                     </h3>
                     <div className="flex gap-4">
-                         <div className="flex items-center justify-between p-4 w-full max-w-md bg-slate-50 dark:bg-gray-700/30 border border-slate-200 dark:border-gray-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer group" onClick={() => window.open(getCloudinaryUrl(profile.aadhaarIdProof), '_blank')}>
+                         <div className="flex items-center justify-between p-4 w-full max-w-md bg-slate-50 dark:bg-gray-700/30 border border-slate-200 dark:border-gray-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer group" onClick={() => window.open(profile.aadhaarIdProof, '_blank')}>
                              <div className="flex items-center gap-3">
                                  <div className="p-2 bg-white dark:bg-gray-600 rounded-lg shadow-sm group-hover:scale-105 transition-transform">
                                      <User className="w-5 h-5 text-slate-600 dark:text-gray-300" />

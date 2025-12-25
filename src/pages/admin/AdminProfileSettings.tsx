@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, Lock, Camera, Loader2, Edit, Save, X } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/authService'; 
 import { adminService } from '../../services/adminService'; 
@@ -47,6 +46,20 @@ const AdminProfileSettings: React.FC = () => {
 
     const handleAccountSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if(name.trim() === ""){
+            toast.error("Name cannot be empty.");
+            return;
+        } else if (name.trim().length < 3){
+            toast.error("Name must be at least 3 characters.");
+            return;
+        } else if (name.trim().length > 20){
+            toast.error("Name must not exceed 20 characters.");
+            return;
+        }
+        if (!email.trim()){
+            toast.error("Email cannot be empty.");
+            return;
+        }
         setIsSaving(true);
         try {
             const formData = new FormData();
@@ -130,10 +143,8 @@ const AdminProfileSettings: React.FC = () => {
                 <form onSubmit={handleAccountSave}>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
-                        {/* Left Column: Account Info */}
                         <div className="lg:col-span-2 space-y-8">
                             
-                            {/* Personal Information Card - dark:bg-gray-800 */}
                             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 transition-colors">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold flex items-center text-slate-900 dark:text-white gap-2">
@@ -193,7 +204,6 @@ const AdminProfileSettings: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Password Change Card - dark:bg-gray-800 */}
                             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 transition-colors">
                                 <h2 className="text-xl font-bold mb-6 flex items-center text-slate-900 dark:text-white gap-2">
                                     <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -270,9 +280,7 @@ const AdminProfileSettings: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Right Column: Profile Photo & Actions */}
                         <div className="lg:col-span-1 space-y-8">
-                            {/* Profile Photo Card - dark:bg-gray-800 */}
                             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 transition-colors">
                                 <h2 className="text-xl font-bold mb-6 flex items-center text-slate-900 dark:text-white gap-2">
                                     <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -284,7 +292,7 @@ const AdminProfileSettings: React.FC = () => {
                                     <div className="relative group">
                                         <div className="w-40 h-40 rounded-full overflow-hidden bg-slate-100 dark:bg-gray-700 flex items-center justify-center border-4 border-white dark:border-gray-700 shadow-lg ring-1 ring-slate-200 dark:ring-gray-600 mb-6">
                                             <img 
-                                                src={imagePreview || (user?.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png')} 
+                                                src={imagePreview || (user?.profilePicture ? user.profilePicture : '/profileImage.png')} 
                                                 alt="Profile Preview"
                                                 className="w-full h-full object-cover"
                                             />
@@ -329,7 +337,6 @@ const AdminProfileSettings: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Action Buttons (Sticky) */}
                             {isEditingProfile && (
                                 <div className="sticky top-8 space-y-3">
                                     <button 

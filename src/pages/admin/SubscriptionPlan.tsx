@@ -22,6 +22,7 @@ export default function AdminSubscriptionPlans() {
 
   const [form, setForm] = useState<IPlan>({
     name: "",
+    description: "",
     price: null,
     durationInDays: 30,
     features: [],
@@ -48,6 +49,7 @@ export default function AdminSubscriptionPlans() {
       if (editingPlan) {
         setForm({
           name: editingPlan.name,
+          description: editingPlan.description || "",
           price: editingPlan.price,
           durationInDays: editingPlan.durationInDays,
           features: [...editingPlan.features],
@@ -55,6 +57,7 @@ export default function AdminSubscriptionPlans() {
       } else {
         setForm({
           name: "",
+          description: "",
           price: 0,
           durationInDays: 30,
           features: [],
@@ -65,7 +68,7 @@ export default function AdminSubscriptionPlans() {
     }
   }, [editingPlan, isModalOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm({
       ...form,
@@ -110,6 +113,7 @@ export default function AdminSubscriptionPlans() {
 
       let savedPlan: IPlan = {
         name: form.name.trim(),
+        description: form.description?.trim(),
         price: form.price,
         durationInDays: form.durationInDays,
         features: [...form.features],
@@ -281,6 +285,11 @@ export default function AdminSubscriptionPlans() {
                       <div className="font-medium text-gray-900 dark:text-white">
                         {plan.name}
                       </div>
+                      {plan.description && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                          {plan.description}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {plan.updatedAt && plan.updatedAt !== plan.createdAt
                           ? `Updated: ${new Date(plan.updatedAt ?? "").toLocaleDateString()}`
@@ -398,6 +407,20 @@ export default function AdminSubscriptionPlans() {
                     required
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="e.g. Basic, Premium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description || ""}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+                    placeholder="Brief description of the plan..."
                   />
                 </div>
 

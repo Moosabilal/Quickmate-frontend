@@ -49,7 +49,8 @@ export interface IAdminServiceDetail {
 
 export interface IAdminBookingDetail {
     _id: string;
-    createdAt: string; 
+    createdAt: string;
+    scheduledDate: string; 
     customerName: string;
     status: string;
     amount: string | number;

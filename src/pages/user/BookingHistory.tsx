@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, Search, Eye, X } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { BookingStatus, IBookingHistoryPage, IBookingStatusCounts } from '../../util/interface/IBooking';
-import { getCloudinaryUrl } from '../../util/cloudinary';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getStatusColor } from '../../components/getStatusColor';
@@ -70,7 +69,7 @@ const BookingHistory: React.FC = () => {
     { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: tabCounts[BookingStatus.CONFIRMED] },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: tabCounts[BookingStatus.COMPLETED] },
     { id: BookingStatus.CANCELLED, label: 'Canceled', count: tabCounts[BookingStatus.CANCELLED] },
-    { id: BookingStatus.EXPIRED, label: 'Expired', count: tabCounts[BookingStatus.EXPIRED] } // --- NEW TAB ---
+    { id: BookingStatus.EXPIRED, label: 'Expired', count: tabCounts[BookingStatus.EXPIRED] } 
 
   ];
 
@@ -159,7 +158,7 @@ const BookingHistory: React.FC = () => {
 
                     <div className="flex-shrink-0 relative">
                       <img
-                        src={getCloudinaryUrl(booking.serviceImage)}
+                        src={booking.serviceImage}
                         alt={booking.serviceName}
                         className="w-full h-48 lg:w-24 lg:h-24 rounded-xl object-cover shadow-sm"
                       />
@@ -195,7 +194,7 @@ const BookingHistory: React.FC = () => {
 
                         <div className="flex items-center gap-3">
                           <img
-                            src={getCloudinaryUrl(booking.providerImage)}
+                            src={booking.providerImage}
                             alt={booking.providerName}
                             className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                           />

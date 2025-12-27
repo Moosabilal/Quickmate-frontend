@@ -164,7 +164,7 @@ export const authService = {
 
   async searchResources(query: string) {
     try {
-      const response = await axiosInstance.get('/auth/search-resources', {
+      const response = await axiosInstance.get(`${API_URL}/search-resources`, {
         params: { query }
       });
       return response.data;

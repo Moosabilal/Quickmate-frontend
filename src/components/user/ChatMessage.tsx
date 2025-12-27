@@ -72,7 +72,6 @@ const ChatMessage: React.FC<ChatMessageProps & { onOptionClick: (text: string) =
                             );
                         })}
 
-                        {/* Add "Add New Address" button if options are addresses */}
                         {chat.options[0] &&
                             typeof chat.options[0] !== 'string' &&
                             chat.options[0].label &&

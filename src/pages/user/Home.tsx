@@ -10,7 +10,7 @@ import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { toast } from 'react-toastify';
 import { ChatbotMessage } from '../../util/interface/IChatBot';
-import { Testimonial, StarRatingProps, QuickAction } from '../../util/interface/IChatBot';
+import { Testimonial, StarRatingProps } from '../../util/interface/IChatBot';
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
@@ -30,12 +30,6 @@ const testimonials: Testimonial[] = [
         rating: 5,
         text: 'Highly recommend! Peter was insightful in helping my Music Theory! He was professional and helped me grasp difficult concepts.',
     },
-];
-
-const defaultQuickActions: QuickAction[] = [
-    { id: '1', label: 'Get Started', action: 'Get Started' },
-    { id: '2', label: 'Pricing', action: 'Pricing' },
-    { id: '3', label: 'Contact', action: 'Contact' }
 ];
 
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
@@ -229,7 +223,7 @@ const Home: React.FC = () => {
                         id: p._id || p.id,
                         name: p.fullName || p.name,
                         type: 'provider',
-                        image: p.profilePhoto || p.profilePicture
+                        image: p.profilePicture
                     }));
                     setSuggestions([...serviceSuggestions, ...providerSuggestions]);
                     setShowSuggestions(true);
@@ -379,25 +373,6 @@ const Home: React.FC = () => {
         setIsMinimized(prev => !prev);
     }, []);
 
-    const handleQuickAction = useCallback((action: QuickAction): void => {
-        const userMessage: ChatbotMessage = {
-            role: "user",
-            text: action.action,
-            timestamp: new Date(),
-            id: Date.now().toString()
-        };
-
-        setChatHistory(prev => [...prev, userMessage]);
-
-        setTimeout(() => {
-            setChatHistory(prev => [...prev, {
-                role: "model",
-                text: `You selected "${action.label}". How can I help you with that?`,
-                timestamp: new Date(),
-                id: Date.now().toString()
-            }]);
-        }, 500);
-    }, []);
 
     const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
@@ -477,7 +452,7 @@ const Home: React.FC = () => {
                                                 className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
                                             >
                                                 <img
-                                                    src={suggestion.image! || 'https://via.placeholder.com/40'}
+                                                    src={suggestion.image! || './home_search_backup_img.webp'}
                                                     alt={suggestion.name}
                                                     className="w-10 h-10 rounded-full object-cover mr-3"
                                                 />
@@ -825,21 +800,8 @@ const Home: React.FC = () => {
                                             generateBotResponse={generateBotResponse}
                                         />
 
-                                        <div className="flex flex-wrap gap-2 mt-3">
-                                            {defaultQuickActions.map((action) => (
-                                                <button
-                                                    key={action.id}
-                                                    className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    onClick={() => handleQuickAction(action)}
-                                                    type="button"
-                                                >
-                                                    {action.label}
-                                                </button>
-                                            ))}
-                                        </div>
-
                                         <div className="text-center mt-2">
-                                            <span className="text-xs text-gray-400">Powered by AI</span>
+                                            <span className="text-xs text-gray-400">Powered by QuickMate</span>
                                         </div>
                                     </div>
                                 </>

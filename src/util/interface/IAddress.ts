@@ -1,3 +1,5 @@
+import React from "react";
+
 export interface IAddress {
     id?: string;
     userId?: string
@@ -17,7 +19,7 @@ export interface AddressPopupProps {
   setShowAddAddress: React.Dispatch<React.SetStateAction<boolean>>;
   showAddAddress: boolean;
   newAddress: IAddress;
-  setNewAddress: React.Dispatch<React.SetStateAction<any>>;
+  setNewAddress: React.Dispatch<React.SetStateAction<IAddress>>;
   handleAddAddress: (address: IAddress) => void;
   serviceId?: string;
 }

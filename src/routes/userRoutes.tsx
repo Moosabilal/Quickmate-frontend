@@ -14,13 +14,15 @@ const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/user/Register'));
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 const ResetPasswordForm = lazy(() => import('../pages/ResetPasswordForm'));
-const ProfileSettings = lazy(() => import('../pages/user/ProfilPage'));
+const ProfileSettings = lazy(() => import('../pages/user/ProfileSetting'));
 const ProviderRegistration = lazy(() => import('../pages/provider/Register'))
 const BookingHistory = lazy(() => import('../pages/user/BookingHistory'))
 const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'))
 const BookingDetails = lazy(() => import('../pages/user/BookingDetails'))
 const CurrentPassword = lazy(() => import('../pages/CurrentPassword'))
 const Wallet = lazy(() => import('../pages/user/Wallet'))
+const ProviderDetailsPage = lazy(() => import('../pages/user/ProviderDetails'))
+const PaymentPage = lazy(() => import('../pages/user/ProviderDetails'))
 import { LayoutRoute } from './LayoutRoute';
 
 import UserSidebarLayout from '../layouts/UserSidebarLayout';
@@ -37,6 +39,7 @@ const userRoutes = [
   { path: '/verify-otp', element: <RegistrationOTPVerification /> },
   { path: '/services', element: <ServicesPage /> },
   { path: '/providers', element: <ProviderPage /> },
+  { path: '/providers/:providerId', element: <ProviderDetailsPage /> },
   { path: '/about', element: <AboutPage /> },
   { path: '/working', element: <HowItWorksPage /> },
   { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },
@@ -62,6 +65,7 @@ const userRoutes = [
         { path: '/profile/currentPassword', element: <CurrentPassword /> },
         { path: '/profile/reset-password/:token', element: <ResetPasswordForm /> },
         { path: '/profile/wallet', element: <Wallet /> },
+        { path: '/payment', element: <PaymentPage /> },
 
 
       ],
@@ -69,4 +73,5 @@ const userRoutes = [
   ]),
 ];
 
-export default userRoutes.flat();
+const flattenedUserRoutes = userRoutes.flat();
+export default flattenedUserRoutes

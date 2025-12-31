@@ -26,8 +26,8 @@ export interface ICategory extends Document {
 }
 
 export interface ICategoryResponse extends Omit<ICategoryInput, 'parentid'> {
-    categoryDetails(categoryDetails: any): unknown;
-    _id: string;
+    id: string;
+    _id?: string
     parentId?: string | null; 
     createdAt: string; 
     updatedAt: string;
@@ -83,8 +83,9 @@ export interface ISubcategoryFormFetchData {
 export interface IserviceResponse {
     id: string;
     name: string;
+    description?: string;
     iconUrl?: string | null;
-    parentId?: string | null
+    parentId?: string | null | undefined;
 }
 
 export interface ICategoryData {
@@ -110,9 +111,33 @@ export interface ICategoryFormData {
     commissionValue: number | '';
     commissionStatus: boolean;
     icon: File | string | null;
+    parentId?: string | null;
 }
 
 export interface CategoryTableDisplay extends ICategoryResponse {
     subCategoriesCount?: number | undefined;
     commissionRule?: ICommissionRuleResponse | null;
+}
+
+export interface ICategoryAdminResponse {
+  data: ICategoryResponse[];
+  total: number;
+  totalPages: number;
+}
+
+export interface CategoryFilters {
+    page: number;
+    limit: number;
+    search?: string;
+}
+
+export interface ICommissionSummary {
+    totalCommissionRevenue: number;
+    totalCommissionRevenueChange: number;
+    averageCommissionPerBooking: number;
+    averageCommissionPerBookingChange: number;
+    totalBookings: number;
+    totalBookingsChange: number;
+    commissionDeductionsToProviders: number;
+    commissionDeductionsToProvidersChange: number;
 }

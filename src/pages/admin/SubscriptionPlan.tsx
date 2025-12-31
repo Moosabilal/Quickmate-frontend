@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { IPlan } from "../../util/interface/ISubscriptionPlan";
 import { subscriptionPlanService } from "../../services/subscriptionPlanService";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../../components/deleteConfirmationModel";
 import { DeleteConfirmationTypes } from "../../util/interface/IDeleteModelType";
-
+import { useDebounce } from "../../hooks/useDebounce";
+import { Search, Plus } from "lucide-react";
 
 export default function AdminSubscriptionPlans() {
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [openDeleteModel, setOpenDeleteModel] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<IPlan | null>(null);
@@ -19,6 +22,7 @@ export default function AdminSubscriptionPlans() {
 
   const [form, setForm] = useState<IPlan>({
     name: "",
+    description: "",
     price: null,
     durationInDays: 30,
     features: [],
@@ -28,23 +32,24 @@ export default function AdminSubscriptionPlans() {
   const [formLoading, setFormLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await subscriptionPlanService.getSubscriptionPlan();
+      const response = await subscriptionPlanService.getSubscriptionPlan(debouncedSearchTerm);
       setPlans(response);
     } catch (err) {
       toast.error(`${err}` || "Failed to fetch subscription");
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     if (isModalOpen) {
       if (editingPlan) {
         setForm({
           name: editingPlan.name,
+          description: editingPlan.description || "",
           price: editingPlan.price,
           durationInDays: editingPlan.durationInDays,
           features: [...editingPlan.features],
@@ -52,6 +57,7 @@ export default function AdminSubscriptionPlans() {
       } else {
         setForm({
           name: "",
+          description: "",
           price: 0,
           durationInDays: 30,
           features: [],
@@ -62,7 +68,7 @@ export default function AdminSubscriptionPlans() {
     }
   }, [editingPlan, isModalOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm({
       ...form,
@@ -107,6 +113,7 @@ export default function AdminSubscriptionPlans() {
 
       let savedPlan: IPlan = {
         name: form.name.trim(),
+        description: form.description?.trim(),
         price: form.price,
         durationInDays: form.durationInDays,
         features: [...form.features],
@@ -178,7 +185,11 @@ export default function AdminSubscriptionPlans() {
       setPlans(plans.filter((p) => p.id !== deletePlanId));
       toast.success("Plan deleted successfully!");
     } catch (err) {
-      toast.error("Failed to delete plan");
+      if (err instanceof Error) {
+        toast.error(err.message || "Failed to delete plan");
+      } else {
+        toast.error(String(err) || "Failed to delete plan");
+      }
     } finally {
       setOpenDeleteModel(false)
     }
@@ -186,74 +197,99 @@ export default function AdminSubscriptionPlans() {
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+  }, [fetchPlans]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    // Main Container: dark:bg-gray-700
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
       <div className="mb-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               Subscription Plans
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
               Manage your subscription plans and pricing
             </p>
           </div>
           <button
             onClick={openAddModal}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm"
           >
-            <span>+</span>
+            <Plus className="w-5 h-5" />
             Add New Plan
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-            All Plans
-          </h2>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Total Plans: {plans.length}
+      {/* Main Content Card - dark:bg-gray-800 */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-5 sm:p-6 border border-gray-200 dark:border-gray-600/50 transition-colors">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                All Plans
+            </h2>
+            <span className="text-sm px-2.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-medium">
+                {plans.length}
+            </span>
+          </div>
+          
+          <div className="relative w-full sm:w-72">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search plans..."
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="ml-3 text-gray-500">Loading plans...</p>
+          <div className="flex justify-center items-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <p className="ml-3 text-gray-500 dark:text-gray-400 font-medium">Loading plans...</p>
           </div>
         ) : plans.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📋</div>
-            <p className="text-gray-500 text-lg">No subscription plans available.</p>
-            <p className="text-gray-400 text-sm mt-2">Create your first plan by clicking "Add New Plan".</p>
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
+            <div className="text-gray-400 text-5xl mb-4">📋</div>
+            <p className="text-gray-600 dark:text-gray-300 text-lg font-medium">
+              {searchTerm ? "No plans match your search." : "No subscription plans available."}
+            </p>
+            {searchTerm ? (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Try different keywords or clear your search.</p>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Create your first plan by clicking "Add New Plan".</p>
+            )}          
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
-              <thead className="bg-gray-100 dark:bg-gray-700">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Price</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Duration</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Features</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Features</th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {plans.map((plan, index) => (
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {plans.map((plan) => (
                   <tr
                     key={plan.id}
-                    className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'
-                      } border-t border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors`}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
                   >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800 dark:text-gray-200">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900 dark:text-white">
                         {plan.name}
                       </div>
+                      {plan.description && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                          {plan.description}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {plan.updatedAt && plan.updatedAt !== plan.createdAt
                           ? `Updated: ${new Date(plan.updatedAt ?? "").toLocaleDateString()}`
@@ -261,42 +297,43 @@ export default function AdminSubscriptionPlans() {
                       </div>
                     </td>
 
-
-
-                    <td className="px-4 py-3">
-                      <div className="text-gray-800 dark:text-gray-200 font-semibold">
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900 dark:text-white font-semibold">
                         ₹{plan.price !== null && plan.price.toLocaleString()}
                       </div>
                       {plan.durationInDays !== null && plan.durationInDays >= 365 && (
-                        <div className="text-xs text-green-600 dark:text-green-400">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 mt-1">
                           Annual Plan
-                        </div>
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                       <div className="flex items-center">
-                        <span className="font-medium">{plan.durationInDays}</span>
-                        <span className="ml-1 text-sm text-gray-500">
+                        <span className="font-medium text-gray-900 dark:text-white">{plan.durationInDays}</span>
+                        <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
                           {plan.durationInDays === 1 ? 'day' : 'days'}
                         </span>
                       </div>
                       {plan.durationInDays !== null && plan.durationInDays >= 365 && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           (~{Math.round(plan.durationInDays / 365)} year{plan.durationInDays >= 730 ? 's' : ''})
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <div className="max-w-xs">
-                        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                        <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1.5">
                           {(expandedPlans.has(plan.id!) ? plan.features : plan.features.slice(0, 3)).map((f, i) => (
                             <li key={i} className="flex items-start">
-                              <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                              <span className="flex-1">{f}</span>
+                              <span className="text-green-500 dark:text-green-400 mr-2 mt-0.5 text-xs">✓</span>
+                              <span className="flex-1 leading-tight">{f}</span>
                             </li>
                           ))}
                           {plan.features.length > 3 && (
-                            <li className="text-xs text-gray-500 dark:text-gray-400 ml-4 cursor-pointer" onClick={() => toggleFeatures(plan.id!)}>
+                            <li 
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 ml-5 cursor-pointer font-medium mt-1" 
+                                onClick={() => toggleFeatures(plan.id!)}
+                            >
                               {expandedPlans.has(plan.id!) ? 'Show less' : `+${plan.features.length - 3} more`}
                             </li>
                           )}
@@ -304,16 +341,16 @@ export default function AdminSubscriptionPlans() {
                       </div>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <div className="flex justify-center space-x-2">
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center space-x-3">
                         <button
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                          className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                           onClick={() => openEditModal(plan)}
                         >
                           Edit
                         </button>
                         <button
-                          className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                          className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                           onClick={() => {
                             setDeletePlanId(plan.id!)
                             setOpenDeleteModel(true)
@@ -331,16 +368,17 @@ export default function AdminSubscriptionPlans() {
         )}
       </div>
 
+      {/* Modal Overlay - dark mode supported */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                {editingPlan ? 'Edit Subscription Plan' : 'Add New Subscription Plan'}
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 animate-in slide-in-from-bottom-4 duration-200">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex justify-between items-center z-10">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {editingPlan ? 'Edit Subscription Plan' : 'Add New Plan'}
               </h2>
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 ✕
               </button>
@@ -348,18 +386,18 @@ export default function AdminSubscriptionPlans() {
 
             <div className="p-6">
               {message && (
-                <div className={`mb-4 p-3 rounded-lg text-sm ${message.startsWith("✅")
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                  : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                <div className={`mb-5 p-3 rounded-lg text-sm font-medium border ${message.startsWith("✅")
+                  ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30"
+                  : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30"
                   }`}>
                   {message}
                 </div>
               )}
 
-              <div className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Plan Name *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Plan Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -367,15 +405,29 @@ export default function AdminSubscriptionPlans() {
                     value={form.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g. Basic, Premium, Enterprise"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                    placeholder="e.g. Basic, Premium"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description || ""}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+                    placeholder="Brief description of the plan..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Price (₹) *
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Price (₹) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -385,14 +437,14 @@ export default function AdminSubscriptionPlans() {
                       required
                       min="0"
                       step="0.01"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="299"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Duration (Days) *
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Duration (Days) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -401,7 +453,7 @@ export default function AdminSubscriptionPlans() {
                       onChange={handleChange}
                       required
                       min="1"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="30"
                     />
                   </div>
@@ -409,70 +461,74 @@ export default function AdminSubscriptionPlans() {
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Features *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Features <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex space-x-2 mb-3">
+                  <div className="flex gap-2 mb-3">
                     <input
                       type="text"
                       value={featureInput}
                       onChange={(e) => setFeatureInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Add a feature and press Enter or click Add"
+                      className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                      placeholder="Add a feature..."
                     />
                     <button
                       type="button"
                       onClick={addFeature}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                     >
                       Add
                     </button>
                   </div>
 
-                  {form.features.length > 0 && (
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {form.features.length > 0 ? (
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                       {form.features.map((feature, index) => (
                         <div
                           key={index}
-                          className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg"
+                          className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 px-3 py-2 rounded-lg group"
                         >
-                          <span className="text-sm text-gray-800 dark:text-gray-200">{feature}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-200">{feature}</span>
                           <button
                             type="button"
                             onClick={() => removeFeature(index)}
-                            className="text-red-500 hover:text-red-700 ml-2"
+                            className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                           >
                             ✕
                           </button>
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    <div className="text-sm text-gray-400 dark:text-gray-500 italic bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg text-center border border-dashed border-gray-200 dark:border-gray-700">
+                        No features added yet.
+                    </div>
                   )}
                 </div>
 
-                <div className="flex space-x-3 pt-4">
+                <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700 mt-6">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 py-2.5 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                   >
                     Cancel
                   </button>
                   <button
-                    type="button"
-                    onClick={handleSubmit}
+                    type="submit"
                     disabled={formLoading}
-                    className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
+                    className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-500/30"
                   >
-                    {formLoading ? "Saving..." : (editingPlan ? "Update Plan" : "Add Plan")}
+                    {formLoading ? "Saving..." : (editingPlan ? "Update Plan" : "Create Plan")}
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       )}
+      
       <DeleteConfirmationModal
         isOpen={openDeleteModel}
         onClose={handleDeleteCancel}

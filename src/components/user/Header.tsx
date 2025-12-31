@@ -6,8 +6,7 @@ import { logout, updateProfile } from '../../features/auth/authSlice';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useLocation } from 'react-router-dom';
 import { authService } from '../../services/authService';
-import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Bell, Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
@@ -48,7 +47,7 @@ const Header = () => {
         if (isAuthenticated) {
             fetchUser();
         }
-    }, []);
+    }, [isAuthenticated, dispatch]);
 
     const handleLogout = async () => {
         await authService.logout()
@@ -115,7 +114,7 @@ const Header = () => {
                                         className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
                                     >
                                         <img
-                                            src={user?.profilePicture ? getCloudinaryUrl(user.profilePicture) : '/profileImage.png'}
+                                            src={user?.profilePicture || '/profileImage.png'}
                                             alt="User Avatar"
                                             className="w-10 h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-blue-500 transition-all duration-300"
                                         />
@@ -147,6 +146,7 @@ const Header = () => {
                                                 Service Dashboard
                                             </Link>}
                                             <button
+                                                type='button'
                                                 onClick={() => setShowDeleteModal(true)}
                                                 className="w-full text-left flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                                             >

@@ -10,7 +10,18 @@ export enum BookingStatus {
     CONFIRMED = "Confirmed",
     CANCELLED = "Cancelled",
     COMPLETED = "Completed",
-    IN_PROGRESS = "In-Progress"
+    IN_PROGRESS = "In-Progress",
+    EXPIRED = "Expired"
+}
+
+export interface IBookingStatusCounts {
+  [BookingStatus.All]: number;
+  [BookingStatus.PENDING]: number;
+  [BookingStatus.CONFIRMED]: number;
+  [BookingStatus.IN_PROGRESS]: number;
+  [BookingStatus.COMPLETED]: number;
+  [BookingStatus.CANCELLED]: number;
+  [BookingStatus.EXPIRED]: number;
 }
 
 export interface LocationState {
@@ -18,6 +29,12 @@ export interface LocationState {
   role?: string;
   bookingId?: string;
   newStatus?: BookingStatus;
+  updateProfileData?: {
+    name: string,
+    email: string,
+    profilePicture: string | File | null
+  }
+  displayEmail?: string;
 }
 
 export interface IBookingRequest {
@@ -26,7 +43,10 @@ export interface IBookingRequest {
   customerName: string;
   phone: string;
   instructions?: string;
-  addressId?: string
+  addressId?: string;
+  amount?: number;
+  scheduledDate?: string;
+  scheduledTime?: string;
 }
 
 
@@ -37,6 +57,8 @@ export interface IBookingConfirmationPage {
   serviceImage?: string;
   providerName?: string;
   providerImage?: string;
+  providerRating?: number;
+  providerReviewsCount?: number;
   priceUnit?: string;
   duration?: string;
   customer?: string;
@@ -96,7 +118,6 @@ export interface IProviderBookingManagement {
   customerEmail: string;
   specialRequests: string;
   createdAt: string;
-  // rating: number | null;
 }
 
 export interface IAdminBookingFilters {
@@ -104,7 +125,6 @@ export interface IAdminBookingFilters {
   limit: number;
   search?: string;
   bookingStatus?: string;
-  serviceType?: string;
   dateRange?: string;
 }
 
@@ -158,4 +178,34 @@ export interface DateTimePopupProps {
   timeSlots?: string[];
   handleDateTimeConfirm: (date: string, time: string) => void;
   providersTimings?: { day: string; startTime: string; endTime: string }[];
+}
+
+export interface BookingData {
+  serviceId: string;
+  providerId: string;
+  addressId: string;
+  instructions?: string;
+  scheduledDate: string;  
+  scheduledTime: string;  
+  customerName: string;
+  phone: string;
+  amount: number;
+}
+
+export interface IBookingDetailData {
+  booking: {
+    _id: string;
+    status: BookingStatus;
+    paymentStatus: string;
+    amount: string;
+    date: string;
+    time: string;
+    createdAt: string;
+    instructions?: string;
+  };
+  user: { name: string; email: string; phone: string; image: string };
+  provider: { _id: string; name: string; email: string; phone: string; image: string; serviceArea: string };
+  service: { title: string; duration: string; price: number };
+  address: { label: string; fullAddress: string };
+  payment?: { method: string; transactionId: string; date: string };
 }

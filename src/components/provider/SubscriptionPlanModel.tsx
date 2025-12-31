@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { subscriptionPlanService } from "../../services/subscriptionPlanService";
-import { toast } from "react-toastify";
 import { X } from "lucide-react";
 import { ISubscriptionPlan, SubscriptionPlansModalProps } from "../../util/interface/ISubscriptionPlan";
 
@@ -14,9 +12,23 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-    if (subscriptionPlans) {
-      setPlans(subscriptionPlans);
+  useEffect(() => {
+    setLoading(true);
+    try {
+      if (subscriptionPlans && Array.isArray(subscriptionPlans)) {
+        setPlans(subscriptionPlans);
+        setError(null);
+      } else {
+        setError("Invalid subscription plan data.");
+      }
+    } catch (err) {
+      if(err instanceof Error){
+        setError(err.message);
+      } else {
+        setError("Failed to load subscription plans.");
+      }
+    } finally {
+      setLoading(false);
     }
   }, [subscriptionPlans]);
 
@@ -41,6 +53,8 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
             <p className="text-lg" style={{ color: '#dbeafe' }}>Unlock premium features with our flexible subscription options</p>
           </div>
           <button
+            aria-label="Close Modal"
+            type="button"
             onClick={onClose}
             className="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center transition-colors text-white text-xl font-light hover:bg-white hover:bg-opacity-30"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
@@ -83,7 +97,7 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {plans.map((plan, index) => (
+              {plans.map((plan) => (
                 <div
                   key={plan._id}
                   className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 transition-all duration-300 ${plan.recommended
@@ -132,6 +146,11 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
                         </svg>
                         {plan.durationInDays} days
                       </div>
+                      {plan.description && (
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mt-4 px-2 line-clamp-2">
+                          {plan.description}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3 mb-8">
@@ -190,12 +209,6 @@ const SubscriptionPlansModal: React.FC<SubscriptionPlansModalProps> = ({
           className="px-8 py-6 border-t border-gray-200 dark:border-gray-700"
           style={{ backgroundColor: 'rgb(249 250 251)' }}
         >
-          {/* <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
-            <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            30-day money-back guarantee • Cancel anytime • Secure payment
-          </div> */}
         </div>
       </div>
     </div>

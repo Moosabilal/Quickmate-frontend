@@ -104,3 +104,41 @@ export interface RegistrationFormTouched {
     password: boolean;
     confirmPassword: boolean;
 }
+
+export interface IRazorpayOrder {
+  id: string;
+  entity: string;
+  amount: number;
+  amount_paid: number;
+  amount_due: number;
+  currency: string;
+  receipt: string;
+  status: string;
+  attempts: number;
+  notes: Record<string, string | number> | [];
+  offer_id: string | null;
+  created_at: number;
+}
+
+export interface Service {
+  _id?: string;
+  id?: string;
+  title?: string;
+  name?: string;
+  iconUrl?: string;
+}
+
+export interface Provider {
+  _id?: string;
+  id?: string;
+  fullName?: string;
+  name?: string;
+  profilePicture?: string;
+}
+
+export interface Suggestion {
+  id: string;
+  name: string;
+  type: 'service' | 'provider';
+  image?: string;
+}

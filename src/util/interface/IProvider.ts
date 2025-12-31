@@ -1,17 +1,12 @@
+import React from "react";
 import { BookingStatus } from "./IBooking";
-import { ICategoryResponse, ICommissionRuleResponse } from "./ICategory";
+import { SubscriptionStatus } from "./ISubscriptionPlan";
 
 export enum ProviderStatus {
   Active = 'Approved',
   InActive = 'Rejected',
   Suspended = 'Suspended',
   Pending = 'Pending',
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = "ACTIVE",
-  EXPIRED = "EXPIRED",
-  NONE = "NONE"
 }
 
 export interface Availability {
@@ -42,6 +37,7 @@ export interface IFeaturedProviders {
   fullName: string;
   profilePhoto: string;
   serviceName: string;
+  rating: number;
 
 }
 
@@ -53,18 +49,29 @@ export interface IProviderProfile {
   fullName: string;
   phoneNumber: string;
   email: string;
-  serviceId: string[];
   serviceLocation: string;
   serviceArea: string;
   experience: number
   profilePhoto: string;
   status: string;
+  availability?: {
+    weeklySchedule: DaySchedule[];
+    dateOverrides: DateOverride[];
+    leavePeriods: LeavePeriod[];
+  };
+  earnings?: number;
+  totalBookings?: number;
+  payoutPending?: number;
+  rating?: number;
+  isVerified?: boolean
   subscription?: {
     planId?: string;
     startDate: Date;
     endDate: Date;
     status: SubscriptionStatus
-  }
+  };
+  createdAt?: Date;
+
 
 }
 
@@ -101,13 +108,13 @@ export interface IProviderForChatListPage {
   bookingId?: string;
   name: string;
   profilePicture: string;
-  services: string;
   location: string;
   isOnline: boolean;
-  // completedJobs: number;
-  lastMessage?: string;
+  services: string;
+  lastMessage: string | null; 
+  messageType: 'text' | 'image' | 'file';
+  lastMessageSenderId: string | null; 
   lastMessageAt?: Date | null;
-
 }
 
 //for admin side
@@ -148,20 +155,20 @@ export interface Booking {
   category: string;
 }
 
-export interface StatData {
-  toFixed: any;
-  current: number;
-  previous: number;
-  change: number;
-}
+// export interface StatData {
+//   toFixed: any;
+//   current: number;
+//   previous: number;
+//   change: number;
+// }
 
-export interface Stats {
-  ratingHistory: never[];
-  earnings: StatData;
-  completedJobs: StatData;
-  upcomingBookings: StatData;
-  averageRating: StatData;
-}
+// export interface Stats {
+//   ratingHistory: never[];
+//   earnings: StatData;
+//   completedJobs: StatData;
+//   upcomingBookings: StatData;
+//   averageRating: StatData;
+// }
 
 
 export interface IDashboardResponse {
@@ -286,11 +293,6 @@ export interface ProviderPopupProps {
   radiusKm?: number;
 }
 
-export interface IMonthlyTrend {
-    month: string;
-    value: number;
-}
-
 export interface RatingTrendChartProps {
     data: IMonthlyTrend[];
 }
@@ -330,4 +332,16 @@ export interface IAvailabilityUpdateData {
     weeklySchedule: DaySchedule[];
     dateOverrides: DateOverride[];
     leavePeriods: LeavePeriod[];
+}
+
+export interface IServiceDetails {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  priceUnit: string;
+  duration: string;
+  categoryId: { name: string };
+  subCategoryId: { name: string };
+  experience?: number;
 }

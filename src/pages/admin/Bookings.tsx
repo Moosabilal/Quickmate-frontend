@@ -1,61 +1,15 @@
-import React, { useState, useEffect, JSX } from 'react';
-import { Search, ChevronDown, CheckCircle, Clock, XCircle, ChevronLeft, ChevronRight, DollarSign, AlertTriangle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Eye } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
 import { IAdminBookingsResponse, IBookingLog } from '../../util/interface/IBooking';
-import { getCloudinaryUrl } from '../../util/cloudinary';
+import { useDebounce } from '../../hooks/useDebounce';
+import { StatusBadge } from '../../components/admin/BookingStatusBadge';
+import { useNavigate } from 'react-router-dom';
+import Pagination from '../../components/admin/Pagination'; 
+import { BookingTableRowSkeleton } from '../../components/admin/BookingTableRowSkeleton';
+import { FilterDropdown } from '../../components/admin/BookingsFilterDropdown';
 
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-    const statusStyles: Record<string, { bg: string; text: string; icon: JSX.Element }> = {
-        Paid: { bg: 'bg-green-100', text: 'text-green-800', icon: <DollarSign className="w-4 h-4" /> },
-        Unpaid: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-        Refunded: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <DollarSign className="w-4 h-4" /> },
-        Completed: { bg: 'bg-blue-100', text: 'text-blue-800', icon: <CheckCircle className="w-4 h-4" /> },
-        Pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-        Canceled: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-4 h-4" /> },
-        Cancelled: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-4 h-4" /> },
-        Ongoing: { bg: 'bg-cyan-100', text: 'text-cyan-800', icon: <Clock className="w-4 h-4" /> },
-    };
-    
-    const style = statusStyles[status] || statusStyles.Pending;
-
-    return (
-        <span className={`inline-flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full ${style.bg} ${style.text}`}>
-            {style.icon}
-            {status}
-        </span>
-    );
-};
-
-const FilterDropdown: React.FC<{ 
-    label: string; 
-    options: string[];
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-}> = ({ label, options, value, onChange }) => (
-    <div className="relative">
-        <select value={value} onChange={onChange} className="appearance-none w-full bg-white border border-slate-300 rounded-lg py-2 pl-4 pr-10 text-slate-700 leading-tight focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-            <option value="All">{label}</option>
-            {options.map(option => <option key={option} value={option}>{option}</option>)}
-        </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-            <ChevronDown className="w-4 h-4" />
-        </div>
-    </div>
-);
-
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-};
-
+const BOOKING_PER_PAGE = 10;
 
 const BookingLogsPage: React.FC = () => {
     const [bookings, setBookings] = useState<IBookingLog[]>([]);
@@ -65,13 +19,13 @@ const BookingLogsPage: React.FC = () => {
     const [filters, setFilters] = useState({
         bookingStatus: 'All',
         dateRange: 'All',
-        serviceType: 'All',
         search: '',
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalBookings, setTotalBookings] = useState(0);
 
+    const navigate = useNavigate();
     const debouncedSearch = useDebounce(filters.search, 500);
 
     useEffect(() => {
@@ -81,9 +35,10 @@ const BookingLogsPage: React.FC = () => {
             try {
                 const response: IAdminBookingsResponse = await bookingService.getAllBookingsForAdmin({
                     page: currentPage,
-                    limit: 10,
+                    limit: BOOKING_PER_PAGE,
                     search: debouncedSearch,
                     bookingStatus: filters.bookingStatus,
+                    dateRange: filters.dateRange,
                 });
                 setBookings(response.bookings);
                 setTotalPages(response.totalPages);
@@ -96,7 +51,7 @@ const BookingLogsPage: React.FC = () => {
             }
         };
         fetchBookings();
-    }, [currentPage, debouncedSearch, filters.bookingStatus]);
+    }, [currentPage, debouncedSearch, filters.bookingStatus, filters.dateRange]);
 
     const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
         setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -104,87 +59,137 @@ const BookingLogsPage: React.FC = () => {
     };
 
     if (error) {
-        return <div className="p-8 text-center text-red-500">{error}</div>;
+        return (
+            <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-gray-700 transition-colors">
+                <div className="text-center p-8">
+                    <p className="text-red-500 dark:text-red-400 text-lg font-medium">{error}</p>
+                    <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Retry</button>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-700 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900">Bookings</h1>
-                    <p className="text-slate-600 mt-1">Manage all bookings made on the platform.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Bookings</h1>
+                    <p className="text-slate-500 dark:text-slate-300 mt-1">Manage all bookings made on the platform.</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-md border border-slate-200">
-                    <div className="p-6 border-b border-slate-200">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="relative md:col-span-2 lg:col-span-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-600/50 transition-colors">
+                    
+                    <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-gray-700">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="relative flex-grow md:max-w-md">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Search by user or provider..."
                                     value={filters.search}
                                     onChange={(e) => handleFilterChange('search', e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                    className="w-full pl-11 pr-4 py-2.5 border border-slate-200 dark:border-gray-600 rounded-xl bg-slate-50 dark:bg-gray-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                 />
                             </div>
-                            <FilterDropdown 
-                                label="Booking Status"
-                                options={['Pending', 'In-Progress', 'Completed', 'Cancelled']}
-                                value={filters.bookingStatus}
-                                onChange={(e) => handleFilterChange('bookingStatus', e.target.value)}
-                            />
-                            <FilterDropdown label="Date Range" options={['Last 7 Days', 'Last 30 Days']} value={filters.dateRange} onChange={(e) => handleFilterChange('dateRange', e.target.value)} />
-                            <FilterDropdown label="Service Type" options={['IT Support', 'Plumbing']} value={filters.serviceType} onChange={(e) => handleFilterChange('serviceType', e.target.value)} />
+                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                                <FilterDropdown 
+                                    label="Booking Status"
+                                    options={['Pending', 'In-Progress', 'Completed', 'Cancelled']}
+                                    value={filters.bookingStatus}
+                                    onChange={(e) => handleFilterChange('bookingStatus', e.target.value)}
+                                />
+                                <FilterDropdown 
+                                    label="Date Range" 
+                                    options={['Last 7 Days', 'Last 30 Days']} 
+                                    value={filters.dateRange} 
+                                    onChange={(e) => handleFilterChange('dateRange', e.target.value)} 
+                                />
+                            </div>
                         </div>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="text-sm text-slate-500 bg-slate-50">
+                            <thead className="text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase bg-slate-50 dark:bg-gray-700/50 border-b border-slate-100 dark:border-gray-700">
                                 <tr>
-                                    <th className="p-4 font-medium">Booking ID</th>
-                                    <th className="p-4 font-medium">User Name</th>
-                                    <th className="p-4 font-medium">Provider Name</th>
-                                    <th className="p-4 font-medium">Service Type</th>
-                                    <th className="p-4 font-medium">Date & Time</th>
-                                    <th className="p-4 font-medium text-center">Payment Status</th>
-                                    <th className="p-4 font-medium text-center">Booking Status</th>
+                                    <th className="p-4 whitespace-nowrap">Booking ID</th>
+                                    <th className="p-4 whitespace-nowrap">User</th>
+                                    <th className="p-4 whitespace-nowrap">Provider</th>
+                                    <th className="p-4 whitespace-nowrap">Service</th>
+                                    <th className="p-4 whitespace-nowrap">Scheduled Date</th>
+                                    <th className="p-4 text-center whitespace-nowrap">Payment</th>
+                                    <th className="p-4 text-center whitespace-nowrap">Status</th>
+                                    <th className="p-4 text-center whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200">
+                            <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
                                 {loading ? (
-                                    <tr><td colSpan={7} className="text-center p-8"><Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto" /></td></tr>
+                                    [...Array(BOOKING_PER_PAGE)].map((_, i) => <BookingTableRowSkeleton key={i} />)
                                 ) : bookings.length > 0 ? (
                                     bookings.map((booking) => (
-                                        <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4 font-medium text-slate-700">{booking.id}</td>
-                                            <td className="p-4"><div className="flex items-center gap-3"><img src={getCloudinaryUrl(booking.userAvatar)} alt={booking.userName} className="w-9 h-9 rounded-full"/><span>{booking.userName}</span></div></td>
-                                            <td className="p-4">{booking.providerName}</td>
-                                            <td className="p-4">{booking.serviceType}</td>
-                                            <td className="p-4">{booking.dateTime}</td>
-                                            <td className="p-4 text-center"><StatusBadge status={booking.paymentStatus} /></td>
-                                            <td className="p-4 text-center"><StatusBadge status={booking.bookingStatus} /></td>
+                                        <tr key={booking.id} className="hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                                            <td className="p-4 font-medium text-slate-700 dark:text-gray-200 text-sm">
+                                                <span className="font-mono text-xs bg-slate-100 dark:bg-gray-700 px-2 py-1 rounded">{booking.id.slice(-6).toUpperCase()}</span>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <img 
+                                                        src={booking.userAvatar ? booking.userAvatar : '/profileImage.png'} 
+                                                        alt={booking.userName} 
+                                                        className="w-8 h-8 rounded-full object-cover bg-slate-200 dark:bg-gray-600"
+                                                    />
+                                                    <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                                                        {booking.userName}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-sm text-slate-600 dark:text-gray-300 whitespace-nowrap">
+                                                {booking.providerName}
+                                            </td>
+                                            <td className="p-4 text-sm text-slate-600 dark:text-gray-300 whitespace-nowrap">
+                                                {booking.serviceType}
+                                            </td>
+                                            <td className="p-4 text-sm text-slate-600 dark:text-gray-300 whitespace-nowrap">{new Date(booking.dateTime).toLocaleDateString()}</td>
+                                            <td className="p-4 text-center">
+                                                <StatusBadge status={booking.paymentStatus} />
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <StatusBadge status={booking.bookingStatus} />
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <button 
+                                                    onClick={() => navigate(`/admin/bookings/${booking.id}`)}
+                                                    className="p-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors group"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
-                                    <tr><td colSpan={7} className="text-center p-8 text-slate-500">No bookings found.</td></tr>
+                                    <tr>
+                                        <td colSpan={8} className="text-center p-12">
+                                            <div className="flex flex-col items-center justify-center text-slate-500 dark:text-gray-400">
+                                                <Search className="w-10 h-10 mb-3 opacity-20" />
+                                                <p className="text-lg font-medium">No bookings found</p>
+                                                <p className="text-sm">Try adjusting your filters or search criteria.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 border-t border-slate-200">
-                        <span className="text-sm text-slate-600">Showing {bookings.length} of {totalBookings} results</span>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage <= 1} className="p-2 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <span className="text-sm font-semibold">{`Page ${currentPage} of ${totalPages}`}</span>
-                            <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages} className="p-2 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        </div>
+                    <div className="bg-slate-50 dark:bg-gray-700/30 border-t border-slate-200 dark:border-gray-700 rounded-b-2xl">
+                        <Pagination 
+                            currentPage={currentPage} 
+                            totalPages={totalPages} 
+                            total={totalBookings} 
+                            limit={BOOKING_PER_PAGE} 
+                            onPageChange={setCurrentPage} 
+                        />
                     </div>
                 </div>
             </div>

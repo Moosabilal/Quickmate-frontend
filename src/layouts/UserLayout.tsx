@@ -8,7 +8,7 @@ const userLayout = () => {
   return (
     <>
     <Header />
-    <main className='h-fit '>
+    <main className='min-h-screen pt-20'>
         <Outlet />
     </main>
     <Footer />

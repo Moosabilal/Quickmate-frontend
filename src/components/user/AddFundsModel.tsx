@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { X, IndianRupee } from "lucide-react";
+import { RazorpayResponse } from "../../util/interface/IRazorpay";
 
 type Props = {
   open: boolean;
@@ -33,7 +34,7 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
   const handleRazorpayDeposit = async () => {
     setLoading(true);
     try {
-      if (!(window as any).Razorpay){
+      if (!window.Razorpay){
          throw new Error("Razorpay SDK failed to load");
       }
 
@@ -46,7 +47,7 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
         name: "YourApp Wallet",
         description: "Add funds",
         order_id: data.orderId,
-        handler: async (resp: any) => {
+        handler: async (resp: RazorpayResponse) => {
           await axios.post("/api/wallet/deposit/verify", {
             razorpay_order_id: resp.razorpay_order_id,
             razorpay_payment_id: resp.razorpay_payment_id,
@@ -60,7 +61,7 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
         theme: { color: "#059669" }
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
     } finally {
       setLoading(false);
@@ -74,7 +75,7 @@ const AddFundsModal: React.FC<Props> = ({ open, onClose, onSuccess, useGateway =
       <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Add Funds</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+          <button type="button" aria-label="close" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <label className="block text-sm font-medium text-gray-700 mb-2">Amount (INR)</label>

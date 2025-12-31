@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ICategoryFormCombinedData } from '../../util/interface/ICategory';
-import { getCloudinaryUrl } from '../../util/cloudinary';
-import { Star, MapPin, Award, IndianRupee, Calendar, CalendarIcon } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ICategoryFormCombinedData, IserviceResponse } from '../../util/interface/ICategory';
+import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, Phone, FileText, Loader2, AlertTriangle } from 'lucide-react'; 
 import ProviderPopup from './ProviderPopupPage';
-import DateTimePopup from '../../components/user/DateTimePopup';
 import AddressPopup from '../../components/user/AddressPopup';
 import { IBackendProvider } from '../../util/interface/IProvider';
 import { toast } from 'react-toastify';
@@ -15,11 +13,10 @@ import { PaymentMethod, paymentVerificationRequest } from '../../util/interface/
 import { IAddress } from '../../util/interface/IAddress';
 import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
-const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
-import { CalendarModal } from '../../components/user/CalendarModal'
+import { CalendarModal } from '../../components/user/CalendarModal';
+import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
 
-declare var Razorpay: any;
-
+const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const ServiceDetailsPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth)
@@ -30,11 +27,11 @@ const ServiceDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [providerPopup, setProviderPopup] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<IBackendProvider | null>(null);
-  const [dateTimePopup, setDateTimePopup] = useState(false);
   const [addressPopup, setAddressPopup] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
+  const [relatedServices, setRelatedServices] = useState<IserviceResponse[]>([]);
   const [newAddress, setNewAddress] = useState<IAddress>({
     label: '',
     street: '',
@@ -49,9 +46,7 @@ const ServiceDetailsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [instructions, setInstructions] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.BANK);
-  const [walletBalance, setWalletBalance] = useState<number>(0)
   const [showCalendar, setShowCalendar] = useState(false)
-
 
   const paymentOptions = [
     { value: PaymentMethod.BANK, label: "Online Payment (Razorpay)" },
@@ -69,11 +64,14 @@ const ServiceDetailsPage: React.FC = () => {
   const fetchWallet = async () => {
     try {
       const res = await walletService.getWallet()
-      console.log('the res', res.data.wallet.balance)
-      setWalletBalance(res.data.wallet.balance)
+      return res.data.wallet.balance
     } catch (error) {
-      toast.error('Failed to fetch wallet balance')
-      setWalletBalance(0)
+      if(error instanceof Error){
+        toast.error(error.message)
+      } else {
+        toast.error('Failed to fetch wallet balance')
+      }
+      return 0
     }
   }
 
@@ -97,6 +95,20 @@ const ServiceDetailsPage: React.FC = () => {
     fetchServiceDetails();
   }, [serviceId]);
 
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (!serviceId) return;
+      try {
+        const related = await categoryService.getRelatedServices(serviceId);
+        setRelatedServices(related);
+      } catch (err) {
+        console.error("Failed to load related services", err);
+      }
+    };
+    
+    fetchRelated();
+  }, [serviceId]);
+
   const handleAddAddress = async (address: IAddress) => {
     if (address.label && address.street && address.city && address.state && address.zip && address.locationCoords) {
       const newAddressObj = {
@@ -106,7 +118,11 @@ const ServiceDetailsPage: React.FC = () => {
       try {
         await addressService.createAddress(newAddressObj)
       } catch (error) {
-        toast.error('Something went wrong! Please try again later')
+        if(error instanceof Error){
+          toast.error(error.message)
+        } else {
+          toast.error('Something went wrong! Please try again later')
+        }
       }
       setSelectedAddress(newAddressObj);
       setShowAddAddress(false);
@@ -115,34 +131,30 @@ const ServiceDetailsPage: React.FC = () => {
     }
   };
 
-  const handleDateTimeConfirm = (date: string, time: string) => {
-    setSelectedDate(date);
-    setSelectedTime(time);
-    setDateTimePopup(false);
-  };
-
   const handleAddressConfirm = (address: IAddress, radius: number) => {
     setSelectedAddress(address);
     setRadius(radius);
     setAddressPopup(false);
   };
 
-  const timeSlots = Array.from({ length: 37 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 5;
-    const minute = i % 2 === 0 ? '00' : '30';
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}:${minute} ${period}`;
-  });
-
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    await fetchWallet()
+     if (!selectedAddress || !selectedProvider || !fullName || !phone) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    if(!/^\d{10}$/.test(phone)) {
+      toast.warn("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    const currentBalance = await fetchWallet()
 
     if (paymentMethod === PaymentMethod.WALLET) {
-      if (walletBalance < Number(selectedProvider?.price)) {
+      if (currentBalance < Number(selectedProvider?.price)) {
         toast.info('Insufficient balance in wallet')
         return;
       }
@@ -172,7 +184,7 @@ const ServiceDetailsPage: React.FC = () => {
 
     const orderResponse = await bookingService.confirmPayment(Number(amount))
 
-    var options = {
+    const options: RazorpayOptions = {
       "key": paymentKey,
       amount: Number(amount) * 100,
       currency: 'INR',
@@ -180,9 +192,10 @@ const ServiceDetailsPage: React.FC = () => {
       "description": "Service Booking Payment",
       "image": "https://example.com/your_logo",
       "order_id": orderResponse.id,
-      handler: async function (paymentResponse: any) {
+      handler: async function (paymentResponse: RazorpayResponse) {
         try {
           const bookingRes = await handleSubmit(e);
+          console.log('the booking res', bookingRes)
           if (!bookingRes?.bookingId) {
             toast.error("Booking failed before payment verification.");
             return;
@@ -221,10 +234,10 @@ const ServiceDetailsPage: React.FC = () => {
       "theme": {
         "color": "#3057b0ff"
       }
-    };
-    var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response: { error: { reason: any; metadata: { order_id: any; }; }; }) {
-      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata.order_id}`);
+    } as RazorpayOptions;
+    const rzp1 = new window.Razorpay(options);
+    rzp1.on('payment.failed', function (response: RazorpayPaymentFailedResponse) {
+      toast.error(`${response.error.reason} for OrderId: ${response.error.metadata?.order_id}`);
     });
     rzp1.open();
     e.preventDefault();
@@ -238,6 +251,13 @@ const ServiceDetailsPage: React.FC = () => {
       toast.error("Please complete all required fields.");
       return;
     }
+
+    if(!/^\d{10}$/.test(phone)) {
+      toast.warn("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    
 
     const bookingPayload = {
       userId: user?.id,
@@ -256,295 +276,252 @@ const ServiceDetailsPage: React.FC = () => {
       return await bookingService.createBooking(bookingPayload);
     } catch (err) {
       console.error("Booking failed:", err);
-      toast.error("Failed to confirm booking. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Booking failed. Please try again.");
     }
   };
 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-xl text-gray-700">Loading service details...</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
+        <Loader2 className="w-16 h-16 text-blue-600 dark:text-blue-400 animate-spin" />
+        <p className="text-lg text-gray-600 dark:text-gray-300 mt-4 animate-pulse">Loading service details...</p>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !serviceDetails) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-xl text-red-600">{error}</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
+         <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800 text-center">
+            <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-2" />
+            <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-2">Oops!</h2>
+            <p className="text-lg text-red-600 dark:text-red-300">{error || 'Service not found.'}</p>
+            <button onClick={() => window.history.back()} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Go Back</button>
+         </div>
       </div>
     );
   }
 
-  if (!serviceDetails) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-xl text-gray-700">Service not found.</p>
-      </div>
-    );
-  }
+  const isStep1Complete = !!selectedAddress;
+  const isStep2Complete = isStep1Complete && !!selectedDate && !!selectedTime;
+  const isStep3Complete = isStep2Complete && !!selectedProvider;
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans text-gray-900 flex flex-col">
-      <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8 flex-grow">
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center text-indigo-700 hover:text-indigo-900 transition-colors duration-200 mb-8 text-lg font-medium group"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Services
-        </button>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
+      
+      <div className="relative h-80 sm:h-96 w-full bg-gray-900">
+        <img
+            src={serviceDetails.iconUrl || ''}
+            alt={serviceDetails.name}
+            className="w-full h-full object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent dark:from-gray-900"></div>
+        <div className="absolute inset-0 flex flex-col justify-end container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+             <button onClick={() => window.history.back()} className="absolute top-8 left-4 sm:left-8 flex items-center text-white/80 hover:text-white transition-colors group bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <ChevronRight className="w-5 h-5 rotate-180 mr-1 group-hover:-translate-x-1 transition-transform" /> Back
+             </button>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">{serviceDetails.name}</h1>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl drop-shadow leading-relaxed">
+                {serviceDetails.description || 'Experience top-tier service from our verified professionals.'}
+            </p>
+        </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row gap-10 max-w-6xl mx-auto">
-          <div className="w-full md:w-2/2 bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex justify-center mb-8">
-              <img
-                src={getCloudinaryUrl(serviceDetails.iconUrl || '')}
-                alt={serviceDetails.name}
-                className="w-full max-w-sm h-64 object-cover rounded-xl shadow-lg border-2 border-gray-300 transform transition-transform duration-300 hover:scale-105"
-              />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-16 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-8">
+
+          <div className="w-full lg:w-2/3 space-y-10">
+            
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sm:p-8 border border-transparent dark:border-gray-700 transition-colors">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                  <FileText className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400" /> About This Service
+              </h2>
+              <div className="prose prose-blue dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p>{serviceDetails.description}</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+              </div>
             </div>
-            <div className="md:ml-14">
-              <h1 className="text-4xl font-extrabold text-gray-800 mb-4 leading-tight">{serviceDetails.name}</h1>
-              {/* <p className="text-2xl text-indigo-600 font-bold mb-6">Starting at ₹ 100</p> */}
-              <p className="text-gray-700 leading-relaxed text-lg mb-8">
-                {serviceDetails.description || 'No detailed description available.'}<br />
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-            </div>
+
+            {relatedServices.length > 0 && (
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">You Might Also Like</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {relatedServices.map((service) => (
+                            <Link 
+                                to={`/service-detailsPage/${service.id}`} 
+                                key={service.id}
+                                className="group block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-2xl dark:hover:shadow-gray-900/30 transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                            >
+                                <div className="flex h-32">
+                                    <div className="w-1/3 overflow-hidden relative">
+                                        <img 
+                                            src={service.iconUrl || ''} 
+                                            alt={service.name} 
+                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                                    </div>
+                                    <div className="w-2/3 p-4 flex flex-col justify-center">
+                                        <h3 className="font-bold text-lg text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                                            {service.name}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                            Explore reliable providers for {service.name.toLowerCase()}.
+                                        </p>
+                                        <span className="mt-3 text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center group/btn">
+                                            View Service <ChevronRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
           </div>
 
-          <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-indigo-800 mb-6 text-center">
-              Book Your Service
-            </h2>
-
-            <form className="space-y-6">
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Select Address
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setAddressPopup(true)}
-                  className="w-full px-4 py-2 rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 transition duration-300 border border-indigo-300 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 flex items-center justify-center"
-                >
-                  {selectedAddress
-                    ? `${selectedAddress.label}: ${selectedAddress.street}, ${selectedAddress.city}`
-                    : "Choose Address"}
-                </button>
-              </div>
-
-
-              <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                  <CalendarIcon className="w-4 h-4 mr-2" />
-                  Check Availability
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setShowCalendar(true)}
-                  disabled={!selectedAddress}
-                  className={`w-full px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-300 shadow text-sm focus:outline-none flex items-center justify-center gap-2 ${!selectedAddress ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  title={!selectedAddress ? "Please select your location first" : ""}
-                >
-                  <Calendar className="w-4 h-4" />
-                  View Availability Calendar
-                </button>
-              </div>
-
-              {selectedDate && selectedTime && (
-                <div className="p-4 rounded-xl border border-green-200 shadow-sm bg-green-50">
-                  <h3 className="text-base font-semibold text-green-700 mb-2">Selected Slot</h3>
-                  <div className="text-sm text-green-800">
-                    <p className="font-medium">
-                      {new Date(selectedDate).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <p>Time: {selectedTime}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendar(true)}
-                    className="mt-2 text-xs text-green-600 hover:text-green-800 underline"
-                  >
-                    Change time slot
-                  </button>
+          <div className="w-full lg:w-1/3">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sticky top-24 border border-gray-100 dark:border-gray-700 transition-colors">
+                <div className="mb-6 pb-4 border-b border-gray-100 dark:border-gray-700 text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Book Service</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Complete the steps to schedule.</p>
                 </div>
-              )}
 
-
-              {selectedTime && (
-                <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                  <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                    <Award className="w-4 h-4 mr-2" />
-                    Service Provider
-                  </h3>
-                  
-                  {selectedProvider ? (
-                    <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={getCloudinaryUrl(selectedProvider.profilePhoto)}
-                            alt={selectedProvider.fullName}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">{selectedProvider.fullName}</p>
-                            <div className="flex items-center gap-1 text-xs text-gray-600">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              <span>
-                                {selectedProvider.rating} • ₹{selectedProvider.price}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setProviderPopup(true)} 
-                          className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-                        >
-                          Change
+                <form className="space-y-5">
+                    <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                        isStep1Complete 
+                        ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                        : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'
+                    }`}>
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                            <span className="flex items-center"><MapPin className={`w-5 h-5 mr-2 ${isStep1Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 1. Location</span>
+                            {isStep1Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
+                        </h3>
+                        <button type="button" onClick={() => setAddressPopup(true)} className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all ${selectedAddress ? "bg-white dark:bg-gray-700 border-green-200 dark:border-green-800 text-gray-900 dark:text-white font-medium shadow-sm" : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 border-dashed border-2"}`}>
+                            {selectedAddress ? (
+                                <div className='flex items-center'><MapPin className="w-4 h-4 mr-2 text-green-600 dark:text-green-400 flex-shrink-0" /> <span className="truncate">{selectedAddress.label}: {selectedAddress.street}, {selectedAddress.city}</span></div>
+                            ) : "Select your address"}
                         </button>
-                      </div>
                     </div>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500 mb-2">Please select a provider to continue.</p>
-                      <button
-                        type="button"
-                        onClick={() => setProviderPopup(true)}
-                        className="w-full px-4 py-2 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow text-sm focus:outline-none"
-                      >
-                        Choose Provider
-                      </button>
+
+                    <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                        isStep2Complete 
+                        ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                        : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30'
+                    } ${!isStep1Complete ? 'opacity-60 pointer-events-none' : 'hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'}`}>
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                            <span className="flex items-center"><Calendar className={`w-5 h-5 mr-2 ${isStep2Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 2. Date & Time</span>
+                            {isStep2Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
+                        </h3>
+                        {selectedDate && selectedTime ? (
+                             <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-green-200 dark:border-green-800 shadow-sm flex justify-between items-center">
+                                <div>
+                                    <p className="font-medium text-green-800 dark:text-green-300 text-sm flex items-center"><Calendar className="w-4 h-4 mr-2" /> {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                                    <p className="text-green-700 dark:text-green-400 text-sm mt-1 flex items-center"><Clock className="w-4 h-4 mr-2" /> {selectedTime}</p>
+                                </div>
+                                <button type="button" onClick={() => setShowCalendar(true)} className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 underline font-medium">Change</button>
+                            </div>
+                        ) : (
+                            <button type="button" onClick={() => setShowCalendar(true)} disabled={!selectedAddress} className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md text-sm font-semibold flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                <Calendar className="w-4 h-4 mr-2" /> Check Availability
+                            </button>
+                        )}
                     </div>
-                  )}
-                </div>
-              )}
 
-              {selectedAddress && selectedProvider &&
-                <>
-                  <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                    <h3 className="text-base font-bold text-indigo-700 mb-3">Your Details</h3>
+                    {isStep2Complete && (
+                        <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                            isStep3Complete 
+                            ? 'border-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                            : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-800'
+                        }`}>
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center justify-between">
+                                <span className="flex items-center"><User className={`w-5 h-5 mr-2 ${isStep3Complete ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`} /> 3. Provider</span>
+                                {isStep3Complete && <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
+                            </h3>
+                            {selectedProvider ? (
+                                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <img src={selectedProvider.profilePhoto} alt={selectedProvider.fullName} className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600 shadow-sm" />
+                                            <div>
+                                                <p className="font-semibold text-gray-900 dark:text-white text-sm">{selectedProvider.fullName}</p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                                                    <span className="flex items-center bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-full"><Star className="w-3 h-3 fill-amber-500 text-amber-500 mr-1" />{selectedProvider.rating}</span>
+                                                    <span className="font-medium text-green-700 dark:text-green-400">₹{selectedProvider.price}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" onClick={() => setProviderPopup(true)} className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 underline font-medium">Change</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button type="button" onClick={() => setProviderPopup(true)} className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md text-sm font-semibold">
+                                    Select Provider
+                                </button>
+                            )}
+                        </div>
+                    )}
 
-                    <div className="space-y-3">
-                      <div>
-                        <label htmlFor="fullName" className="block font-medium text-gray-700 mb-1">
-                          Your Name
-                        </label>
-                        <input
-                          type="text"
-                          id="fullName"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          placeholder="Enter your full name"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-sm"
-                        />
-                      </div>
+                    {isStep3Complete && (
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500">
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center"><FileText className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" /> 4. Final Details</h3>
+                            <div className="space-y-4 mb-6">
+                                <div className="relative">
+                                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                                    <input 
+                                        type="text" 
+                                        id="fullName" 
+                                        value={fullName} 
+                                        onChange={(e) => setFullName(e.target.value)} 
+                                        placeholder="Your Name" 
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                                    <input 
+                                        type="tel" 
+                                        id="phone" 
+                                        value={phone} 
+                                        onChange={(e) => setPhone(e.target.value)} 
+                                        placeholder="Phone Number" 
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                    />
+                                </div>
+                                <textarea 
+                                    id="instructions" 
+                                    rows={2} 
+                                    value={instructions} 
+                                    onChange={(e) => setInstructions(e.target.value)} 
+                                    placeholder="Special instructions (optional)..." 
+                                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800" 
+                                />
+                            </div>
 
-                      <div>
-                        <label htmlFor="phone" className="block text-s font-medium text-gray-700 mb-1">
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="(123) 456 7890"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200 text-sm"
-                        />
-                      </div>
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center"><CreditCard className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" /> Payment Method</h3>
+                            <div className="space-y-2 mb-6">
+                                {paymentOptions.map((method) => (
+                                    <label key={method.value} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${paymentMethod === method.value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                                        <input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod === method.value} onChange={() => setPaymentMethod(method.value)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600" />
+                                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200">{method.label}</span>
+                                    </label>
+                                ))}
+                            </div>
 
-                      <div>
-                        <label htmlFor="instructions" className="block text-s font-medium text-gray-700 mb-1">
-                          Special Instructions{" "}
-                          <span className="text-xs text-gray-500 font-normal">(optional)</span>
-                        </label>
-                        <textarea
-                          id="instructions"
-                          rows={3}
-                          value={instructions}
-                          onChange={(e) => setInstructions(e.target.value)}
-                          placeholder="Any special requests or details about your home?"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none transition duration-200 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-xl border border-gray-200 shadow-sm bg-gray-50">
-                    <h3 className="text-base font-semibold text-indigo-700 mb-2 flex items-center">
-                      <IndianRupee className="w-4 h-4 mr-2" />
-                      Select Payment Method
-                    </h3>
-                    <div className="space-y-2">
-                      {paymentOptions.map((method) => (
-                        <label key={method.value} className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value={method.value}
-                            checked={paymentMethod === method.value}
-                            onChange={() => setPaymentMethod(method.value)}
-                            className="text-indigo-600 focus:ring-indigo-500"
-                          />
-                          <span>{method.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      disabled={!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod}
-                      onClick={handlePayment}
-                      className={`w-full bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg text-base hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition duration-300 shadow-md ${!selectedAddress || !selectedProvider || !fullName || !phone || !paymentMethod ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                    >
-                      Confirm Booking
-                    </button>
-                  </div>
-                </>}
-            </form>
+                            <button type="submit" onClick={handlePayment} disabled={!fullName || !phone} className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3.5 px-4 rounded-xl text-base hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]">
+                                Confirm Booking • ₹{selectedProvider.price}
+                            </button>
+                        </div>
+                    )}
+                </form>
+            </div>
           </div>
         </div>
       </main>
-
-      <CalendarModal
-        isOpen={showCalendar}
-        onClose={() => setShowCalendar(false)}
-        latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0}
-        longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
-        serviceId={serviceId || ''}
-        radius={radius}
-        onSlotSelect={handleSlotSelection}
-      />
-      <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''}
-        selectedDate={selectedDate}
-        selectedTime={selectedTime}
-        latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0}
-        longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0}
-        radiusKm={radius}
-      />
-      <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} />
+      
+      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0} longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0} serviceId={serviceId || ''} radius={radius} onSlotSelect={handleSlotSelection} />
+      {providerPopup && <ProviderPopup setSelectedProvider={setSelectedProvider} providerPopup={providerPopup} selectedProvider={selectedProvider} setProviderPopup={setProviderPopup} serviceId={serviceId || ''} selectedDate={selectedDate} selectedTime={selectedTime} latitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[0]) : 0} longitude={selectedAddress?.locationCoords ? Number(selectedAddress.locationCoords.split(',')[1]) : 0} radiusKm={radius} />}
       <AddressPopup addressPopup={addressPopup} setAddressPopup={setAddressPopup} selectedAddress={selectedAddress} handleAddressConfirm={handleAddressConfirm} setShowAddAddress={setShowAddAddress} showAddAddress={showAddAddress} newAddress={newAddress} setNewAddress={setNewAddress} handleAddAddress={handleAddAddress} serviceId={serviceId || ''} />
     </div>
   );

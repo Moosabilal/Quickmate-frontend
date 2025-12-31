@@ -23,6 +23,7 @@ const App = () => {
       const fetchUser = async () => {
         try {
           const userData = await authService.getUser();
+          console.log('the user Data', userData)
           dispatch(updateProfile({ user: userData }));
 
           if (userData.role === "ServiceProvider") {

@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
-import ThemeToggle from './ThemeToggle';
-import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { login, updateProfile } from '../features/auth/authSlice';
+import { updateProfile } from '../features/auth/authSlice';
 import { providerService } from '../services/providerService';
 import { updateProviderProfile } from '../features/provider/providerSlice';
-import { BookingStatus, LocationState } from '../util/interface/IBooking';
+import { LocationState } from '../util/interface/IBooking';
 import { bookingService } from '../services/bookingService';
+import { isAxiosError } from 'axios';
+
 
 let OTP_RESEND_TIMEOUT_SECONDS = 60;
 
@@ -17,7 +17,7 @@ const RegistrationOTPVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { email: registrationEmail, role, bookingId, newStatus } = (location.state as LocationState) || {};
+  const { email: registrationEmail, role, bookingId, newStatus, updateProfileData } = (location.state as LocationState) || {};
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -90,15 +90,48 @@ const RegistrationOTPVerification = () => {
     }
 
     try {
-      if (role === "Customer") {
+      if (updateProfileData) {
+        console.log('update provile data', updateProfileData)
         await authService.verifyRegistrationOtp(registrationEmail, otp);
+        
+        const formData = new FormData();
+        formData.append('name', updateProfileData.name);
+        formData.append('email', updateProfileData.email);
+        if (updateProfileData.profilePicture) {
+            formData.append('profilePicture', updateProfileData.profilePicture);
+        }
+        const data = await authService.updateProfile(formData);
+        dispatch(updateProfile({ user: data }));
+        toast.success('Profile updated Successfully');
+        navigate('/profile');
+        return;
+      }
+
+      if (role === "Customer") {
+        console.log('registration email', registrationEmail)
+        await authService.verifyRegistrationOtp(registrationEmail, otp);
+        // if(updateProfileData){
+        //   const data = await authService.updateProfile(updateProfileData)
+        //   console.log('data', data)
+        //   toast.success('Profile updated Successfully')
+        //   navigate('/profile')
+        //   return
+        // }
         toast.success('Account verified successfully! You can now log in.');
         navigate('/login', { replace: true });
       } else if (role === "ServiceProvider") {
-        const { user, provider, message } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+        console.log('provider registration email', registrationEmail)
+        const { user, provider } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
+        // if(updateProfileData){
+        //   const data = await authService.updateProfile(updateProfileData)
+        //   console.log('data', data)
+        //   toast.success('Profile updated Successfully')
+        //   return
+        // }
+        console.log('Verified user and provider:', { user, provider });
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
-        toast.success(message);
+        toast.success('Account successfully verified!');
         navigate(`/provider/providerProfile/${user.id}`, { replace: true });
       } else if (bookingId && newStatus) {
         const email = registrationEmail
@@ -107,8 +140,11 @@ const RegistrationOTPVerification = () => {
         navigate(`/provider/providerBookingManagement`)
       }
 
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'OTP verification failed. Please try again.';
+    } catch (err) {
+      let errorMessage = 'OTP verification failed. Please try again.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -150,8 +186,11 @@ const RegistrationOTPVerification = () => {
           return prevTimer - 1;
         });
       }, 1000);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again later.';
+    } catch (err) {
+      let errorMessage = 'Failed to resend OTP. Please try again later.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -186,7 +225,7 @@ const RegistrationOTPVerification = () => {
 
         {registrationEmail && (
           <p className="text-center text-gray-700 dark:text-gray-300 mb-4">
-            A 6-digit OTP has been sent to **{registrationEmail}**.
+            A 6-digit OTP has been sent to **{updateProfileData?.email || registrationEmail}**.
           </p>
         )}
 

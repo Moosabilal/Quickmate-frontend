@@ -1,48 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import axios from "axios";
-import { toast } from 'react-toastify';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Plus,
   Minus,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ArrowUpRight,
   ArrowDownLeft,
   Calendar,
   Filter,
-  X,
-  IndianRupee
 } from 'lucide-react';
 import Pagination from '../../components/user/Pagination';
 import { walletService } from '../../services/walletService';
 import { AddFundsModal } from '../../components/AddWithdrawFund';
-import { TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
+import { ITransaction, TransactionStatus, WalletFilter } from '../../util/interface/IPayment';
 
 const inr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
 
 const TRANSACTION_PER_PAGE = 25;
+
 const Wallet: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TransactionStatus>(TransactionStatus.ALL)
   const [currentPage, setCurrentPage] = useState(1);
   const [openAdd, setOpenAdd] = useState(false);
   const [balance, setBalance] = useState(0);
-  const [addOrWithdraw, setAddOrWithdraw] = useState<string>('')
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [addOrWithdraw, setAddOrWithdraw] = useState<string>('');
+  const [transactions, setTransactions] = useState<ITransaction[]>([]);
   const [filters, setFilters] = useState<WalletFilter>({});
   const [totalPages, setTotalPages] = useState(1);
-  
+
 
   const applyFilters = (newFilters: Partial<WalletFilter>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const fetchWallet = async (filters: WalletFilter = {}) => {
+  const fetchWallet = useCallback(async (filters: WalletFilter = {}) => {
     if (activeTab === TransactionStatus.ALL) filters.status = "";
     else filters.status = activeTab;
 
-    filters.page = currentPage
+    filters.page = currentPage;
     filters.limit = TRANSACTION_PER_PAGE;
 
     const query = new URLSearchParams(
@@ -52,28 +46,28 @@ const Wallet: React.FC = () => {
       }, {} as Record<string, string>)
     ).toString();
 
-
     const res = await walletService.getWallet(query);
-    setTotalPages(res.data.totalPages)
+    console.log("Wallet data:", res.data.transactions);
+    setTotalPages(res.data.totalPages);
     setBalance(res.data.wallet.balance);
     setTransactions(res.data.transactions);
-  };
+  }, [activeTab, currentPage]);
 
   useEffect(() => {
     fetchWallet(filters);
-  }, [filters, activeTab, currentPage]);
+  }, [filters, fetchWallet]);
 
   const getTransactionIcon = (type: string, amount: number) => {
-    const baseClasses = "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center";
+    const baseClasses = "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors";
     if (amount >= 0 && type === 'credit') {
       return (
-        <div className={`${baseClasses} bg-emerald-50 text-emerald-600 border border-emerald-200`}>
+        <div className={`${baseClasses} bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800`}>
           <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       );
     } else {
       return (
-        <div className={`${baseClasses} bg-red-50 text-red-500 border border-red-200`}>
+        <div className={`${baseClasses} bg-red-50 text-red-500 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800`}>
           <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       );
@@ -81,38 +75,44 @@ const Wallet: React.FC = () => {
   };
 
   const formatAmount = (amount: number, type: string) => (amount >= 0 && type === 'credit' ? "+" : "-") + inr(Math.abs(amount));
-  const getAmountColor = (amount: number, type: string) => amount >= 0 && type === 'credit' ? 'text-emerald-600' : 'text-red-500';
+  
+  const getAmountColor = (amount: number, type: string) => 
+    amount >= 0 && type === 'credit' 
+      ? 'text-emerald-600 dark:text-emerald-400' 
+      : 'text-red-500 dark:text-red-400';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-20">
+      <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 mb-6 transition-all duration-300">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Wallet</h1>
-              <p className="text-gray-600 text-base sm:text-lg">Manage your funds and view transaction history</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Wallet</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-base">Manage your funds and view transaction history</p>
             </div>
-            <div className="bg-gradient-to-br from-amber-50 to-orange-100 p-3 sm:p-4 rounded-xl border border-orange-200 self-start sm:self-auto">
-              <div className="w-16 h-10 sm:w-20 sm:h-12 bg-gradient-to-r from-amber-600 to-orange-600 rounded-lg shadow-sm"></div>
+            <div className="bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 p-4 rounded-2xl border border-orange-200 dark:border-orange-800/50 self-start sm:self-auto hidden sm:block">
+               <div className="w-12 h-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg shadow-sm opacity-80"></div>
             </div>
           </div>
 
-          <div className="mt-6 sm:mt-8 mb-6">
-            <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Current Balance</div>
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">{inr(balance)}</div>
+          <div className="mt-8 mb-8">
+            <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Current Balance</div>
+            <div className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight">{inr(balance)}</div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => {
                 setOpenAdd(true)
                 setAddOrWithdraw('Add')
               }}
-              className="flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-sm w-full sm:w-auto">
+              className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-emerald-200 dark:shadow-none w-full sm:w-auto active:scale-[0.98]">
               <Plus className="w-5 h-5" />
               Add Funds
             </button>
-            <button className="flex items-center justify-center gap-3 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-colors w-full sm:w-auto"
+            <button 
+              className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600/80 text-gray-700 dark:text-gray-200 px-6 py-3.5 rounded-xl font-semibold transition-all w-full sm:w-auto active:scale-[0.98]"
               onClick={() => {
                 setOpenAdd(true)
                 setAddOrWithdraw("Withdraw")
@@ -124,77 +124,95 @@ const Wallet: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg">
-              { Object.values(TransactionStatus).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as TransactionStatus)}
-                    className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors text-center ${activeTab === tab
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 transition-all duration-300">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            
+            <div className="flex flex-wrap gap-2 p-1 bg-gray-100 dark:bg-gray-700/50 rounded-xl w-full lg:w-auto">
+              {Object.values(TransactionStatus).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as TransactionStatus)}
+                  className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${activeTab === tab
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'
+                    }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-colors text-sm">
-                <Calendar className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors text-sm w-full sm:w-auto">
+                <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <input
                   type="date"
                   onChange={(e) => applyFilters({ startDate: e.target.value })}
-                  className="bg-transparent outline-none text-gray-700"
+                  className="bg-transparent outline-none text-gray-700 dark:text-gray-200 w-full cursor-pointer placeholder-gray-500"
                 />
               </div>
-              {activeTab === TransactionStatus.ALL && <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-colors text-sm">
-                <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Transaction Type</span>
-                <span className="sm:hidden">Type</span>
-                <select
-                  onChange={(e) =>
-                    applyFilters({
-                      transactionType: e.target.value as "credit" | "debit" | "",
-                    })
-                  }
-                  className="bg-transparent outline-none text-gray-700"
-                >
-                  <option value="">All</option>
-                  <option value="credit">Credit</option>
-                  <option value="debit">Debit</option>
-                </select>
-              </div>}
+              
+              {activeTab === TransactionStatus.ALL && (
+                <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors text-sm w-full sm:w-auto">
+                  <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <select
+                    onChange={(e) =>
+                      applyFilters({
+                        transactionType: e.target.value as "credit" | "debit" | "",
+                      })
+                    }
+                    className="bg-transparent outline-none text-gray-700 dark:text-gray-200 w-full cursor-pointer"
+                  >
+                    <option value="">All Types</option>
+                    <option value="credit">Credit</option>
+                    <option value="debit">Debit</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-3 sm:space-y-4">
-            {transactions.map((transaction) => (
-              <div
-                key={transaction._id}
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-100"
-              >
-                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                  <div className="flex-shrink-0">
-                    {getTransactionIcon(transaction.transactionType, transaction.amount)}
+          <div className="space-y-4">
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <div
+                  key={transaction._id}
+                  className="group flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-all border border-gray-100 dark:border-gray-700/50"
+                >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="flex-shrink-0 transform group-hover:scale-110 transition-transform duration-300">
+                      {getTransactionIcon(transaction.transactionType, transaction.amount)}
+                    </div>
+                    <div className="min-w-0 flex-1 pr-4">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
+                        {transaction.description || "Transaction"}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-0.5">
+                        {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg truncate">
-                      {transaction.description}
-                    </h3>
-                    <p className="text-gray-600 text-xs sm:text-sm">{transaction.createdAt}</p>
+                  <div className={`text-base sm:text-lg font-bold flex-shrink-0 ml-2 ${getAmountColor(transaction.amount, transaction.transactionType)}`}>
+                    {formatAmount(transaction.amount, transaction.transactionType)}
                   </div>
                 </div>
-                <div className={`text-base sm:text-lg lg:text-xl font-bold flex-shrink-0 ml-2 ${getAmountColor(transaction.amount, transaction.transactionType)}`}>
-                  {formatAmount(transaction.amount, transaction.transactionType)}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400 text-lg">No transactions found.</p>
               </div>
-            ))}
+            )}
           </div>
 
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          <div className="mt-8">
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          </div>
         </div>
       </div>
 

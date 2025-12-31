@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
+import { isAxiosError } from 'axios';
 
 const ForgotPasswordRequest = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,8 +21,12 @@ const ForgotPasswordRequest = () => {
       const response = await authService.forgotPassword(email);
       setMessage(response.message);
       toast.success(response.message)
-    } catch (err: any) { 
-      setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
+    } catch (err) {
+      let errorMessage = 'Failed to send reset link. Please try again.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

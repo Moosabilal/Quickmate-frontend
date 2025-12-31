@@ -3,7 +3,7 @@ import {create} from 'zustand';
 interface IncomingCall {
   fromUserId: string;
   fromUserName?: string;
-  offer: any;
+  offer: RTCSessionDescriptionInit;
   joiningId: string;
 }
 

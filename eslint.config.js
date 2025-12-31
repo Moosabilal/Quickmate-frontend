@@ -13,7 +13,10 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+      },
     },
     plugins: {
       'react-hooks': reactHooks,
@@ -27,6 +30,7 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'jsx-a11y/aria-proptypes': 'off',
     },
   },
 
@@ -36,7 +40,15 @@ export default [
       parser: tsParser,
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: globals.browser,
+      globals: {
+        RequestInit: "readonly",
+        fetch: "readonly",
+        Headers: "readonly",
+        Request: "readonly",
+        Response: "readonly",
+        ...globals.browser, 
+        ...globals.es2021,
+      },
     },
     plugins: {
       '@typescript-eslint': tseslint,
@@ -48,14 +60,20 @@ export default [
       ...reactHooks.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
 
+      'no-inline-styles': 'off',
+
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      '@typescript-eslint/no-explicit-any': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
+      'jsx-a11y/aria-proptypes': 'off',
+      "react/react-in-jsx-scope": "off",
+      "no-undef": "off",
     },
   },
 ]

@@ -1,17 +1,17 @@
-import axios from "axios";
 import axiosInstance from "../lib/axiosInstance";
-import { IReviewAdminFilters } from "../util/interface/IReview";
+import { IReviewAdminFilters, ReviewStatus } from "../util/interface/IReview";
+import { handleAxiosError } from "../util/helperFunction/handleError";
 
 const REVIEW_URL = `/review`;
 
 export const reviewService = {
+
     addReview: async (bookingId: string, reviewData: { rating: number; review: string }) => {
         try {
             const response = await axiosInstance.post(`${REVIEW_URL}/addReview`, { bookingId, ...reviewData });
-            return response.data
+            return response.data;
         } catch (error) {
-            console.error('Error adding review:', error);
-            throw error;
+            handleAxiosError(error, "Failed to add review.");
         }
     },
 
@@ -24,12 +24,24 @@ export const reviewService = {
             if (filters.search) params.append('search', filters.search);
             if (filters.rating) params.append('rating', String(filters.rating));
             if (filters.sort) params.append('sort', filters.sort);
+            if (filters.status && filters.status !== 'All') {
+                params.append('status', filters.status);
+            }
 
             const response = await axiosInstance.get(`${REVIEW_URL}/reviews`, { params });
             return response.data;
         } catch (error) {
-            console.error('Error fetching reviews for admin:', error);
+            handleAxiosError(error, "Failed to fetch reviews for admin.");
+        }
+    },
+
+    updateReviewStatus: async (reviewId: string, status: ReviewStatus) => {
+        try {
+            const response = await axiosInstance.patch(`${REVIEW_URL}/reviews/${reviewId}/status`, { status });
+            return response.data;
+        } catch (error) {
+            handleAxiosError(error, "Failed to update review status.");
             throw error;
         }
     }
-}
+};

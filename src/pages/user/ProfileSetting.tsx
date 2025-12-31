@@ -1,18 +1,15 @@
-import { MdDelete, MdEdit, MdHome, MdWork, MdClose } from 'react-icons/md';
+import { MdDelete, MdEdit, MdHome, MdWork } from 'react-icons/md';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import React, { useEffect, useState } from 'react';
 import { authService } from '../../services/authService';
-import { useRef } from 'react';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { updateProfile } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { getCloudinaryUrl } from '../../util/cloudinary';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { LocationSelector } from '../provider/Register';
 import AddressPopup from '../../components/user/AddressPopup';
 import { addressService } from '../../services/addressService';
 import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateProfile } from '../../features/auth/authSlice';
+import { Loader2 } from 'lucide-react';
 
 
 
@@ -22,24 +19,21 @@ const ProfileSetting: React.FC = () => {
 
     const [name, setName] = useState(user?.name || 'N/A');
     const [email, setEmail] = useState(user?.email || 'N/A');
-    const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || 'nothing');
+    const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || '');
 
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
-    const [isMapOpen, setIsMapOpen] = useState(false)
 
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
     const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
     const [addressPopup, setAddressPopup] = useState(false);
-
+    const [editLoading, setEditLoading] = useState(false);
 
     const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
     const [addressList, setAddressList] = useState<IAddress[]>([]);
     const [isEditingAddress, setIsEditingAddress] = useState(false);
-    const [editAddressId, setEditAddressId] = useState<string | null>(null);
     const [currentAddress, setCurrentAddress] = useState<IAddress>({
         id: '',
         label: '',
@@ -55,8 +49,7 @@ const ProfileSetting: React.FC = () => {
 
     const navigate = useNavigate();
 
-    const nameRef = useRef<HTMLInputElement>(null);
-    const emailRef = useRef<HTMLInputElement>(null);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -75,7 +68,27 @@ const ProfileSetting: React.FC = () => {
         setIsEditing(true);
     };
 
+    console.log('the providpiicture', profilePicture, editingProfilePicture)
+
     const handleSaveChanges = async () => {
+        if (editingName.trim() === '') {
+            toast.error('Name cannot be empty');
+            return;
+        } else if (editingName.trim().length < 3) {
+            toast.error('Name must be at least 3 characters long');
+            return;
+        } else if (editingName.trim().length > 20) {
+            toast.error('Name must not exceed 20 characters');
+            return;
+        }
+        if (editingEmail.trim() === '') {
+            toast.error('Email cannot be empty');
+            return;
+        }
+        if (editingEmail.trim().split('@')[0].length < 3) {
+            toast.error('Email address is too short')
+        }
+        setEditLoading(true)
         try {
             const formData = new FormData();
             formData.append('name', editingName);
@@ -85,16 +98,37 @@ const ProfileSetting: React.FC = () => {
             } else if (typeof editingProfilePicture === 'string' && editingProfilePicture) {
                 formData.append('profilePicture', editingProfilePicture);
             }
+            console.log('the pattern', editingEmail, typeof editingEmail, email, typeof email)
+            if (editingEmail.trim() !== email) {
+                try {
+                    const result = await authService.generateOtp(editingEmail)
+                    console.log('the result of otop', result)
+                    navigate('/verify-otp', { state: { email: user?.email, displayEmail: editingEmail, role: user?.role, updateProfileData: { name: editingName, email: editingEmail, profilePicture: editingProfilePicture } } });
+                    return
+
+                } catch (error) {
+                    console.log(error)
+                }
+            }
             const updatedData = await authService.updateProfile(formData);
 
             setName(editingName);
             setEmail(editingEmail);
             setProfilePicture(editingProfilePicture);
+            dispatch(updateProfile({ user: updatedData }));
+
 
             toast.success('profile Updated Successfully')
             setIsEditing(false);
         } catch (error) {
-            toast.error('Failed to save profile. Please try again.');
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
+
+        } finally {
+            setEditLoading(false)
         }
     };
 
@@ -107,32 +141,31 @@ const ProfileSetting: React.FC = () => {
 
     const handleAddAddress = async (newAddress: IAddress) => {
 
-            try {
-                let savedAddress: IAddress;
+        try {
+            let savedAddress: IAddress;
 
-                if (isEditingAddress && currentAddress.id) {
-                    savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
+            if (isEditingAddress && currentAddress.id) {
+                savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
 
-                    setAddressList(prev =>
-                        prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
-                    );
-                    toast.success("Address Updated")
-                } else {
-                    savedAddress = await addressService.createAddress(newAddress);
-                    setAddressList(prev => [...prev, savedAddress]);
-                    toast.success("Address Created")
-                }
-
-                setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
-                setIsEditingAddress(false);
-                setEditAddressId(null);
-                setAddressPopup(false);
-
-            } catch (error) {
-                console.error('Failed to save address:', error);
-                alert('Something went wrong while saving the address. Please try again.');
+                setAddressList(prev =>
+                    prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
+                );
+                toast.success("Address Updated")
+            } else {
+                savedAddress = await addressService.createAddress(newAddress);
+                setAddressList(prev => [...prev, savedAddress]);
+                toast.success("Address Created")
             }
-        
+
+            setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
+            setIsEditingAddress(false);
+            setAddressPopup(false);
+
+        } catch (error) {
+            console.error('Failed to save address:', error);
+            alert('Something went wrong while saving the address. Please try again.');
+        }
+
     };
 
 
@@ -149,7 +182,6 @@ const ProfileSetting: React.FC = () => {
             setCurrentAddress(addressToEdit);
             setIsEditingAddress(true);
             setShowAddressModal(true)
-            setEditAddressId(id);
             setAddressPopup(true);
         }
     };
@@ -193,6 +225,9 @@ const ProfileSetting: React.FC = () => {
                                         value={editingName}
                                         onChange={(e) => setEditingName(e.target.value)}
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                        title="Full Name"
+                                        placeholder="Enter your full name"
+
                                     />
                                 </div>
                                 <div>
@@ -208,9 +243,13 @@ const ProfileSetting: React.FC = () => {
                                 <div className="flex space-x-4 mt-4">
                                     <button
                                         onClick={handleSaveChanges}
-                                        className="px-8 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                        disabled={editLoading}
+                                        className="px-8 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        Save Changes
+                                        {editLoading ?
+                                            (<><Loader2 className="h-4 w-4 animate-spin" />
+                                                Saving...</>) :
+                                            'Save Changes'}
                                     </button>
                                     <button
                                         onClick={handleCancel}
@@ -226,11 +265,11 @@ const ProfileSetting: React.FC = () => {
                             <div className="relative w-32 h-32">
                                 <img
                                     src={
-                                        editingProfilePicture
-                                            ? typeof editingProfilePicture === 'string'
-                                                ? getCloudinaryUrl(editingProfilePicture)
-                                                : URL.createObjectURL(editingProfilePicture)
-                                            : undefined
+                                        editingProfilePicture && typeof editingProfilePicture === 'string'
+                                            ? editingProfilePicture
+                                            : editingProfilePicture instanceof File
+                                                ? URL.createObjectURL(editingProfilePicture)
+                                                : '/profileImage.png'
                                     }
                                     alt="Profile"
                                     className="w-full h-full rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
@@ -281,7 +320,7 @@ const ProfileSetting: React.FC = () => {
                         </div>
                         <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                             <img
-                                src={typeof profilePicture === 'string' ? getCloudinaryUrl(profilePicture) : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : undefined}
+                                src={typeof profilePicture === 'string' && profilePicture ? profilePicture : profilePicture instanceof File ? URL.createObjectURL(profilePicture) : '/profileImage.png'}
                                 alt="Profile"
                                 className="w-28 h-28 rounded-full object-cover border-2 border-blue-300 dark:border-blue-700 shadow-md"
                             />
@@ -328,7 +367,10 @@ const ProfileSetting: React.FC = () => {
                     ))}
                 </div>
                 <button
-                    onClick={() => setAddressPopup(true)}
+                    onClick={() => {
+                        setShowAddressModal(true);
+                        setAddressPopup(true)
+                    }}
                     className="mt-6 px-4 py-2 border border-blue-500 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm font-semibold"
                 >
                     Add address
@@ -399,32 +441,6 @@ const ProfileSetting: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            {/* {isMapOpen && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white w-[90%] max-w-2xl h-[500px] rounded-lg shadow-xl relative">
-                        <h2 className="text-lg font-semibold p-4 border-b">Select Service Location</h2>
-                        <button 
-                            onClick={() => setIsMapOpen(false)} 
-                            className="absolute top-3 right-4 text-xl hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center"
-                        >
-                            ×
-                        </button>
-
-                        <MapContainer center={mapCenter} zoom={5} className="h-[400px] w-full rounded-b-lg">
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <LocationSelector onSelect={(lat, lng) => {
-                                setFormData(prev => ({ ...prev, serviceLocation: { lat, lng } }));
-                                setErrors(prev => ({ ...prev, serviceLocation: undefined }));
-                                setIsMapOpen(false);
-                            }} />
-                            {formData.serviceLocation && (
-                                <Marker position={[formData.serviceLocation.lat, formData.serviceLocation.lng]} />
-                            )}
-                        </MapContainer>
-                    </div>
-                </div>
-            )} */}
 
             <AddressPopup
                 addressPopup={addressPopup}

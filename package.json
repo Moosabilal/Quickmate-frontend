@@ -29,10 +29,13 @@
     "@mui/x-date-pickers": "^8.10.2",
     "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.8.2",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "gapi-script": "^1.2.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
@@ -53,7 +56,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.0",
+    "@eslint/js": "^9.39.1",
     "@types/leaflet": "^1.9.20",
     "@types/qs": "^6.14.0",
     "@types/react": "^19.1.2",
@@ -63,15 +66,17 @@
     "@typescript-eslint/parser": "^8.42.0",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.25.0",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0",
+    "eslint-plugin-tailwindcss": "^3.18.2",
+    "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "typescript-eslint": "^8.46.3",
     "vite": "^6.3.6"
   }
 }

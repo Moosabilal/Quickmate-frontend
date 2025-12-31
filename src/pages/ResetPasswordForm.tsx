@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { ValidationErrorsForReset } from '../util/interface/IUser';
@@ -99,8 +99,12 @@ const ResetPasswordForm: React.FC = () => {
       });
       setMessage(response.data.message + ' You can now log in with your new password.');
       setTimeout(() => navigate('/login'), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to reset password. Please try again.');
+    } catch (err) {
+      let errorMessage = 'Failed to reset password. Please try again.';
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

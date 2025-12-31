@@ -59,7 +59,7 @@ const Register = () => {
         if(email.split('@')[0].length < 3){
             return 'Email address is too short'
         }
-        if (email.length > 254) {
+        if (email.length > 50) {
             return 'Email address is too long';
         }   
         return undefined;

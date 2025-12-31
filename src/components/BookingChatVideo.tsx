@@ -150,10 +150,6 @@ export default function BookingChatVideo({
 
                 {m.messageType === 'image' && (
                   <img
-                    // Logic:
-                    // 1. If it's a local blob (upload preview), use it.
-                    // 2. If it's a full link from backend (signed), use it.
-                    // 3. Otherwise, try the helper (fallback).
                     src={
                       m.fileUrl?.startsWith('blob:') || m.fileUrl?.startsWith('http')
                         ? m.fileUrl
@@ -161,14 +157,11 @@ export default function BookingChatVideo({
                     }
                     alt="Uploaded attachment"
                     className="rounded-lg max-w-full"
-                    // ... existing onLoad logic
                     onLoad={() => {
                       if (messagesContainerRef.current) {
                         messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
                       }
                     }}
-                    // Add Authorization header if using Cookie-based auth (rare), 
-                    // but for Signed URLs (query param), standard src works fine.
                     crossOrigin="anonymous"
                   />
                 )}

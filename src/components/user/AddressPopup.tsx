@@ -63,21 +63,15 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     setLoading(true);
     setError(null);
 
-    // --- 1. Define the Success Handler (Used for both attempts) ---
     const handleSuccess = async (position: GeolocationPosition) => {
       try {
         const { accuracy, latitude, longitude } = position.coords;
         console.log(`Location acquired! Accuracy: ${accuracy} meters`);
 
-        // NOTE: You had hardcoded coordinates in your snippet.
-        // I have commented them out so the real location is used. 
-        // Uncomment them only for testing.
         let lat = latitude;
         let lng = longitude;
         lat = 12.733242; 
         lng = 74.895929;
-        const dddd = await providerService.getState(lat, lng);
-        console.log('the location', dddd)
 
         if (serviceId) {
           const withinRange = await bookingService.findProviderRange(serviceId, lat, lng, radius);
@@ -125,31 +119,27 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       }
     };
 
-    // --- 2. Define the Error Handler with Retry Logic ---
     const handleError = (error: GeolocationPositionError) => {
-      // If error is TIMEOUT (Code 3) and we were using High Accuracy, TRY AGAIN with Low Accuracy
       if (error.code === 3) {
         console.warn("High accuracy GPS timed out. Retrying with network location...");
         toast.info("GPS signal weak, switching to network location...");
 
         navigator.geolocation.getCurrentPosition(
-          handleSuccess, // Use the same success handler
+          handleSuccess,
           (retryError) => {
-             // If it fails again, show the final error
              setLoading(false);
              toast.error("Unable to retrieve location. Please enter address manually.");
              console.error("Retry failed:", retryError);
           },
           {
-            enableHighAccuracy: false, // Low accuracy is much faster (Wi-Fi/Cell)
+            enableHighAccuracy: false, 
             timeout: 10000,
             maximumAge: 0
           }
         );
-        return; // Exit here so we don't trigger the switch below
+        return; 
       }
 
-      // Standard Error Handling for other errors (Permission denied, etc.)
       setLoading(false);
       switch (error.code) {
         case error.PERMISSION_DENIED:
@@ -167,10 +157,9 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
       console.error("Geolocation error:", error);
     };
 
-    // --- 3. Start the Initial Request (High Accuracy) ---
     const options = {
       enableHighAccuracy: true,
-      timeout: 20000, // Increased to 20 seconds to give GPS a chance
+      timeout: 20000, 
       maximumAge: 0
     };
 

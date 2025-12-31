@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -43,27 +43,29 @@ const BookingDetails: React.FC = () => {
   const [showRated, SetShowRated] = useState(false)
 
 
-  useEffect(() => {
-    const fetchBookingDetails = async () => {
-      try {
-        const response = await bookingService.getBookingById(id!);
-        console.log('the response in the details page is ', response);
-        setBooking(response);
-        setRating(response.rating || 0) 
-        setReview(response.review || '') 
-        setSelectedDate(response.date);
-        setSelectedTime(response.time);
-      } catch (error) {
-        console.error('Error fetching booking details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchBookingDetails = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const response = await bookingService.getBookingById(id);
+      console.log('Fetched booking details:', response);
 
-    if (id) {
-      fetchBookingDetails();
+      setBooking(response);
+      setRating(response.rating || 0);
+      setReview(response.review || '');
+      setSelectedDate(response.date);
+      setSelectedTime(response.time);
+    } catch (err) {
+      console.error('Error fetching booking details:', err);
+
+    } finally {
+      setLoading(false);
     }
   }, [id]);
+  useEffect(() => {
+    fetchBookingDetails();
+  }, [fetchBookingDetails]);
+
 
   const handleDeleteClick = (booking: IBookingConfirmationPage) => {
     setBookingToDelete(booking);
@@ -113,11 +115,19 @@ const BookingDetails: React.FC = () => {
   };
 
   const handleReviewSubmit = async (bookingId: string) => {
-    const response = await reviewService.addReview(bookingId, { rating, review })
-    toast.success(response.message);
-    setShowReviewForm(false);
-    setRating(0);
-    setReview('');
+    try {
+      const response = await reviewService.addReview(bookingId, { rating, review })
+      toast.success(response.message);
+      setShowReviewForm(false);
+      setRating(0);
+      setReview('');
+      await fetchBookingDetails();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to submit review')
+      }
+    }
+
   }
 
   const handleDownloadReceipt = async () => {
@@ -132,40 +142,40 @@ const BookingDetails: React.FC = () => {
     const toastId = toast.loading("Generating receipt...");
 
     try {
-        const canvas = await html2canvas(receiptElement, { 
-            scale: 2, 
-            useCORS: true, 
-            allowTaint: true, 
-            logging: false,
-            backgroundColor: '#ffffff', 
-            scrollY: -window.scrollY 
-        });
+      const canvas = await html2canvas(receiptElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        scrollY: -window.scrollY
+      });
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
-        const imgWidth = 210; 
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        let heightLeft = imgHeight;
-        let position = 0;
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
 
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
+      }
 
-        while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        pdf.save(`Receipt-${booking.bookedOrderId}.pdf`);
-        toast.update(toastId, { render: "Receipt downloaded!", type: "success", isLoading: false, autoClose: 3000 });
+      pdf.save(`Receipt-${booking.bookedOrderId}.pdf`);
+      toast.update(toastId, { render: "Receipt downloaded!", type: "success", isLoading: false, autoClose: 3000 });
     } catch (error) {
-        console.error("PDF Generation failed:", error);
-        toast.update(toastId, { render: "Failed to generate PDF.", type: "error", isLoading: false, autoClose: 3000 });
+      console.error("PDF Generation failed:", error);
+      toast.update(toastId, { render: "Failed to generate PDF.", type: "error", isLoading: false, autoClose: 3000 });
     }
   };
 
@@ -343,7 +353,7 @@ const BookingDetails: React.FC = () => {
                   <div>
                     <label className="text-sm text-gray-500 dark:text-gray-400">Special Instruction</label>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                       {booking.specialInstruction ? booking.specialInstruction : <span className="text-gray-400 italic">None</span>}
+                      {booking.specialInstruction ? booking.specialInstruction : <span className="text-gray-400 italic">None</span>}
                     </p>
                   </div>
                 </div>

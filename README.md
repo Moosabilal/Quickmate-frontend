@@ -9,7 +9,6 @@ The modern, responsive frontend for **QuickMate**, built to provide a seamless b
 ## 📸 Screenshots
 ![Home Page](public/image.png)
 ![Booking Page](public/image-1.png)
-![Chat page](public/image-2.png)
 
 ---
 
@@ -34,7 +33,7 @@ The modern, responsive frontend for **QuickMate**, built to provide a seamless b
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/Moosabilal/Quickmate-frontend.git](https://github.com/Moosabilal/Quickmate-frontend.git)
+    git clone https://github.com/Moosabilal/Quickmate-frontend.git
     cd quickmate-frontend
     ```
 

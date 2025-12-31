@@ -119,3 +119,26 @@ export interface IRazorpayOrder {
   offer_id: string | null;
   created_at: number;
 }
+
+export interface Service {
+  _id?: string;
+  id?: string;
+  title?: string;
+  name?: string;
+  iconUrl?: string;
+}
+
+export interface Provider {
+  _id?: string;
+  id?: string;
+  fullName?: string;
+  name?: string;
+  profilePicture?: string;
+}
+
+export interface Suggestion {
+  id: string;
+  name: string;
+  type: 'service' | 'provider';
+  image?: string;
+}

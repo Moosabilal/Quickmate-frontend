@@ -16,6 +16,8 @@ import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { isAxiosError } from 'axios';
 import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
+import { Provider, Service, Suggestion } from '../../util/interface/IUser';
+
 
 const testimonials: Testimonial[] = [
     {
@@ -213,13 +215,13 @@ const Home: React.FC = () => {
                 try {
                     const response = await authService.searchResources(searchQuery);
                     console.log('the response', response)
-                    const serviceSuggestions = response.services.map((s: any) => ({
+                    const serviceSuggestions: Suggestion[] = response.services.map((s: Service) => ({
                         id: s._id || s.id,
                         name: s.title || s.name,
                         type: 'service',
                         image: s.iconUrl
                     }));
-                    const providerSuggestions = response.providers.map((p: any) => ({
+                    const providerSuggestions: Suggestion[] = response.providers.map((p: Provider) => ({
                         id: p._id || p.id,
                         name: p.fullName || p.name,
                         type: 'provider',

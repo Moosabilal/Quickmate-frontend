@@ -1,11 +1,12 @@
 import axios from 'axios';
-import config from './config';
 import { authService } from '../services/authService';
 import { Store } from '@reduxjs/toolkit';
 import { logout } from '../features/auth/authSlice';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 const axiosInstance = axios.create({
-  baseURL: config.API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true
 
 });

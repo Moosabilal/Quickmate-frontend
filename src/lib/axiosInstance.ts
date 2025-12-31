@@ -3,10 +3,10 @@ import { authService } from '../services/authService';
 import { Store } from '@reduxjs/toolkit';
 import { logout } from '../features/auth/authSlice';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true
 
 });

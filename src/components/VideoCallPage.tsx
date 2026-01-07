@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import BookingChatVideo from './BookingChatVideo'; 
+import BookingChatVideo from './BookingChatVideo';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useCallStore } from '../app/callStore';
 
@@ -9,10 +9,10 @@ const VideoCallPage: React.FC = () => {
   const { user } = useAppSelector(state => state.auth);
   const location = useLocation();
 
-    const { setIncomingCall } = useCallStore();
+  const { setIncomingCall } = useCallStore();
 
-      const { name, incomingCall, isInitiator } = (location.state as { 
-    name: string; 
+  const { name, incomingCall, isInitiator } = (location.state as {
+    name: string;
     incomingCall?: {
       joiningId: string;
       offer: RTCSessionDescription;
@@ -22,9 +22,9 @@ const VideoCallPage: React.FC = () => {
     isInitiator?: boolean
   }) || { name: 'Video Call' };
 
-  console.log('VideoCallPage state:',  name );
+  console.log('VideoCallPage state:', name);
 
-      useEffect(() => {
+  useEffect(() => {
     if (incomingCall) {
       setIncomingCall(incomingCall);
     }
@@ -41,10 +41,10 @@ const VideoCallPage: React.FC = () => {
 
   return (
     <div className="h-screen w-screen">
-      <BookingChatVideo 
+      <BookingChatVideo
         currentUserId={user?.id || ''}
         joiningId={joiningId}
-        mode="video" 
+        mode="video"
         name={name}
         incomingCall={incomingCall}
         isInitiator={!!isInitiator}

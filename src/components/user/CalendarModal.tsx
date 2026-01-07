@@ -158,7 +158,6 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
     <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95">
         
-        {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Schedule Appointment</h2>
@@ -174,10 +173,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
           
-          {/* Calendar Section */}
           <div className="flex-grow md:w-2/3 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between mb-6">
               <button 
@@ -217,7 +214,6 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
             </div>
           </div>
 
-          {/* Time Slots Section */}
           <div className="md:w-1/3 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 sm:p-6 flex flex-col">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />

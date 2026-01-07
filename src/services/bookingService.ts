@@ -140,12 +140,21 @@ export const bookingService = {
   },
 
   getBookingDetails: async (bookingId: string) => {
-        try {
-            const response = await axiosInstance.get(`${BOOKING_URL}/admin/bookings/${bookingId}`);
-            return response.data;
-        } catch (error) {
-            handleAxiosError(error, "Failed to fetch booking details.");
-        }
-    },
+    try {
+      const response = await axiosInstance.get(`${BOOKING_URL}/admin/bookings/${bookingId}`);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch booking details.");
+    }
+  },
+
+  processRefund: async (paymentId: string, amount: number) => {
+    try {
+      const response = await axiosInstance.post(`${BOOKING_URL}/refund`, { paymentId, amount });
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Refund request failed.");
+    }
+  },
 
 };

@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 export const fileService = {
     uploadChatFile: async (file: File): Promise<{ url: string }> => {
         const maxSizeMB = 10;
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff'];
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff', 'text/plain'];
 
         if (!file) {
             throw new Error('No file selected');

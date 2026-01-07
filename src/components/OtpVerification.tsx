@@ -108,27 +108,11 @@ const RegistrationOTPVerification = () => {
       }
 
       if (role === "Customer") {
-        console.log('registration email', registrationEmail)
         await authService.verifyRegistrationOtp(registrationEmail, otp);
-        // if(updateProfileData){
-        //   const data = await authService.updateProfile(updateProfileData)
-        //   console.log('data', data)
-        //   toast.success('Profile updated Successfully')
-        //   navigate('/profile')
-        //   return
-        // }
         toast.success('Account verified successfully! You can now log in.');
         navigate('/login', { replace: true });
       } else if (role === "ServiceProvider") {
-        console.log('provider registration email', registrationEmail)
         const { user, provider } = await providerService.verifyRegistrationOtp(registrationEmail, otp);
-        // if(updateProfileData){
-        //   const data = await authService.updateProfile(updateProfileData)
-        //   console.log('data', data)
-        //   toast.success('Profile updated Successfully')
-        //   return
-        // }
-        console.log('Verified user and provider:', { user, provider });
         dispatch(updateProfile({ user }))
         dispatch(updateProviderProfile({ provider }))
         toast.success('Account successfully verified!');

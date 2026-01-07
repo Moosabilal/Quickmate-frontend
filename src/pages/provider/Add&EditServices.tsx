@@ -99,6 +99,8 @@ const ServiceManagementPage: React.FC = () => {
         });
     };
 
+    console.log('form data', formData);
+
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -151,6 +153,7 @@ const ServiceManagementPage: React.FC = () => {
             };
 
             for (const [key, value] of Object.entries(formData)) {
+                console.log('the key value', key, value);
                 const prevValue = editingService?.[key as keyof IAddAndEditServiceForm];
 
                 const isValueChanged = normalize(value) !== normalize(prevValue);
@@ -177,6 +180,9 @@ const ServiceManagementPage: React.FC = () => {
 
             if (editingService) {
                 try {
+                    for(const pair of data.entries()) {
+                        console.log(`${pair[0]}: ${pair[1]}`);
+                    }
                     const { message, success } = await serviceService.updateService(serviceId || '', data)
                     if (success) {
                         toast.success(message)

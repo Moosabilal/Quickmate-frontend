@@ -6,44 +6,51 @@ interface ZodError {
   code?: string;
 }
 
+type ErrorWithStatus = Error & { status?: number };
+
 export function handleAxiosError(error: unknown, defaultMessage: string): never {
+  console.log('the error in the error handler', error)
+
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data;
     const backendMessage = responseData?.message;
-    
+    const status = error.response?.status;
+
     let zodErrorMessage: string | null = null;
 
     if (typeof backendMessage === 'string') {
-        if (backendMessage.trim().startsWith('[') && backendMessage.trim().endsWith(']')) {
-            const parsed = JSON.parse(backendMessage);
-            
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              const firstError = parsed[0] as ZodError;
-              if (firstError && firstError.message) {
-                zodErrorMessage = firstError.message;
-              }
-            }
+      if (backendMessage.trim().startsWith('[') && backendMessage.trim().endsWith(']')) {
+        const parsed = JSON.parse(backendMessage);
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const firstError = parsed[0] as ZodError;
+          if (firstError && firstError.message) {
+            zodErrorMessage = firstError.message;
+          }
         }
-    }
-
-    if (zodErrorMessage) {
-        throw new Error(zodErrorMessage);
-    }
-
-    if (Array.isArray(responseData) && responseData.length > 0) {
-      const firstError = responseData[0] as ZodError;
-      if (firstError && firstError.message) {
-        throw new Error(firstError.message);
       }
     }
 
-    const finalMessage =
-      (typeof backendMessage === 'string' ? backendMessage : "") ||
-      (error.message as string) ||
-      defaultMessage;
+    let finalMessage = defaultMessage;
 
-    throw new Error(finalMessage);
+    if (zodErrorMessage) {
+      finalMessage = zodErrorMessage;
+    } else if (Array.isArray(responseData) && responseData.length > 0) {
+      const firstError = responseData[0] as ZodError;
+      if (firstError && firstError.message) {
+        finalMessage = firstError.message;
+      }
+    } else {
+      finalMessage = (typeof backendMessage === 'string' ? backendMessage : "") ||
+        (error.message as string) ||
+        defaultMessage;
+    }
 
+    const err = new Error(finalMessage) as ErrorWithStatus;
+
+    err.status = status;
+
+    throw err;
   } else if (error instanceof Error) {
     throw new Error(error.message || defaultMessage);
   } else {

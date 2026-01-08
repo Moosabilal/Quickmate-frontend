@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios, { isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { ValidationErrorsForReset } from '../util/interface/IUser';
+import { authService } from '../services/authService';
 
 const validatePassword = (password: string): string | undefined => {
   if (!password) return 'Password is required';
@@ -92,12 +93,8 @@ const ResetPasswordForm: React.FC = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
-        token,
-        newPassword,
-        confirmNewPassword,
-      });
-      setMessage(response.data.message + ' You can now log in with your new password.');
+      const response = await authService.resetPassword(token, newPassword, confirmNewPassword);
+      setMessage(response.message + ' You can now log in with your new password.');
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       let errorMessage = 'Failed to reset password. Please try again.';

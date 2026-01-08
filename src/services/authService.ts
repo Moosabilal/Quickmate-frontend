@@ -50,6 +50,16 @@ export const authService = {
     }
   },
 
+  resetPassword: async (token: string, newPassword: string, confirmNewPassword: string) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/reset-password`, { token, newPassword, confirmNewPassword });
+      return response.data;
+    } catch (error) {
+      console.error('Error during resetPassword API call:', error);
+      handleAxiosError(error, "Failed to reset password.");
+    }
+  },
+
   googleAuthLogin: async (token: string) => {
     try {
       const response = await axiosInstance.post(`${API_URL}/google-login`, { token });

@@ -86,7 +86,7 @@ export default function BookingChatVideo({
 
   useEffect(() => {
     if (mode === 'video' && callStatus === 'ended') {
-      toast.info('Call rejected or ended by the other user');
+      toast.info('Call rejected or ended');
       navigate(-1);
     }
   }, [mode, callStatus, navigate]);
@@ -168,7 +168,11 @@ export default function BookingChatVideo({
 
                 {m.messageType === 'file' && (
                   <a
-                    href={m.fileUrl?.startsWith('blob:') ? m.fileUrl : getCloudinaryDownloadUrl(m.fileUrl!)} target="_blank"
+                    href={
+                      m.fileUrl?.startsWith('blob:') || m.fileUrl?.startsWith('http')
+                        ? m.fileUrl
+                        : getCloudinaryDownloadUrl(m.fileUrl!)
+                    } target="_blank"
                     rel="noopener noreferrer"
                     download
                     className={`flex items-center gap-3 p-3 rounded-lg transition-colors 

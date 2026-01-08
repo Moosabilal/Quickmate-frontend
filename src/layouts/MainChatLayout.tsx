@@ -36,8 +36,7 @@ import Header from '../components/user/Header';
 const MainChatLayout: React.FC = () => {
   const location = useLocation();
   
-  // Determine if a specific chat room is selected based on the URL
-  // Assuming /chat is the list and /chat/:id is the room
+
   const isChatSelected = location.pathname !== '/chat' && location.pathname !== '/chat/';
 
   return (
@@ -46,9 +45,6 @@ const MainChatLayout: React.FC = () => {
       
       <div className="flex flex-grow overflow-hidden pt-20 relative">
         
-        {/* Sidebar Panel */}
-        {/* On mobile: Hidden if a chat is selected. Visible if no chat is selected. */}
-        {/* On desktop: Always visible (md:w-1/3, etc.) */}
         <div className={`
           w-full md:w-1/3 lg:w-1/4 xl:w-1/5 h-full
           border-r border-gray-200 dark:border-gray-700 
@@ -59,9 +55,6 @@ const MainChatLayout: React.FC = () => {
           <ChatSidebar />
         </div>
 
-        {/* Chat Room / Outlet Panel */}
-        {/* On mobile: Visible if a chat is selected. Hidden if no chat is selected. */}
-        {/* On desktop: Always visible */}
         <div className={`
           flex-grow h-full overflow-hidden 
           bg-gray-50 dark:bg-gray-900

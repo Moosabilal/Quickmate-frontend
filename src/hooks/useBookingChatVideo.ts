@@ -56,18 +56,6 @@ export function useBookingChatVideo(currentUserId: string, joiningId: string, us
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun1.l.google.com:19302" },
-                // Add TURN servers for better connectivity across firewalls/NATs
-                // Note: Replace with your own TURN server credentials in production
-                {
-                    urls: "turn:turn.quickmate.com:3478",
-                    username: "quickmate-user",
-                    credential: "quickmate-pass"
-                },
-                {
-                    urls: "turn:turn.quickmate.com:3478?transport=tcp",
-                    username: "quickmate-user",
-                    credential: "quickmate-pass"
-                }
             ],
         }),
         []
@@ -320,7 +308,7 @@ useEffect(() => {
 
         } catch (err) {
             console.error("File upload failed:", err);
-            toast.error("File upload failed.");
+            toast.error(`${err}`);
             setMessages((prev) => prev.filter(m => m._id !== pendingId));
         }
     }, [joiningId, currentUserId, sendMessage]);

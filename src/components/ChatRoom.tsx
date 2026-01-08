@@ -27,7 +27,7 @@ const ChatRoom: React.FC = () => {
       <header className="flex items-center px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white shadow-sm z-10 flex-shrink-0">
         <button 
           type="button"
-          onClick={() => navigate('/chat')} 
+          onClick={() => navigate(-1)} 
           className="mr-3 p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden"
           aria-label="Back to chat list"
         >

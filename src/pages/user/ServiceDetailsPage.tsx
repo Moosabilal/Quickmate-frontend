@@ -15,6 +15,7 @@ import { addressService } from '../../services/addressService';
 import { walletService } from '../../services/walletService';
 import { CalendarModal } from '../../components/user/CalendarModal';
 import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
+import { IApiError } from '../../util/interface/IError';
 
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -195,11 +196,6 @@ const ServiceDetailsPage: React.FC = () => {
       handler: async function (paymentResponse: RazorpayResponse) {
         try {
           const bookingRes = await handleSubmit(e);
-          console.log('the booking res', bookingRes)
-          if (!bookingRes?.bookingId) {
-            toast.error("Booking failed before payment verification.");
-            return;
-          }
           if (!selectedProvider) {
             throw new Error("No provider selected.");
           }
@@ -219,8 +215,20 @@ const ServiceDetailsPage: React.FC = () => {
           toast.success(`OrderId ${validationRes.orderId} ${validationRes.message}`);
           navigate(`/confirmationModel/${bookingRes.bookingId}`)
         } catch (err) {
-          console.error("Payment handler error:", err);
-          toast.error("Payment verification failed.");
+          const apiError = err as IApiError
+          let userMessage = "Booking creation failed due to technical issues.";
+          if(apiError.status === 409){
+            userMessage = "This slot was just booked by someone else.";
+          }
+          toast.info(`${userMessage} Initiating automatic refund...`);
+
+          try {
+            await bookingService.processRefund(paymentResponse.razorpay_payment_id, Number(amount));
+            toast.success("Refund processed successfully. It will reflect in 5-7 business days.");
+          } catch (error) {
+            console.log("Refund failed", error)
+            toast.error("Refund Initiation failed. Please contact support with Order ID: " + paymentResponse.razorpay_order_id);
+          }
         }
       },
       "prefill": {
@@ -257,8 +265,6 @@ const ServiceDetailsPage: React.FC = () => {
       return;
     }
 
-    
-
     const bookingPayload = {
       userId: user?.id,
       serviceId: serviceId!,
@@ -275,8 +281,9 @@ const ServiceDetailsPage: React.FC = () => {
     try {
       return await bookingService.createBooking(bookingPayload);
     } catch (err) {
-      console.error("Booking failed:", err);
-      toast.error(err instanceof Error ? err.message : "Booking failed. Please try again.");
+      const error = err as IApiError
+      toast.error(err instanceof Error ? error.message : "Booking failed. Please try again.");
+      throw err
     }
   };
 

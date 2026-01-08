@@ -53,6 +53,8 @@ const ProviderDetailsPage: React.FC = () => {
     fetchProviderData();
   }, [providerId]);
 
+  console.log('the services', services);
+
   const renderStars = (rating: number) => {
     return (
       <div className="flex items-center gap-1">
@@ -130,7 +132,6 @@ const ProviderDetailsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-12">
       
-      {/* Header Profile Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-900 dark:to-indigo-900 text-white py-12 px-4 sm:px-6 lg:px-8 shadow-xl relative">
         <button 
             onClick={() => navigate(-1)}
@@ -184,7 +185,6 @@ const ProviderDetailsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left Column: Schedule */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
@@ -197,7 +197,6 @@ const ProviderDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Services */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
@@ -246,9 +245,6 @@ const ProviderDetailsPage: React.FC = () => {
                           </div>
                         )}
                         <div className="flex flex-wrap gap-2 pt-1">
-                          <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2.5 py-0.5 rounded-md text-xs font-medium border border-blue-100 dark:border-blue-800">
-                            {service.categoryId.name}
-                          </span>
                           <span className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2.5 py-0.5 rounded-md text-xs font-medium border border-purple-100 dark:border-purple-800">
                             {service.subCategoryId.name}
                           </span>

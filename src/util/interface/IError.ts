@@ -5,3 +5,6 @@ export type ApiError =
   | { message?: string }            
   | string;
 
+export interface IApiError extends Error {
+  status?: number;
+}

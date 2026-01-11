@@ -2,6 +2,7 @@ import axios from 'axios';
 import { authService } from '../services/authService';
 import { Store } from '@reduxjs/toolkit';
 import { logout } from '../features/auth/authSlice';
+import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -70,6 +71,10 @@ export const setupInterceptors = (store: Store) => {
           break;
         case 409:
           console.warn('Conflict:', error.response.data?.message);
+          break;
+        case 429:
+          toast.error("Too many requests! Please slow down and try again in a minute.");
+          console.warn("Rate limit exceeded:", error.response.data?.message);
           break;
         default:
           console.warn('Unhandled error:', error.response?.data?.message || error.message);

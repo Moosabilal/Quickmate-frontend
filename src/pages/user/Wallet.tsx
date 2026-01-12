@@ -4,7 +4,6 @@ import {
   Minus,
   ArrowUpRight,
   ArrowDownLeft,
-  Calendar,
   Filter,
 } from 'lucide-react';
 import Pagination from '../../components/user/Pagination';
@@ -143,14 +142,14 @@ const Wallet: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors text-sm w-full sm:w-auto">
+              {/*<div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors text-sm w-full sm:w-auto">
                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <input
                   type="date"
                   onChange={(e) => applyFilters({ startDate: e.target.value })}
                   className="bg-transparent outline-none text-gray-700 dark:text-gray-200 w-full cursor-pointer placeholder-gray-500"
                 />
-              </div>
+              </div>*/}
               
               {activeTab === TransactionStatus.ALL && (
                 <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors text-sm w-full sm:w-auto">

@@ -10,7 +10,19 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const formatTimeSlot = (utcTime: Date): string => utcTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  const formatTimeSlot = (date: Date): string => {
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    
+    const strHours = hours < 10 ? '0' + hours : hours;
+    const strMinutes = minutes < 10 ? '0' + minutes : minutes;
+    
+    return `${strHours}:${strMinutes} ${ampm}`;
+  };
   const convertTo24Hour = (time12h: string): string => {
     const [time, modifier] = time12h.split(" ");
     let [hours, minutes] = time.split(":").map(Number);

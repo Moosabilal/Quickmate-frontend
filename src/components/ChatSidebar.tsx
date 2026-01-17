@@ -157,7 +157,7 @@ const ChatSidebar: React.FC = () => {
               <NavLink
                 key={chatPartner.id}
                 to={`/chat/${joiningId}`}
-                state={{ name: chatPartner.name }}
+                state={{ name: chatPartner.name, profilePicture: chatPartner.profilePicture }}
                 className={({ isActive }) =>
                   `flex items-center p-4 space-x-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
                     isActive 

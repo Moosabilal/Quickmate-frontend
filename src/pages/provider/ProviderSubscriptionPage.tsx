@@ -26,9 +26,9 @@ const ProviderSubscriptionPage: React.FC = () => {
   const [allPlans, setAllPlans] = useState<IPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const { provider } = useAppSelector((state) => state.provider);
-  
+
   const [currentSubscription, setCurrentSubscription] = useState<ISubscription | null>(provider?.subscription || null);
   const [currentPlanDetails, setCurrentPlanDetails] = useState<IPlan | null>(null);
 
@@ -47,7 +47,7 @@ const ProviderSubscriptionPage: React.FC = () => {
         const current = plans.find((p: IPlan) => (p.id || p._id) === currentSubscription.planId);
         setCurrentPlanDetails(current || null);
       } else {
-        setCurrentPlanDetails(null); 
+        setCurrentPlanDetails(null);
       }
     } catch (err) {
       toast.error(`${err instanceof Error ? err.message : `${err}` || "Failed to load subscription plans."}`);
@@ -64,6 +64,18 @@ const ProviderSubscriptionPage: React.FC = () => {
     setCurrentSubscription(provider?.subscription || null);
   }, [provider]);
 
+  const isSubscriptionActive = useCallback(() => {
+    if (!currentSubscription) return false;
+    if (currentSubscription.status !== 'ACTIVE') return false;
+    if (!currentSubscription.endDate) return false;
+
+    const now = new Date();
+    const end = new Date(currentSubscription.endDate);
+    return now < end;
+  }, [currentSubscription]);
+
+  const isActive = isSubscriptionActive();
+
   const handlePayment = (
     order: {
       id: string;
@@ -74,8 +86,8 @@ const ProviderSubscriptionPage: React.FC = () => {
   ) => {
     const planId = plan.id || plan._id;
     if (!provider?.id || !planId) {
-        toast.error("Provider or Plan ID is missing.");
-        return;
+      toast.error("Provider or Plan ID is missing.");
+      return;
     }
     const options: RazorpayOptions = {
       key: paymentKey,
@@ -96,7 +108,7 @@ const ProviderSubscriptionPage: React.FC = () => {
           );
 
           console.log('the verified data', verifyData)
-          
+
           toast.success(onSuccessMessage);
           // setCurrentSubscription(verifyData.provider.subscription);
           dispatch(updateProviderProfile({ provider: verifyData.provider }));
@@ -118,7 +130,7 @@ const ProviderSubscriptionPage: React.FC = () => {
       },
       theme: { color: "#3057b0ff" }
     } as RazorpayOptions;
-    
+
     if (window.Razorpay) {
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
@@ -137,7 +149,7 @@ const ProviderSubscriptionPage: React.FC = () => {
     }
 
     setIsProcessing(true);
-    
+
     if (modalConfig.type === 'downgrade' && modalConfig.plan) {
       try {
         const response = await subscriptionPlanService.scheduleDowngrade(modalConfig.plan.id!);
@@ -152,7 +164,7 @@ const ProviderSubscriptionPage: React.FC = () => {
         toast.error(errorMessage);
       }
     }
-    
+
     else if (modalConfig.type === 'cancelDowngrade') {
       try {
         const response = await subscriptionPlanService.cancelDowngrade();
@@ -169,14 +181,14 @@ const ProviderSubscriptionPage: React.FC = () => {
     }
 
     setIsProcessing(false);
-    setModalConfig(null); 
+    setModalConfig(null);
   };
 
   const onSubscribeClick = async (plan: IPlan) => {
     console.log('the selected plan', plan)
     if (!provider?.id || !plan.id) {
-        toast.error("Provider or Plan ID is missing.");
-        return;
+      toast.error("Provider or Plan ID is missing.");
+      return;
     }
     setIsProcessing(true);
     try {
@@ -197,20 +209,20 @@ const ProviderSubscriptionPage: React.FC = () => {
     console.log('the selected plan', plan)
     const planId = plan.id || plan._id;
     if (!planId) {
-        toast.error("Cannot process upgrade, plan ID is missing.");
-        return;
+      toast.error("Cannot process upgrade, plan ID is missing.");
+      return;
     }
     setIsProcessing(true);
     try {
       const res = await subscriptionPlanService.calculateUpgrade(planId);
       console.log(res.newPlan)
-      
+
       setModalConfig({
         type: 'upgrade',
         plan: plan,
-        details: res, 
-        order: res.order, 
-        newPlan: res.newPlan 
+        details: res,
+        order: res.order,
+        newPlan: res.newPlan
       });
     } catch (err) {
       let errorMessage = "Failed to calculate upgrade cost.";
@@ -223,14 +235,14 @@ const ProviderSubscriptionPage: React.FC = () => {
     }
   };
 
-  const onDowngradeClick = async (plan: IPlan) => {   
+  const onDowngradeClick = async (plan: IPlan) => {
     setModalConfig({ type: 'downgrade', plan: plan });
   };
 
   const onCancelDowngradeClick = async () => {
     setModalConfig({ type: 'cancelDowngrade' });
   };
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-10 bg-slate-50 dark:bg-gray-900 min-h-[300px]">
@@ -248,7 +260,7 @@ const ProviderSubscriptionPage: React.FC = () => {
     <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Subscription</h1>
 
-      {pendingDowngradePlan && currentSubscription?.status === 'ACTIVE' && (
+      {pendingDowngradePlan && isActive && (
         <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-600/50 rounded-lg transition-colors">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -256,8 +268,8 @@ const ProviderSubscriptionPage: React.FC = () => {
               <div>
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Downgrade Scheduled</h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  You are scheduled to downgrade to the <strong>{pendingDowngradePlan.name}</strong> plan on 
-                  <strong> {formatDate(currentSubscription.endDate)}</strong>.
+                  You are scheduled to downgrade to the <strong>{pendingDowngradePlan.name}</strong> plan on
+                  <strong> {formatDate(currentSubscription?.endDate)}</strong>.
                 </p>
               </div>
             </div>
@@ -273,7 +285,7 @@ const ProviderSubscriptionPage: React.FC = () => {
         </div>
       )}
 
-      {currentSubscription && currentSubscription.status === 'ACTIVE' && currentPlanDetails ? (
+      {currentSubscription && isActive && currentPlanDetails ? (
         <div className="mb-12">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Your Current Plan</h2>
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white rounded-2xl shadow-xl dark:shadow-blue-900/20 p-8 transition-colors">
@@ -306,16 +318,16 @@ const ProviderSubscriptionPage: React.FC = () => {
 
       <div>
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-          {currentSubscription?.status === 'ACTIVE' ? 'Upgrade or Change Your Plan' : allPlans.length !== 0 ? 'Choose a Plan' : 'No Plans Available'}
+          {isActive ? 'Upgrade or Change Your Plan' : allPlans.length !== 0 ? 'Choose a Plan' : 'No Plans Available'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {otherPlans.map(plan => {
+          {(isActive ? otherPlans : allPlans).map(plan => {
             const currentPrice = currentPlanDetails?.price || 0;
             const planPrice = plan.price || 0;
-            const isUpgrade = currentPlanDetails && planPrice > currentPrice;
-            const isDowngrade = currentPlanDetails && planPrice < currentPrice;
+            const isUpgrade = isActive && currentPlanDetails && planPrice > currentPrice;
+            const isDowngrade = isActive && currentPlanDetails && planPrice < currentPrice;
             const isDisabled = isProcessing || !!pendingDowngradePlan;
-            
+
             return (
               <div key={plan.id || plan._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-black/30 p-6 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300">
                 <div className="text-center mb-4">
@@ -336,7 +348,7 @@ const ProviderSubscriptionPage: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                
+
                 <button
                   onClick={() => {
                     if (isUpgrade) onUpgradeClick(plan);
@@ -355,7 +367,7 @@ const ProviderSubscriptionPage: React.FC = () => {
                   {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isUpgrade && <Zap className="w-4 h-4" />}
                   {isDowngrade && <ArrowDownCircle className="w-4 h-4" />}
-                  
+
                   {isUpgrade ? 'Upgrade Now' : (isDowngrade ? 'Schedule Downgrade' : 'Subscribe')}
                 </button>
               </div>

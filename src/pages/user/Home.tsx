@@ -10,29 +10,13 @@ import ChatForm from '../../components/user/ChatForm';
 import ChatMessage from '../../components/user/ChatMessage';
 import { toast } from 'react-toastify';
 import { ChatbotMessage } from '../../util/interface/IChatBot';
-import { Testimonial, StarRatingProps } from '../../util/interface/IChatBot';
+import { StarRatingProps } from '../../util/interface/IChatBot';
 import { chatbotService } from '../../services/chatBotService';
 import { AI_SYSTEM_PROMPT } from '../../util/AI_Prompt';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { isAxiosError } from 'axios';
 import { RazorpayOptions, RazorpayPaymentFailedResponse, RazorpayResponse } from '../../util/interface/IRazorpay';
 import { Provider, Service, Suggestion } from '../../util/interface/IUser';
-
-
-const testimonials: Testimonial[] = [
-    {
-        id: 1,
-        author: 'Sarah F.',
-        rating: 5,
-        text: 'QuickMate made finding a reliable cleaner so easy! Jessica was efficient and amazing, my home has never looked better!',
-    },
-    {
-        id: 2,
-        author: 'David L.',
-        rating: 5,
-        text: 'Highly recommend! Peter was insightful in helping my Music Theory! He was professional and helped me grasp difficult concepts.',
-    },
-];
 
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -606,28 +590,6 @@ const Home: React.FC = () => {
                                 ))}
                             </div>
                         </div>
-                    </div>
-                </section>
-
-                <section className="container mx-auto px-4 py-12 md:py-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
-                        What People Are Saying
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {testimonials.map((testimonial) => (
-                            <article
-                                key={testimonial.id}
-                                className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border-t-4 border-blue-500 dark:border-blue-400"
-                            >
-                                <StarRating rating={testimonial.rating} />
-                                <blockquote className="text-gray-700 dark:text-gray-300 mt-4 italic">
-                                    "{testimonial.text}"
-                                </blockquote>
-                                <cite className="font-semibold text-gray-800 dark:text-gray-100 mt-4 not-italic block">
-                                    - {testimonial.author}
-                                </cite>
-                            </article>
-                        ))}
                     </div>
                 </section>
 

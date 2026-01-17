@@ -64,12 +64,19 @@ const Header = () => {
         { to: '/about', label: 'About Us' }
     ];
 
+    const isLinkActive = (path: string) => {
+        if (path === '/') {
+            return location.pathname === '/';
+        }
+        return location.pathname.startsWith(path);
+    };
+
     return (
         <>
             <header className="fixed top-0 w-full z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-lg border-b border-gray-200/20 dark:border-gray-700/20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
-                        <div className="flex items-center space-x-3 group">
+                        <Link to="/" className="flex items-center space-x-3 group">
                             <div className="relative">
                                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
                                     <span className="text-white font-bold text-lg">Q</span>
@@ -84,28 +91,32 @@ const Header = () => {
                                     Professional Services
                                 </span>
                             </div>
-                        </div>
+                        </Link>
 
                         <nav className="hidden lg:flex space-x-1">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.to}
-                                    to={link.to}
-                                    className="relative px-6 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-all duration-300 rounded-xl hover:bg-blue-50/50 dark:hover:bg-blue-900/20 group"
-                                >
-                                    {link.label}
-                                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-                                </Link>
-                            ))}
+                            {navLinks.map((link) => {
+                                const active = isLinkActive(link.to);
+                                return (
+                                    <Link
+                                        key={link.to}
+                                        to={link.to}
+                                        className={`relative px-6 py-3 font-medium transition-all duration-300 rounded-xl group
+                                            ${active 
+                                                ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20' 
+                                                : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20'
+                                            }`}
+                                    >
+                                        {link.label}
+                                        <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transform origin-center transition-transform duration-300 ease-out
+                                            ${active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}>
+                                        </span>
+                                    </Link>
+                                );
+                            })}
                         </nav>
 
                         <div className="flex items-center space-x-4">
                             <ThemeToggle />
-
-                            {/* <div className="relative">
-                            <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-all duration-300 hover:scale-110" />
-                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                        </div> */}
 
                             {isAuthenticated && !isProfilePage ? (
                                 <div className="relative">
@@ -182,16 +193,23 @@ const Header = () => {
                     {isMobileMenuOpen && (
                         <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg">
                             <nav className="py-4 space-y-2">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.to}
-                                        to={link.to}
-                                        className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 font-medium transition-all duration-300 rounded-lg mx-2"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
+                                {navLinks.map((link) => {
+                                    const active = isLinkActive(link.to);
+                                    return (
+                                        <Link
+                                            key={link.to}
+                                            to={link.to}
+                                            className={`block px-4 py-3 font-medium transition-all duration-300 rounded-lg mx-2
+                                                ${active
+                                                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20'
+                                                }`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    );
+                                })}
                             </nav>
                         </div>
                     )}

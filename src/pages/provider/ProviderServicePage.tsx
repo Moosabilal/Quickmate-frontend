@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Star,
     Plus,
@@ -22,6 +22,7 @@ import { updateProviderProfile } from '../../features/provider/providerSlice';
 import { IService } from '../../util/interface/IService';
 import { isAxiosError } from 'axios';
 import { RazorpayOptions, RazorpayResponse } from '../../util/interface/IRazorpay';
+import { IProviderProfile } from '../../util/interface/IProvider';
 const paymentKey = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 const ProviderServicesPage: React.FC = () => {
@@ -40,80 +41,108 @@ const ProviderServicesPage: React.FC = () => {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!provider.id) return;
+    const syncSubscriptionStatus = useCallback(async () => {
+        if (!provider?.subscription) return provider;
 
-            setIsLoading(true);
+        const { status, endDate } = provider.subscription;
+        const now = new Date();
+        const end = new Date(endDate);
+        const isDateExpired = now > end;
+
+        if (status === 'ACTIVE' && isDateExpired) {
             try {
-                const servicesResponse = await serviceService.getServicesByProviderId(provider.id);
-                setServices(servicesResponse.services);
+                const updatedSubscription = await subscriptionPlanService.checkAndExpire(provider.id!);
 
-                const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan('');
-                setSubscriptionPlans(subscriptionResponse);
+                const updatedProvider = { ...provider, subscription: updatedSubscription };
+                dispatch(updateProviderProfile({ provider: updatedProvider as IProviderProfile }));
+                return updatedProvider;
             } catch (error) {
-                console.log('the errororrr111', error)
-                let errorMessage = "Something went wrong while fetching data";
-                if (isAxiosError(error) && error.response?.data?.message) {
-                    errorMessage = error.response.data.message;
-                } else if (error instanceof Error) {
-                    errorMessage = error.message;
-                }
-                toast.error(errorMessage);
-            } finally {
-                setIsLoading(false);
+                console.error("Failed to sync subscription status", error);
             }
+        }
+        return provider;
+    }, [provider, dispatch]);
+
+    const fetchData = useCallback(async (currentProvider: typeof provider) => {
+        if (!currentProvider?.id) return;
+
+        setIsLoading(true);
+        try {
+            const servicesResponse = await serviceService.getServicesByProviderId(currentProvider.id);
+            const servicesList = servicesResponse.services || [];
+            setServices(servicesList);
+
+            const subscriptionResponse = await subscriptionPlanService.getSubscriptionPlan('');
+            setSubscriptionPlans(subscriptionResponse);
+        } catch (error) {
+            console.log('the errororrr111', error)
+            let errorMessage = "Something went wrong while fetching data";
+            if (isAxiosError(error) && error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        const init = async () => {
+            const syncedProvider = await syncSubscriptionStatus();
+            await fetchData(syncedProvider);
         };
+        init();
+    }, [syncSubscriptionStatus, fetchData]);
 
-        fetchData();
-    }, [provider]);
-
-
-
+    const isSubscriptionActive = () => {
+        const sub = provider?.subscription;
+        if (!sub) return false;
+        if (sub.status !== 'ACTIVE') return false;
+        if (sub.endDate) {
+             return new Date() < new Date(sub.endDate);
+        }
+        return false;
+    };
 
     const handleAddNewService = () => {
-        const { subscription } = provider;
-
-        console.log('the subscription', subscription);
-
-        if (!subscription || subscription.status === "NONE") {
-            if (services.length >= 1) {
-                console.log('its coming to opend the model')
-                setIsModalOpen(true);
+        if (!isSubscriptionActive()) {
+            if (services.length < 1) {
+                navigate(`/provider/providerService/new`);
                 return;
             }
-            return navigate(`/provider/providerService/new`);
-        }
 
-        if (subscription.status === "EXPIRED") {
-            toast.info("Your subscription has expired. Please renew to add more services.");
+            const isExpired = provider?.subscription?.status === 'EXPIRED';
+            const msg = isExpired
+                ? "Subscription expired. Please renew to add more services." 
+                : "Free tier limit reached. Please subscribe to add more services.";
+            
+            toast.error(msg);
             setIsModalOpen(true);
             return;
         }
 
-        if (subscription.status === "ACTIVE") {
+        const { subscription } = provider;
+        if (subscription) {
             const currentPlan = subscriptionPlans.find(
                 (plan) => plan._id === subscription.planId
             );
 
-            if (!currentPlan) {
-                toast.error("Subscription plan not found. Please subscribe again.");
-                setIsModalOpen(true);
-                return;
-            }
-
-            const serviceLimit = currentPlan.features.find(f => f.includes("Max service limit"));
-            if (serviceLimit) {
-                const maxServices = parseInt(serviceLimit.match(/\d+/)?.[0] || "0", 10);
-                if (services.length >= maxServices) {
-                    toast.info("You’ve reached your service limit for this plan. Please upgrade.");
-                    setIsModalOpen(true);
-                    return;
+            if (currentPlan) {
+                const serviceLimit = currentPlan.features.find(f => f.toLowerCase().includes("max service limit"));
+                if (serviceLimit) {
+                    const maxServices = parseInt(serviceLimit.match(/\d+/)?.[0] || "0", 10);
+                    if (maxServices > 0 && services.length >= maxServices) {
+                        toast.info(`Limit reached (${maxServices}). Please upgrade.`);
+                        setIsModalOpen(true);
+                        return;
+                    }
                 }
             }
-
-            return navigate(`/provider/providerService/new`);
         }
+        
+        navigate(`/provider/providerService/new`);
     };
 
 

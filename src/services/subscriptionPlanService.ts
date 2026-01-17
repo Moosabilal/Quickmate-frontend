@@ -57,7 +57,6 @@ export const subscriptionPlanService = {
             return response.data.data; 
         } catch (error) {
             handleAxiosError(error, "Failed to calculate upgrade cost.");
-            throw error;
         }
     },
 
@@ -67,7 +66,6 @@ export const subscriptionPlanService = {
             return response.data;
         } catch (error) {
             handleAxiosError(error, "Failed to schedule downgrade.");
-            throw error;
         }
     },
 
@@ -77,7 +75,15 @@ export const subscriptionPlanService = {
             return response.data; 
         } catch (error) {
             handleAxiosError(error, "Failed to cancel downgrade.");
-            throw error;
+        }
+    },
+
+    checkAndExpire: async (providerId: string) => {
+        try {
+            const response = await axiosInstance.put(`${SUBSCRIPTIONPLAN_URL}/${providerId}/check`);
+            return response.data.data; 
+        } catch (error) {
+            handleAxiosError(error, "Failed to check subscription expiry.");
         }
     },
 

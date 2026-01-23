@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { ValidationErrorsForReset } from '../util/interface/IUser';
 import { authService } from '../services/authService';
+import { useAppSelector } from '../hooks/useAppSelector';
 
 const validatePassword = (password: string): string | undefined => {
   if (!password) return 'Password is required';
@@ -37,6 +38,8 @@ const ResetPasswordForm: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [initialCheckComplete, setInitialCheckComplete] = useState<boolean>(false);
 
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+
   useEffect(() => {
     if (tokenFromParams) {
       setToken(tokenFromParams);
@@ -44,7 +47,7 @@ const ResetPasswordForm: React.FC = () => {
     } else {
       setError('Password reset token is missing from the URL.');
       setInitialCheckComplete(true);
-      navigate('/forgot-password');
+      navigate('/forgot-password', { replace: true });
     }
   }, [tokenFromParams, navigate]);
 
@@ -95,7 +98,8 @@ const ResetPasswordForm: React.FC = () => {
     try {
       const response = await authService.resetPassword(token, newPassword, confirmNewPassword);
       setMessage(response.message + ' You can now log in with your new password.');
-      setTimeout(() => navigate('/login'), 3000);
+
+      setTimeout(() => !isAuthenticated ? navigate('/login', { replace: true }) : navigate('/profile'), 3000);
     } catch (err) {
       let errorMessage = 'Failed to reset password. Please try again.';
       if (isAxiosError(err) && err.response?.data?.message) {
@@ -121,7 +125,7 @@ const ResetPasswordForm: React.FC = () => {
         <div className="p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center max-w-md">
           <p className="text-red-500 dark:text-red-400 text-lg font-medium">{error}</p>
           <button
-            onClick={() => navigate('/forgot-password')}
+            onClick={() => navigate('/forgot-password', { replace: true })}
             className="mt-6 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300"
           >
             Go to Forgot Password
@@ -255,7 +259,7 @@ const ResetPasswordForm: React.FC = () => {
           )}
         </div>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        {!isAuthenticated && (<p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Back to{' '}
           <button
             onClick={() => navigate('/login')}
@@ -263,7 +267,7 @@ const ResetPasswordForm: React.FC = () => {
           >
             Login
           </button>
-        </p>
+        </p>)}
       </div>
     </div>
   );

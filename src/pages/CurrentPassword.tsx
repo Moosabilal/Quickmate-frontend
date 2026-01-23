@@ -16,8 +16,7 @@ const CurrentPasswordPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const location  = useLocation();
+    const location = useLocation();
 
     const { email } = location.state as { email: string };
 
@@ -48,10 +47,10 @@ const CurrentPasswordPage = () => {
         try {
 
             const response = await authService.forgotPassword(email, currentPassword);
-            setMessage(response.message);
+            navigate(`/reset-password/${response.resetToken}`, { replace: true })
             setCurrentPassword('');
         } catch (error) {
-            if(error instanceof Error){
+            if (error instanceof Error) {
                 setError(error.message);
             } else {
                 setError('An unexpected error occurred. Please try again.');
@@ -110,30 +109,27 @@ const CurrentPasswordPage = () => {
                             </div>
                         </div>
 
-                        {(error || message) && (
-  <div
-    className={`rounded-xl p-4 border ${
-      error
-        ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-        : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-    }`}
-  >
-    <div className="flex items-center">
-      <AlertCircle
-        className={`w-5 h-5 mr-3 flex-shrink-0 ${
-          error ? 'text-red-600' : 'text-green-600'
-        }`}
-      />
-      <p
-        className={`text-sm ${
-          error ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'
-        }`}
-      >
-        {error ? error : message}
-      </p>
-    </div>
-  </div>
-)}
+                        {(error) && (
+                            <div
+                                className={`rounded-xl p-4 border ${error
+                                        ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                                        : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                    }`}
+                            >
+                                <div className="flex items-center">
+                                    <AlertCircle
+                                        className={`w-5 h-5 mr-3 flex-shrink-0 ${error ? 'text-red-600' : 'text-green-600'
+                                            }`}
+                                    />
+                                    <p
+                                        className={`text-sm ${error ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'
+                                            }`}
+                                    >
+                                        {error}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
 
                         <div className="flex space-x-4 pt-6">

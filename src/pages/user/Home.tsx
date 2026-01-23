@@ -91,7 +91,7 @@ const Home: React.FC = () => {
     const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; type: 'service' | 'provider'; image?: string }>>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const user = useAppSelector((state) => state.auth.user);
+    const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
     const chatBodyRef = useRef<HTMLDivElement | null>(null);
     const lastMessageRef = useRef<string>("");
@@ -631,7 +631,7 @@ const Home: React.FC = () => {
                     </div>
                 </section>
 
-                <section className="container mx-auto px-4 py-12 md:py-16 text-center">
+                { !isAuthenticated && (<section className="container mx-auto px-4 py-12 md:py-16 text-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-6">
                         Ready to Get Started?
                     </h2>
@@ -654,7 +654,7 @@ const Home: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                     </Link>
-                </section>
+                </section>)}
 
                 <div className={`fixed ${isMobile && showChatbot ? 'inset-0' : 'bottom-6 right-6'} z-50 ${showChatbot && isMobile ? 'chatbot-mobile-fullscreen' : ''}`}>
                     {showChatbot && isMobile && (

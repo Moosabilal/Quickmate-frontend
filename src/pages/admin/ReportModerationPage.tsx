@@ -147,7 +147,7 @@ const ReportModerationPage: React.FC = () => {
                         setSelectedNewProvider('');
                     }
                 } catch (e) {
-                    console.error("Failed to load providers");
+                    console.error("Failed to load providers", e);
                 } finally {
                     setLoadingProviders(false);
                 }
@@ -290,7 +290,6 @@ const ReportModerationPage: React.FC = () => {
                     </table>
                 </div>
 
-                {/* Pagination */}
                 <Pagination
                     currentPage={page}
                     limit={limit}
@@ -300,7 +299,6 @@ const ReportModerationPage: React.FC = () => {
                 />
             </div>
 
-            {/* Admin Reply Modal */}
             {showReplyModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all animate-in zoom-in duration-300">

@@ -88,7 +88,6 @@ const BookingConfirmation: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 transition-colors duration-300">
       <div className="max-w-5xl mx-auto">
 
-        {/* Success Header */}
         <div className="text-center mb-10">
           <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
             <div className="absolute inset-0 bg-green-100 dark:bg-green-900/30 rounded-full animate-pulse"></div>
@@ -105,10 +104,8 @@ const BookingConfirmation: React.FC = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Details Column */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Booking Card */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 p-6 text-white">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -123,7 +120,6 @@ const BookingConfirmation: React.FC = () => {
               </div>
 
               <div className="p-6 sm:p-8 space-y-8">
-                {/* Info Grid */}
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
@@ -170,7 +166,6 @@ const BookingConfirmation: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Address Section */}
                 <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-100 dark:border-blue-800/50">
                   <div className="flex items-start">
                     <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 mt-0.5 shadow-sm shrink-0">
@@ -188,7 +183,6 @@ const BookingConfirmation: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Instructions */}
                 {booking.specialInstruction && (
                   <div className="p-4 sm:p-5 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border border-yellow-200 dark:border-yellow-800/50">
                     <div className="flex items-start">
@@ -206,10 +200,8 @@ const BookingConfirmation: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Payment & Actions */}
           <div className="space-y-6">
 
-            {/* Payment Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                 Payment Summary
@@ -233,7 +225,6 @@ const BookingConfirmation: React.FC = () => {
               </div>
             </div>
 
-            {/* Next Steps */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/50">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">What's Next?</h3>
               <div className="space-y-4">
@@ -252,7 +243,6 @@ const BookingConfirmation: React.FC = () => {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/profile/booking-history')}
@@ -268,7 +258,6 @@ const BookingConfirmation: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer Help */}
         <div className="mt-12 text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Need Help?</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">Our support team is here to assist you 24/7</p>

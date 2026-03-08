@@ -3,7 +3,7 @@ import { reportService } from '../../services/reportService';
 import { toast } from 'react-toastify';
 import { CalendarModal } from '../../components/user/CalendarModal';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, User, CheckCircle, Clock } from 'lucide-react';
+import { Calendar, User, CheckCircle } from 'lucide-react';
 
 const MyReports: React.FC = () => {
     const [reports, setReports] = useState<any[]>([]);
@@ -39,7 +39,7 @@ const MyReports: React.FC = () => {
         try {
             await reportService.scheduleUserRework(activeReport._id, date, time);
             toast.success("Rework scheduled successfully!");
-            fetchReports(); // Refresh to hide schedule button
+            fetchReports();
         } catch (error: any) {
             toast.error(error.message || "Failed to schedule rework");
         }
@@ -157,7 +157,7 @@ const MyReports: React.FC = () => {
                             ? activeReport.assignedReworkProviderId._id
                             : activeReport.assignedReworkProviderId
                     }
-                    radius={100} // Broad radius for strict provider matching
+                    radius={100}
                     onSlotSelect={handleSlotSelect}
                 />
             )}

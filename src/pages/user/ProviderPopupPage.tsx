@@ -72,7 +72,6 @@ const ProviderPopup = ({
       const providers = await providerService.getserviceProvider(serviceId, filteredParams);
       setAllProviders(providers);
 
-      // Auto-select provider if preSelectedProviderId is provided
       if (preSelectedProviderId && !selectedProvider) {
         const preSelected = providers.find((p: IBackendProvider) => p._id === preSelectedProviderId);
         if (preSelected) {
@@ -89,7 +88,7 @@ const ProviderPopup = ({
       }
       toast.error(errorMessage);
     }
-  }, [serviceId]);
+  }, [serviceId, preSelectedProviderId, selectedProvider, setSelectedProvider]);
 
   useEffect(() => {
     if (serviceId) {
@@ -97,9 +96,6 @@ const ProviderPopup = ({
     }
   }, [serviceId, selectedTime, getProvider, filters]);
 
-  // const handleApplyFilters = () => {
-  //   getProvider(filters);
-  // };
 
   const handleClearFilters = () => {
     setFilters(initialFilters);
@@ -188,12 +184,6 @@ const ProviderPopup = ({
                   </div>
 
                   <div className="flex gap-3 mt-4">
-                    {/* <button
-                      onClick={handleApplyFilters}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      Apply
-                    </button> */}
                     <button
                       onClick={handleClearFilters}
                       className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
@@ -415,7 +405,6 @@ const ProviderPopup = ({
                 </div>
               </div>
             ) : (
-              // Desktop Placeholder State
               <div className="hidden md:flex flex-col items-center justify-center h-full text-center p-8 bg-gray-50 dark:bg-gray-800/50">
                 <div className="w-20 h-20 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 shadow-sm">
                   <Award className="w-10 h-10 text-gray-300 dark:text-gray-500" />

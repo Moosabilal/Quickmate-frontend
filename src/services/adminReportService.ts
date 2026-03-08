@@ -19,7 +19,7 @@ export const adminReportService = {
     updateReportStatus: async (reportId: string, status: string, adminReply?: string, resolutionType?: string, newProviderId?: string) => {
         try {
             const payload: any = { status };
-            if (adminReply) payload.adminFeedback = adminReply; // Use feedback name
+            if (adminReply) payload.adminFeedback = adminReply;
             if (resolutionType) payload.resolutionType = resolutionType;
             if (newProviderId) payload.newProviderId = newProviderId;
 

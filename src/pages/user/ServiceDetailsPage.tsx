@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { categoryService } from '../../services/categoryService';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ICategoryFormCombinedData, IserviceResponse } from '../../util/interface/ICategory';
-import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, Phone, FileText, Loader2, AlertTriangle, X, ShieldCheck, LogIn } from 'lucide-react';
+import { Star, MapPin, Calendar, User, CreditCard, CheckCircle, ChevronRight, Clock, FileText, Loader2, AlertTriangle, ShieldCheck, LogIn } from 'lucide-react';
 import ProviderPopup from './ProviderPopupPage';
 import PhoneVerificationModal from '../../components/user/PhoneVerificationModal';
 import AddressPopup from '../../components/user/AddressPopup';
@@ -56,7 +56,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [instructions, setInstructions] = useState('');
 
   const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otp, setOtp] = useState('');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(!!user?.phone);
   const [showVerificationPopup, setShowVerificationPopup] = useState(false);
@@ -164,18 +163,17 @@ const ServiceDetailsPage: React.FC = () => {
         setIsPhoneVerified(true);
         setShowOtpInput(false);
         setShowVerificationPopup(false);
-        // Refresh user state to include the new phone number
         const updatedUserRes = await authService.getUser();
         if (updatedUserRes) {
           dispatch(updateProfile({ user: updatedUserRes }));
         }
-        // Proceed to payment after verification
         setTimeout(() => {
           const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
           handlePayment(fakeEvent, true);
         }, 500);
       }
     } catch (error) {
+      toast.error("Invalid OTP, please try again");
       console.error("Failed to verify OTP:", error);
     } finally {
       setVerificationLoading(false);
@@ -594,7 +592,7 @@ const ServiceDetailsPage: React.FC = () => {
 
       <PhoneVerificationModal
         isOpen={showVerificationPopup}
-        onClose={() => { setShowVerificationPopup(false); setOtp(''); }}
+        onClose={() => { setShowVerificationPopup(false); }}
         phone={phone}
         onPhoneChange={setPhone}
         onSendOtp={handleSendOtp}

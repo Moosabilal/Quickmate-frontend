@@ -1,5 +1,5 @@
 import { MapPin, X, Loader2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { addressService } from "../../services/addressService";
 import { providerService } from "../../services/providerService";
 import { AddressPopupProps, IAddress } from "../../util/interface/IAddress";
@@ -104,7 +104,6 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         };
 
         if (isGuest) {
-          // Guests: don't save to DB, just use the detected address in-memory
           handleAddressConfirm({ ...detectedAddress, id: `guest-${Date.now()}` }, radius);
         } else {
           const response = await addressService.createAddress(detectedAddress);
@@ -230,11 +229,12 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
     }
   }
 
-  const fetchAddress = async () => {
-    if (isGuest) return; // guests don't have saved addresses
+  const fetchAddress = useCallback(async () => {
+    if (isGuest) return;
+
     try {
-      const res = await addressService.getAddress()
-      setMockAddresses(res)
+      const res = await addressService.getAddress();
+      setMockAddresses(res);
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -242,12 +242,12 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         toast.error('Something went wrong. Please try again.');
       }
     }
-  }
+  }, [isGuest]);
 
   useEffect(() => {
     if (!addressPopup) return;
     fetchAddress()
-  }, [addressPopup])
+  }, [addressPopup, fetchAddress])
 
   if (!addressPopup) return null;
 

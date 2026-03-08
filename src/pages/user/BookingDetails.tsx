@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Wrench,
   ShieldAlert,
-  CalendarDays,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
@@ -70,11 +69,9 @@ const BookingDetails: React.FC = () => {
       setSelectedDate(response.date);
       setSelectedTime(response.time);
 
-      // Check if the user has already reported this booking or its relative in the warranty chain
       const userReports = await reportService.getUserReports();
       if (userReports.success && id) {
         const hasReport = userReports.reports.some((r: any) => {
-          // Robust string extraction for IDs
           const reportBook = typeof r.bookingId === 'object' ? r.bookingId : null;
           const reportNodeId = (reportBook?._id || reportBook?.id || r.bookingId)?.toString();
           const reportParentId = reportBook?.parentBookingId?.toString();
@@ -84,13 +81,9 @@ const BookingDetails: React.FC = () => {
 
           if (!reportNodeId || !currentNodeId) return false;
 
-          // Is it reported on this exact booking?
           if (reportNodeId === currentNodeId) return true;
-          // Is it reported on the parent of this booking?
           if (currentParentId && reportNodeId === currentParentId) return true;
-          // Is it reported on a child of this booking?
           if (reportParentId && reportParentId === currentNodeId) return true;
-          // Is it reported on a sibling of this booking?
           if (currentParentId && reportParentId && reportParentId === currentParentId) return true;
 
           return false;
@@ -173,7 +166,7 @@ const BookingDetails: React.FC = () => {
 
   }
 
-  const handleReportSubmit = async (bookingId: string) => {
+  const handleReportSubmit = async () => {
     if (!booking) return;
     setIsReporting(true);
     try {
@@ -184,7 +177,7 @@ const BookingDetails: React.FC = () => {
         setShowReportForm(false);
         setReportReason('Poor Quality Service');
         setReportDescription('');
-        setHasReported(true); // Set hasReported to true on successful submission
+        setHasReported(true);
       } else {
         toast.error(response.message || 'Failed to submit report');
       }
@@ -213,11 +206,10 @@ const BookingDetails: React.FC = () => {
         toast.success(response.message || 'Warranty claim submitted successfully');
         setShowWarrantyModal(false);
         setWarrantyIssue('');
-        await fetchBookingDetails(); // Refresh to update warranty status
+        await fetchBookingDetails();
       }
     } catch (error: any) {
       if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
-        // Handle Zod validation errors
         error.response.data.errors.forEach((err: any) => {
           toast.error(err.message || 'Validation error');
         });
@@ -348,7 +340,7 @@ const BookingDetails: React.FC = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-          <div id="receipt-content" className="lg:col-span-2 space-y-8 p-4 bg-white dark:bg-gray-900 rounded-lg"> {/* Added p-4 for padding in PDF */}
+          <div id="receipt-content" className="lg:col-span-2 space-y-8 p-4 bg-white dark:bg-gray-900 rounded-lg">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden p-6">
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 p-6 text-white rounded-xl mb-6">
                 <div className="flex items-center justify-between">
@@ -493,7 +485,6 @@ const BookingDetails: React.FC = () => {
               const isValid = daysLeft > 0;
 
               const handleBookAgain = () => {
-                // Navigate to service details with providerId in state or query
                 navigate(`/service-detailsPage/${booking.serviceId}`, {
                   state: { preSelectedProviderId: booking.providerId }
                 });
@@ -557,7 +548,6 @@ const BookingDetails: React.FC = () => {
                       {!showReviewForm && !showReportForm ? (
                         <div className="flex flex-col gap-3">
                           <p className="text-gray-800 dark:text-gray-200 mb-2">Service completed successfully!</p>
-                          {/* Action Buttons for Feedback */}
                           <div className="flex flex-col sm:flex-row gap-4 mt-6">
                             {!booking.review && (
                               <button
@@ -653,7 +643,7 @@ const BookingDetails: React.FC = () => {
                           />
                           <div className="flex gap-3">
                             <button
-                              onClick={() => handleReportSubmit(booking.id)}
+                              onClick={() => handleReportSubmit()}
                               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
                               disabled={isReporting || !reportDescription.trim()}
                             >
@@ -766,7 +756,6 @@ const BookingDetails: React.FC = () => {
       />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={booking.providerTimings} />
 
-      {/* Warranty Claim Modal */}
       {showWarrantyModal && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95">
@@ -819,7 +808,6 @@ const BookingDetails: React.FC = () => {
         </div>
       )}
 
-      {/* CalendarModal for Warranty Claim */}
       <CalendarModal
         isOpen={showCalendarForWarranty}
         onClose={() => setShowCalendarForWarranty(false)}

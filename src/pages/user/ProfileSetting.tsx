@@ -9,7 +9,7 @@ import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
-import { Loader2, Phone, X, CheckCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import PhoneVerificationModal from '../../components/user/PhoneVerificationModal';
 
 const ProfileSetting: React.FC = () => {
@@ -27,7 +27,6 @@ const ProfileSetting: React.FC = () => {
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
 
     const [showVerificationModal, setShowVerificationModal] = useState(false);
-    const [otp, setOtp] = useState('');
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
 
@@ -83,6 +82,7 @@ const ProfileSetting: React.FC = () => {
             setShowOtpInput(true);
             toast.success("Verification code sent to your phone");
         } catch (error) {
+            console.log(error);
             toast.error("Failed to send verification code");
         } finally {
             setOtpLoading(false);
@@ -105,6 +105,7 @@ const ProfileSetting: React.FC = () => {
             const updatedUser = await authService.getUser();
             dispatch(updateProfile({ user: updatedUser }));
         } catch (error) {
+            console.log(error);
             toast.error("Invalid OTP, please try again");
         } finally {
             setOtpLoading(false);
@@ -127,7 +128,7 @@ const ProfileSetting: React.FC = () => {
             return;
         }
 
-        if(editingEmail.split('@')[0].length < 3){
+        if (editingEmail.split('@')[0].length < 3) {
             toast.error('Email address is too short');
             return;
         }
@@ -252,7 +253,7 @@ const ProfileSetting: React.FC = () => {
         <>
             <PhoneVerificationModal
                 isOpen={showVerificationModal}
-                onClose={() => { setShowVerificationModal(false); setOtp(''); }}
+                onClose={() => { setShowVerificationModal(false); }}
                 phone={editingPhone}
                 onPhoneChange={setEditingPhone}
                 onSendOtp={handleSendOtp}

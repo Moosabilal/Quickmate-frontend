@@ -9,9 +9,8 @@ import { IAddress } from '../../util/interface/IAddress';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateProfile } from '../../features/auth/authSlice';
-import { Loader2 } from 'lucide-react';
-
-
+import { Loader2, Phone, X, CheckCircle } from 'lucide-react';
+import PhoneVerificationModal from '../../components/user/PhoneVerificationModal';
 
 const ProfileSetting: React.FC = () => {
     const { user } = useAppSelector(state => state.auth);
@@ -19,11 +18,18 @@ const ProfileSetting: React.FC = () => {
 
     const [name, setName] = useState(user?.name || 'N/A');
     const [email, setEmail] = useState(user?.email || 'N/A');
+    const [phone, setPhone] = useState(user?.phone || '');
     const [profilePicture, setProfilePicture] = useState<string | File | null>(user?.profilePicture || '');
 
     const [editingName, setEditingName] = useState('');
     const [editingEmail, setEditingEmail] = useState('');
+    const [editingPhone, setEditingPhone] = useState('');
     const [editingProfilePicture, setEditingProfilePicture] = useState<string | File | null>('');
+
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [otpLoading, setOtpLoading] = useState(false);
 
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -45,10 +51,7 @@ const ProfileSetting: React.FC = () => {
         locationCoords: '',
     });
 
-
-
     const navigate = useNavigate();
-
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -64,11 +67,49 @@ const ProfileSetting: React.FC = () => {
     const handleEditProfile = () => {
         setEditingName(name);
         setEditingEmail(email);
+        setEditingPhone(phone);
         setEditingProfilePicture(profilePicture);
         setIsEditing(true);
     };
 
-    console.log('the providpiicture', profilePicture, editingProfilePicture)
+    const handleSendOtp = async () => {
+        if (!editingPhone || editingPhone.length < 10) {
+            toast.error("Please enter a valid 10-digit phone number");
+            return;
+        }
+        setOtpLoading(true);
+        try {
+            await authService.sendPhoneOtp(editingPhone);
+            setShowOtpInput(true);
+            toast.success("Verification code sent to your phone");
+        } catch (error) {
+            toast.error("Failed to send verification code");
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
+    const handleVerifyPhone = async (otpValue: string) => {
+        if (!otpValue || otpValue.length !== 6) {
+            toast.error("Please enter the 6-digit OTP");
+            return;
+        }
+        setOtpLoading(true);
+        try {
+            await authService.verifyPhoneOtp(otpValue, editingPhone);
+            setPhone(editingPhone);
+            setShowVerificationModal(false);
+            setShowOtpInput(false);
+            toast.success("Phone number verified successfully!");
+
+            const updatedUser = await authService.getUser();
+            dispatch(updateProfile({ user: updatedUser }));
+        } catch (error) {
+            toast.error("Invalid OTP, please try again");
+        } finally {
+            setOtpLoading(false);
+        }
+    };
 
     const handleSaveChanges = async () => {
         if (editingName.trim() === '') {
@@ -85,40 +126,47 @@ const ProfileSetting: React.FC = () => {
             toast.error('Email cannot be empty');
             return;
         }
-        if (editingEmail.trim().split('@')[0].length < 3) {
-            toast.error('Email address is too short')
+
+        if(editingEmail.split('@')[0].length < 3){
+            toast.error('Email address is too short');
+            return;
         }
+
+        if (editingPhone !== phone) {
+            setShowVerificationModal(true);
+            return;
+        }
+
         setEditLoading(true)
         try {
             const formData = new FormData();
             formData.append('name', editingName);
             formData.append('email', editingEmail);
+            formData.append('phone', editingPhone);
             if (editingProfilePicture instanceof File) {
                 formData.append('profilePicture', editingProfilePicture);
             } else if (typeof editingProfilePicture === 'string' && editingProfilePicture) {
                 formData.append('profilePicture', editingProfilePicture);
             }
-            console.log('the pattern', editingEmail, typeof editingEmail, email, typeof email)
+
             if (editingEmail.trim() !== email) {
                 try {
-                    const result = await authService.generateOtp(editingEmail)
-                    console.log('the result of otop', result)
-                    navigate('/verify-otp', { state: { email: user?.email, displayEmail: editingEmail, role: user?.role, updateProfileData: { name: editingName, email: editingEmail, profilePicture: editingProfilePicture } } });
-                    return
-
+                    await authService.generateOtp(editingEmail);
+                    navigate('/verify-otp', { state: { email: user?.email, displayEmail: editingEmail, role: user?.role, updateProfileData: { name: editingName, email: editingEmail, profilePicture: editingProfilePicture, phone: editingPhone } } });
+                    return;
                 } catch (error) {
-                    console.log(error)
+                    console.log(error);
                 }
             }
             const updatedData = await authService.updateProfile(formData);
 
             setName(editingName);
             setEmail(editingEmail);
+            setPhone(editingPhone);
             setProfilePicture(editingProfilePicture);
             dispatch(updateProfile({ user: updatedData }));
 
-
-            toast.success('profile Updated Successfully')
+            toast.success('Profile Updated Successfully')
             setIsEditing(false);
         } catch (error) {
             if (error instanceof Error) {
@@ -126,7 +174,6 @@ const ProfileSetting: React.FC = () => {
             } else {
                 toast.error('Something went wrong. Please try again.');
             }
-
         } finally {
             setEditLoading(false)
         }
@@ -135,18 +182,16 @@ const ProfileSetting: React.FC = () => {
     const handleCancel = () => {
         setEditingName(name);
         setEditingEmail(email);
+        setEditingPhone(phone);
         setEditingProfilePicture(profilePicture);
         setIsEditing(false);
     };
 
     const handleAddAddress = async (newAddress: IAddress) => {
-
         try {
             let savedAddress: IAddress;
-
             if (isEditingAddress && currentAddress.id) {
                 savedAddress = await addressService.updateAddress(currentAddress.id, currentAddress);
-
                 setAddressList(prev =>
                     prev.map(addr => (addr.id === currentAddress.id ? savedAddress : addr))
                 );
@@ -156,19 +201,14 @@ const ProfileSetting: React.FC = () => {
                 setAddressList(prev => [...prev, savedAddress]);
                 toast.success("Address Created")
             }
-
             setCurrentAddress({ id: '', label: '', userId: '', street: '', city: '', state: '', zip: '' });
             setIsEditingAddress(false);
             setAddressPopup(false);
-
         } catch (error) {
             console.error('Failed to save address:', error);
             alert('Something went wrong while saving the address. Please try again.');
         }
-
     };
-
-
 
     const handleAddressConfirm = (address: IAddress) => {
         setSelectedAddress(address);
@@ -185,7 +225,6 @@ const ProfileSetting: React.FC = () => {
             setAddressPopup(true);
         }
     };
-
 
     const handleDeleteAddress = (id: string) => {
         setDeleteAddressId(id);
@@ -211,6 +250,19 @@ const ProfileSetting: React.FC = () => {
 
     return (
         <>
+            <PhoneVerificationModal
+                isOpen={showVerificationModal}
+                onClose={() => { setShowVerificationModal(false); setOtp(''); }}
+                phone={editingPhone}
+                onPhoneChange={setEditingPhone}
+                onSendOtp={handleSendOtp}
+                onVerifyOtp={handleVerifyPhone}
+                loading={otpLoading}
+                description="Please verify your new phone number to save your profile changes."
+                showOtpInput={showOtpInput}
+                setShowOtpInput={setShowOtpInput}
+            />
+
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 p-6 mb-8">Account</h1>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center md:items-start justify-between">
                 {isEditing ? (
@@ -237,6 +289,17 @@ const ProfileSetting: React.FC = () => {
                                         value={editingEmail}
                                         onChange={(e) => setEditingEmail(e.target.value)}
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={editingPhone}
+                                        onChange={(e) => setEditingPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                        placeholder="Enter your phone number"
+                                        maxLength={10}
                                     />
                                 </div>
 
@@ -304,7 +367,7 @@ const ProfileSetting: React.FC = () => {
                         <div className="flex-1">
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Profile info</h2>
                             <p className="text-gray-700 dark:text-gray-300 text-sm font-medium">{name}</p>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">{email} • { }</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">{email} • {phone || 'No phone number'}</p>
                             <button
                                 onClick={handleEditProfile}
                                 className="mt-4 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-sm font-semibold rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"

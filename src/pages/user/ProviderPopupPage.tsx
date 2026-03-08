@@ -37,7 +37,8 @@ const ProviderPopup = ({
   selectedTime,
   latitude,
   longitude,
-  radiusKm
+  radiusKm,
+  preSelectedProviderId
 }: ProviderPopupProps) => {
 
   const initialFilters: FilterParams = {
@@ -56,37 +57,45 @@ const ProviderPopup = ({
   const [showReviews, setShowReviews] = useState(false);
 
   const getProvider = useCallback(async (filterParams: FilterParams) => {
-      try {
-        const filteredParams: Partial<FilterParams> = Object.fromEntries(
-          Object.entries(filterParams).filter(
-            ([, value]) =>
-              value !== null &&
-              value !== undefined &&
-              value !== "" &&
-              value !== 0 &&
-              !(typeof value === "number" && isNaN(value))
-          )
-        );
+    try {
+      const filteredParams: Partial<FilterParams> = Object.fromEntries(
+        Object.entries(filterParams).filter(
+          ([, value]) =>
+            value !== null &&
+            value !== undefined &&
+            value !== "" &&
+            value !== 0 &&
+            !(typeof value === "number" && isNaN(value))
+        )
+      );
 
-        const providers = await providerService.getserviceProvider(serviceId, filteredParams);
-        setAllProviders(providers);
-      } catch (error) {
-        console.error("Error fetching providers:", error);
-        let errorMessage = "Failed to fetch providers";
-        if (isAxiosError(error) && error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
+      const providers = await providerService.getserviceProvider(serviceId, filteredParams);
+      setAllProviders(providers);
+
+      // Auto-select provider if preSelectedProviderId is provided
+      if (preSelectedProviderId && !selectedProvider) {
+        const preSelected = providers.find((p: IBackendProvider) => p._id === preSelectedProviderId);
+        if (preSelected) {
+          setSelectedProvider(preSelected);
         }
-        toast.error(errorMessage);
       }
-    }, [serviceId]);
+    } catch (error) {
+      console.error("Error fetching providers:", error);
+      let errorMessage = "Failed to fetch providers";
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    }
+  }, [serviceId]);
 
   useEffect(() => {
     if (serviceId) {
       getProvider(filters);
     }
-  }, [serviceId, selectedTime, getProvider, filters]); 
+  }, [serviceId, selectedTime, getProvider, filters]);
 
   // const handleApplyFilters = () => {
   //   getProvider(filters);
@@ -109,7 +118,7 @@ const ProviderPopup = ({
   return (
     <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4 animate-in fade-in duration-200">
       <div className="w-full h-full md:h-[85vh] max-w-6xl bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-colors">
-        
+
         <div className={`w-full md:w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 ${selectedProvider ? 'hidden md:flex' : 'flex h-full'}`}>
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 p-4 text-white shrink-0">
             <div className="flex items-center justify-between">
@@ -199,11 +208,10 @@ const ProviderPopup = ({
                 allProviders.map((provider) => (
                   <div
                     key={provider._id}
-                    className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
-                      selectedProvider?._id === provider._id
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 ring-1 ring-blue-300 dark:ring-blue-700'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'
-                    }`}
+                    className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${selectedProvider?._id === provider._id
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 ring-1 ring-blue-300 dark:ring-blue-700'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'
+                      }`}
                     onClick={() => setSelectedProvider(provider)}
                   >
                     <div className="flex items-center gap-4">
@@ -231,10 +239,10 @@ const ProviderPopup = ({
                           <MapPin className="w-3 h-3" /> {provider.serviceArea}
                         </p>
                         <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {provider.reviews?.length ?? 0} reviews
-                            </p>
-                            <p className="text-sm font-bold text-gray-900 dark:text-white">₹{provider.price}</p>
+                          </p>
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">₹{provider.price}</p>
                         </div>
                       </div>
                     </div>
@@ -258,15 +266,15 @@ const ProviderPopup = ({
         <div className={`w-full md:w-1/2 bg-white dark:bg-gray-800 flex flex-col h-full ${selectedProvider ? 'flex' : 'hidden md:flex'}`}>
           <div className="bg-gradient-to-r from-green-600 to-green-700 dark:from-green-700 dark:to-green-800 p-4 text-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
-                <button 
-                    aria-label="Back to Provider List"
-                    type='button'
-                    onClick={() => setSelectedProvider(null)}
-                    className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
-                <h3 className="text-lg font-bold">Provider Details</h3>
+              <button
+                aria-label="Back to Provider List"
+                type='button'
+                onClick={() => setSelectedProvider(null)}
+                className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold">Provider Details</h3>
             </div>
             <button
               aria-label="Close Provider Details"
@@ -284,9 +292,9 @@ const ProviderPopup = ({
                 <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-6">
                   <div className="relative inline-block">
                     <img
-                        src={selectedProvider.profilePhoto}
-                        alt={selectedProvider.fullName}
-                        className="w-24 h-24 rounded-full object-cover border-4 border-green-50 dark:border-green-900/30 shadow-md bg-gray-100 dark:bg-gray-700"
+                      src={selectedProvider.profilePhoto}
+                      alt={selectedProvider.fullName}
+                      className="w-24 h-24 rounded-full object-cover border-4 border-green-50 dark:border-green-900/30 shadow-md bg-gray-100 dark:bg-gray-700"
                     />
                   </div>
                   <h4 className="text-2xl font-bold text-gray-900 dark:text-white mt-3">
@@ -295,15 +303,15 @@ const ProviderPopup = ({
                   <p className="text-green-600 dark:text-green-400 font-medium">
                     {selectedProvider.serviceName}
                   </p>
-                  
+
                   <div className="flex items-center justify-center gap-4 mt-3">
                     <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-full text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors" onClick={() => setShowReviews(!showReviews)}>
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="font-bold text-sm">{averageRating}</span>
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="font-bold text-sm">{averageRating}</span>
                     </div>
-                    <button 
-                        className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
-                        onClick={() => setShowReviews(!showReviews)}
+                    <button
+                      className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
+                      onClick={() => setShowReviews(!showReviews)}
                     >
                       {selectedProvider.reviews?.length ?? 0} reviews
                     </button>

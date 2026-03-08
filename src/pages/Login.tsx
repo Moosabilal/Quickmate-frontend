@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { login } from '../features/auth/authSlice';
@@ -23,7 +23,10 @@ const Login = () => {
 
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const locationHook = useLocation();
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+    const redirectTo = new URLSearchParams(locationHook.search).get('redirect');
 
     const validateEmail = (email: string): string | undefined => {
         if (!email.trim()) return 'Email address is required';
@@ -63,9 +66,10 @@ const Login = () => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate(user?.role === 'Admin' ? '/admin' : '/', { replace: true });
+            const dest = redirectTo || (user?.role === 'Admin' ? '/admin' : '/');
+            navigate(dest, { replace: true });
         }
-    }, [isAuthenticated, user, navigate]);
+    }, [isAuthenticated, user, navigate, redirectTo]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -113,7 +117,7 @@ const Login = () => {
             <div className="relative bg-white dark:bg-gray-800 p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 hover:shadow-2xl">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-2">QuickMate</h1>
-                    <p className="text-gray-600 dark:text-gray-300 text-lg">Welcome back!</p>
+                    <p className="text-gray-600 dark:text-gray-300 text-lg">{redirectTo ? 'Sign in to continue booking' : 'Welcome back!'}</p>
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Access Your Account</h2>
@@ -159,7 +163,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 onBlur={() => handleBlur("password")}
-                                className={`${getInputClasses("password")} pr-10`} 
+                                className={`${getInputClasses("password")} pr-10`}
                                 placeholder="••••••••"
                                 aria-invalid={!!(touched.password && validationErrors.password)}
                             />
@@ -218,7 +222,8 @@ const Login = () => {
                                     const res = await authService.googleAuthLogin(idToken);
                                     dispatch(login({ user: res.data.user }));
                                     toast.success(`Welcome, ${res.data.user.name}`);
-                                    navigate('/');
+                                    const dest = redirectTo || (res.data.user?.role === 'Admin' ? '/admin' : '/');
+                                    navigate(dest);
                                 } catch (error) {
                                     console.error(error);
                                     let errorMessage = 'Google login failed. Try again.';

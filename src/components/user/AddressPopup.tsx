@@ -18,6 +18,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   setNewAddress,
   handleAddAddress,
   serviceId,
+  isGuest = false,
 }) => {
 
   const [mockAddresses, setMockAddresses] = useState<IAddress[]>([])
@@ -70,7 +71,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
         let lat = latitude;
         let lng = longitude;
-        lat = 12.733242; 
+        lat = 12.733242;
         lng = 74.895929;
 
         if (serviceId) {
@@ -85,7 +86,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         const locationData = await providerService.getState(lat, lng);
         console.log('Location data:', locationData);
 
-        const newAddress: IAddress = {
+        const detectedAddress: IAddress = {
           label: "Current Location",
           street:
             locationData?.address?.road ||
@@ -102,8 +103,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
           locationCoords: `${lat},${lng}`,
         };
 
-        const response = await addressService.createAddress(newAddress);
-        handleAddressConfirm(response, radius);
+        if (isGuest) {
+          // Guests: don't save to DB, just use the detected address in-memory
+          handleAddressConfirm({ ...detectedAddress, id: `guest-${Date.now()}` }, radius);
+        } else {
+          const response = await addressService.createAddress(detectedAddress);
+          handleAddressConfirm(response, radius);
+        }
 
       } catch (err) {
         console.error("An error occurred while processing location:", err);
@@ -127,17 +133,17 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
         navigator.geolocation.getCurrentPosition(
           handleSuccess,
           (retryError) => {
-             setLoading(false);
-             toast.error("Unable to retrieve location. Please enter address manually.");
-             console.error("Retry failed:", retryError);
+            setLoading(false);
+            toast.error("Unable to retrieve location. Please enter address manually.");
+            console.error("Retry failed:", retryError);
           },
           {
-            enableHighAccuracy: false, 
+            enableHighAccuracy: false,
             timeout: 10000,
             maximumAge: 0
           }
         );
-        return; 
+        return;
       }
 
       setLoading(false);
@@ -159,7 +165,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
 
     const options = {
       enableHighAccuracy: true,
-      timeout: 20000, 
+      timeout: 20000,
       maximumAge: 0
     };
 
@@ -225,6 +231,7 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
   }
 
   const fetchAddress = async () => {
+    if (isGuest) return; // guests don't have saved addresses
     try {
       const res = await addressService.getAddress()
       setMockAddresses(res)
@@ -302,9 +309,13 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                    Saved Addresses
-                  </label>
+                  {isGuest ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">Sign in to use saved addresses</p>
+                  ) : (
+                    <label className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                      Saved Addresses
+                    </label>
+                  )}
                   <button
                     onClick={handleCurrentLocation}
                     disabled={loading}
@@ -316,40 +327,42 @@ const AddressPopup: React.FC<AddressPopupProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-3 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1">
-                {mockAddresses.map((address) => (
-                  <div
-                    key={address.id}
-                    className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 group ${selectedAddress?.id === address.id
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500'
-                      : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-600'
-                      }`}
-                    onClick={() => handleAddressConfirmWithCheck(address)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-1 p-1.5 rounded-full ${selectedAddress?.id === address.id
-                        ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300'
-                        : 'bg-gray-100 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
-                        }`}>
-                        <MapPin className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white text-sm">{address.label}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
-                          {address.street}, {address.city}, {address.state} {address.zip}
-                        </p>
+              {!isGuest && (
+                <div className="space-y-3 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1">
+                  {mockAddresses.map((address) => (
+                    <div
+                      key={address.id}
+                      className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 group ${selectedAddress?.id === address.id
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500'
+                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-600'
+                        }`}
+                      onClick={() => handleAddressConfirmWithCheck(address)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`mt-1 p-1.5 rounded-full ${selectedAddress?.id === address.id
+                          ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
+                          }`}>
+                          <MapPin className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">{address.label}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
+                            {address.street}, {address.city}, {address.state} {address.zip}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                <button
-                  onClick={() => setShowAddAddress(!showAddAddress)}
-                  className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all text-sm font-medium flex items-center justify-center gap-2"
-                >
-                  <span>+</span> Add New Address
-                </button>
-              </div>
+                  <button
+                    onClick={() => setShowAddAddress(!showAddAddress)}
+                    className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <span>+</span> Add New Address
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

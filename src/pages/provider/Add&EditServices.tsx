@@ -180,7 +180,7 @@ const ServiceManagementPage: React.FC = () => {
 
             if (editingService) {
                 try {
-                    for(const pair of data.entries()) {
+                    for (const pair of (data as any).entries()) {
                         console.log(`${pair[0]}: ${pair[1]}`);
                     }
                     const { message, success } = await serviceService.updateService(serviceId || '', data)

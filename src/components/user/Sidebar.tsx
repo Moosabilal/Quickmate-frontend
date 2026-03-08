@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   MdOutlineSettings,
@@ -10,12 +10,14 @@ import {
   MdMenu,
   MdClose
 } from 'react-icons/md';
+import { ShieldAlert } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { logout } from '../../features/auth/authSlice';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { authService } from '../../services/authService';
+import { reportService } from '../../services/reportService';
 
 const Sidebar = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -24,12 +26,34 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
 
-  const navItems = [
+  const [hasReports, setHasReports] = useState(false);
+
+  useEffect(() => {
+    const checkUserReports = async () => {
+      try {
+        if (user) {
+          const response = await reportService.getUserReports();
+          if (response.success && response.reports.length > 0) {
+            setHasReports(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check user reports:", error);
+      }
+    };
+    checkUserReports();
+  }, [user]);
+
+  const baseNavItems = [
     { name: 'Profile Settings', icon: <MdOutlineSettings className="w-5 h-5" />, path: '/profile' },
     { name: 'Booking History', icon: <MdHistory className="w-5 h-5" />, path: '/profile/booking-history' },
     { name: 'Wallet', icon: <MdOutlineAccountBalanceWallet className="w-5 h-5" />, path: '/profile/wallet' },
     { name: 'Live Chat', icon: <MdOutlineChat className="w-5 h-5" />, path: '/chat' },
   ];
+
+  const navItems = hasReports
+    ? [...baseNavItems, { name: 'My Reports', icon: <ShieldAlert className="w-5 h-5" />, path: '/profile/reports' }]
+    : baseNavItems;
 
   const serviceProviderItem = {
     name: 'Manage Your Services',
@@ -70,7 +94,7 @@ const Sidebar = () => {
       </button>
 
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -81,12 +105,12 @@ const Sidebar = () => {
         lg:static lg:translate-x-0 lg:w-auto lg:bg-transparent lg:dark:bg-transparent lg:z-auto lg:col-span-1
         ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:shadow-none'}
       `}>
-        
+
         <div className="bg-white dark:bg-gray-800 h-full lg:h-auto lg:rounded-2xl lg:shadow-lg p-6 lg:sticky lg:top-24 overflow-y-auto border-r lg:border-none border-gray-200 dark:border-gray-700">
-          
+
           <div className="flex justify-between items-center lg:hidden mb-6 pb-4 border-b border-slate-100 dark:border-gray-700">
             <h2 className="text-lg font-bold text-slate-800 dark:text-white">Menu</h2>
-            <button 
+            <button
               type='button'
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-full text-slate-500 dark:text-gray-400 transition-colors"
@@ -117,8 +141,8 @@ const Sidebar = () => {
                 to={item.path}
                 onClick={handleMobileNavClick}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.path)
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-800 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                  : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-800 dark:hover:text-white'
                   }`}
               >
                 {item.icon}
@@ -131,8 +155,8 @@ const Sidebar = () => {
                 to={serviceProviderItem.path}
                 onClick={handleMobileNavClick}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(serviceProviderItem.path)
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-800 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                  : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-800 dark:hover:text-white'
                   }`}
               >
                 {serviceProviderItem.icon}

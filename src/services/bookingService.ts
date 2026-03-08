@@ -157,4 +157,17 @@ export const bookingService = {
     }
   },
 
+  claimWarranty: async (warrantyData: {
+    originalBookingId: string;
+    issueDescription: string;
+    requestedDate: string;
+    requestedTime: string;
+  }) => {
+    try {
+      const response = await axiosInstance.post(`${BOOKING_URL}/claim-warranty`, warrantyData);
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Warranty claim failed.");
+    }
+  },
 };

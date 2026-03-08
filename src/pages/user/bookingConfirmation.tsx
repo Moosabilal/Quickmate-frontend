@@ -6,8 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getStatusColor } from '../../components/getStatusColor';
 
 const BookingConfirmation: React.FC = () => {
-  const { bookingId } = useParams<{bookingId: string}>();
-  
+  const { bookingId } = useParams<{ bookingId: string }>();
+
   const [booking, setBooking] = useState<IBookingConfirmationPage>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,7 +30,7 @@ const BookingConfirmation: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     if (bookingId) {
       getBookings();
     }
@@ -47,8 +47,8 @@ const BookingConfirmation: React.FC = () => {
   };
 
   const getPaymentStatusColor = (status: string) => {
-    return status?.toLowerCase() === 'paid' 
-      ? 'text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-900/20' 
+    return status?.toLowerCase() === 'paid'
+      ? 'text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-900/20'
       : 'text-red-700 bg-red-50 dark:text-red-300 dark:bg-red-900/20';
   };
 
@@ -73,8 +73,8 @@ const BookingConfirmation: React.FC = () => {
             </svg>
           </div>
           <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">{error || 'Booking not found'}</p>
-          <button 
-            onClick={() => navigate('/services')} 
+          <button
+            onClick={() => navigate('/services')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Browse Services
@@ -87,7 +87,7 @@ const BookingConfirmation: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 transition-colors duration-300">
       <div className="max-w-5xl mx-auto">
-        
+
         {/* Success Header */}
         <div className="text-center mb-10">
           <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
@@ -107,14 +107,14 @@ const BookingConfirmation: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Details Column */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Booking Card */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 p-6 text-white">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-bold mb-1">{booking.serviceName}</h2>
-                    <p className="text-blue-100 text-sm font-medium opacity-90">ID: #{booking.bookedOrderId.slice(-8).toUpperCase()}</p>
+                    <p className="text-blue-100 text-sm font-medium opacity-90">ID: #{(booking.bookedOrderId || booking.id).slice(-8).toUpperCase()}</p>
                   </div>
                   <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border self-start sm:self-center ${getStatusColor(booking.status)}`}>
                     {booking.status}
@@ -208,13 +208,13 @@ const BookingConfirmation: React.FC = () => {
 
           {/* Right Column: Payment & Actions */}
           <div className="space-y-6">
-            
+
             {/* Payment Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                 Payment Summary
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -254,12 +254,12 @@ const BookingConfirmation: React.FC = () => {
 
             {/* Actions */}
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={() => navigate('/profile/booking-history')}
                 className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-3.5 px-6 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transform active:scale-[0.98]">
                 View My Bookings <ArrowRight className="w-4 h-4" />
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/services')}
                 className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-3.5 px-6 rounded-xl font-semibold border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
                 Book Another Service

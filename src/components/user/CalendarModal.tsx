@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { ChevronLeft, ChevronRight, Loader2, X, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { IApiProviderAvailability, CalendarModalProps } from "../../util/interface/IBooking";
 
-export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, latitude, longitude, serviceId, radius, onSlotSelect }) => {
+export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, latitude, longitude, serviceId, radius, providerId, onSlotSelect }) => {
   const [availability, setAvailability] = useState<{ [date: string]: string[] }>({});
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -14,13 +14,13 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
     let hours = date.getHours();
     const minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    
+
     hours = hours % 12;
     hours = hours ? hours : 12;
-    
+
     const strHours = hours < 10 ? '0' + hours : hours;
     const strMinutes = minutes < 10 ? '0' + minutes : minutes;
-    
+
     return `${strHours}:${strMinutes} ${ampm}`;
   };
   const convertTo24Hour = (time12h: string): string => {
@@ -32,7 +32,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
   };
   const toISODateString = (date: Date) => {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
@@ -59,7 +59,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
           serviceId || "",
           radius || 10,
           timeMin.toISOString(),
-          timeMax.toISOString()
+          timeMax.toISOString(),
+          providerId
         );
 
         const mergedSlotsByDate: { [date: string]: Set<string> } = {};
@@ -98,7 +99,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
     if (isOpen) {
       fetchAvailabilityForMonth();
     }
-  }, [isOpen, currentMonth, latitude, longitude, serviceId, radius]);
+  }, [isOpen, currentMonth, latitude, longitude, serviceId, radius, providerId]);
 
 
   const handleTimeSlotClick = (date: Date, time: string) => {
@@ -142,10 +143,10 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
             disabled={isPast}
             className={`
               w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200
-              ${isPast 
-                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                : isSelected 
-                  ? 'bg-blue-600 text-white shadow-md scale-110' 
+              ${isPast
+                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                : isSelected
+                  ? 'bg-blue-600 text-white shadow-md scale-110'
                   : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
               }
               ${isToday && !isSelected ? 'border-2 border-blue-500 text-blue-600 dark:text-blue-400' : ''}
@@ -167,18 +168,18 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95">
-        
+
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Schedule Appointment</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">Select a date and time slot</p>
           </div>
-          <button 
-            type="button" 
-            aria-label="close" 
-            onClick={onClose} 
+          <button
+            type="button"
+            aria-label="close"
+            onClick={onClose}
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
           >
             <X className="w-6 h-6" />
@@ -186,13 +187,13 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
         </div>
 
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
-          
+
           <div className="flex-grow md:w-2/3 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <button 
-                aria-label="previous month" 
-                type="button" 
-                onClick={() => changeMonth(-1)} 
+              <button
+                aria-label="previous month"
+                type="button"
+                onClick={() => changeMonth(-1)}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -201,10 +202,10 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
                 <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
               </h3>
-              <button 
+              <button
                 aria-label="next month"
-                type="button" 
-                onClick={() => changeMonth(1)} 
+                type="button"
+                onClick={() => changeMonth(1)}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -214,11 +215,11 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
             <div className="grid grid-cols-7 text-center text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="py-2">{day}</div>)}
             </div>
-            
+
             <div className="grid grid-cols-7 border-t border-l border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
               {calendarGrid}
             </div>
-            
+
             <div className="mt-4 flex items-center justify-center gap-6 text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full border-2 border-blue-500"></div> Today</div>
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500"></div> Available</div>
@@ -231,7 +232,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
               <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               {selectedDate ? selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : "Select a Date"}
             </h3>
-            
+
             <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 -mr-2">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-48 gap-3">
@@ -242,9 +243,9 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, l
                 selectedDateSlots.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3 content-start">
                     {selectedDateSlots.map(slot => (
-                      <button 
-                        key={slot} 
-                        onClick={() => handleTimeSlotClick(selectedDate, slot)} 
+                      <button
+                        key={slot}
+                        onClick={() => handleTimeSlotClick(selectedDate, slot)}
                         className="px-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 transition-all text-sm font-medium shadow-sm"
                       >
                         {slot}

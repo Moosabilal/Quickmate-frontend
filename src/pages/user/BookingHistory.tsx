@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, Search, Eye, X } from 'lucide-react';
+import { Calendar, Clock, Search, Eye, X, ShieldCheck } from 'lucide-react';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingHistoryPage, IBookingStatusCounts } from '../../util/interface/IBooking';
+import { BookingStatus, IBookingHistoryPage, IBookingStatusCounts, WarrantyStatus } from '../../util/interface/IBooking';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getStatusColor } from '../../components/getStatusColor';
@@ -69,7 +69,7 @@ const BookingHistory: React.FC = () => {
     { id: BookingStatus.CONFIRMED, label: 'Upcoming', count: tabCounts[BookingStatus.CONFIRMED] },
     { id: BookingStatus.COMPLETED, label: 'Completed', count: tabCounts[BookingStatus.COMPLETED] },
     { id: BookingStatus.CANCELLED, label: 'Canceled', count: tabCounts[BookingStatus.CANCELLED] },
-    { id: BookingStatus.EXPIRED, label: 'Expired', count: tabCounts[BookingStatus.EXPIRED] } 
+    { id: BookingStatus.EXPIRED, label: 'Expired', count: tabCounts[BookingStatus.EXPIRED] }
 
   ];
 
@@ -176,11 +176,26 @@ const BookingHistory: React.FC = () => {
                               {getStatusIcon(booking.status)}
                               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                             </span>
+                            {booking.isWarrantyClaim && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+                                <ShieldCheck className="w-3 h-3" />
+                                Warranty Rework
+                              </span>
+                            )}
                           </div>
                           {booking.createdAt && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                               Booked on {new Date(booking.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </p>
+                          )}
+                          {booking.status === BookingStatus.COMPLETED && booking.warrantyStatus && (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider mt-2 ${booking.warrantyStatus === WarrantyStatus.AVAILABLE
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                              : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600'
+                              }`}>
+                              <ShieldCheck className="w-3 h-3" />
+                              Warranty: {booking.warrantyStatus.toLowerCase()}
+                            </span>
                           )}
                         </div>
 
@@ -263,9 +278,10 @@ const BookingHistory: React.FC = () => {
               Clear All Filters
             </button>
           </div>
-        )}
-      </main>
-    </div>
+        )
+        }
+      </main >
+    </div >
   );
 };
 

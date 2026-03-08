@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Calendar, MapPin, CheckCircle, AlertTriangle, User,
-  Search, Eye, IndianRupee, X, Loader2
+  Search, Eye, IndianRupee, X, Loader2, ShieldCheck
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { bookingService } from '../../services/bookingService';
@@ -319,6 +319,12 @@ const ProviderBookingManagementPage: React.FC = () => {
                                 {getStatusIcon(booking.status)}
                                 <span className="capitalize">{booking.status.replace('-', ' ').toLowerCase()}</span>
                               </span>
+                              {booking.isWarrantyClaim && (
+                                <span className="px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-100 dark:border-orange-800">
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  <span>Warranty Rework</span>
+                                </span>
+                              )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-gray-400">
@@ -388,13 +394,15 @@ const ProviderBookingManagementPage: React.FC = () => {
                               >
                                 {processingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Accept"}
                               </button>
-                              <button
-                                onClick={() => handleCancelBooking(booking)}
-                                disabled={processingId === booking.id}
-                                className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium rounded-lg transition-colors"
-                              >
-                                Decline
-                              </button>
+                              {!booking.isWarrantyClaim && (
+                                <button
+                                  onClick={() => handleCancelBooking(booking)}
+                                  disabled={processingId === booking.id}
+                                  className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Decline
+                                </button>
+                              )}
                             </>
                           )}
                           {booking.status === BookingStatus.CONFIRMED && (
@@ -407,14 +415,16 @@ const ProviderBookingManagementPage: React.FC = () => {
                               >
                                 {processingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start Job"}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => handleCancelBooking(booking)}
-                                disabled={processingId === booking.id}
-                                className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 dark:border-gray-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium rounded-lg transition-colors"
-                              >
-                                Cancel
-                              </button>
+                              {!booking.isWarrantyClaim && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCancelBooking(booking)}
+                                  disabled={processingId === booking.id}
+                                  className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 dark:border-gray-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              )}
                             </>
                           )}
                           {booking.status === BookingStatus.IN_PROGRESS && (
@@ -529,7 +539,9 @@ const ProviderBookingManagementPage: React.FC = () => {
                     <button onClick={() => handleStatusUpdate(selectedBooking.id, BookingStatus.CONFIRMED)} disabled={!!processingId} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-xl transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center">
                       {processingId === selectedBooking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Accept"}
                     </button>
-                    <button onClick={() => handleStatusUpdate(selectedBooking.id, BookingStatus.CANCELLED)} disabled={!!processingId} className="flex-1 py-2.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-red-600 dark:text-red-400 font-medium rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">Decline</button>
+                    {!selectedBooking.isWarrantyClaim && (
+                      <button onClick={() => handleStatusUpdate(selectedBooking.id, BookingStatus.CANCELLED)} disabled={!!processingId} className="flex-1 py-2.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-red-600 dark:text-red-400 font-medium rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">Decline</button>
+                    )}
                   </div>
                 )}
                 {selectedBooking.status === BookingStatus.CONFIRMED && (
@@ -537,7 +549,9 @@ const ProviderBookingManagementPage: React.FC = () => {
                     <button onClick={() => handleStatusUpdate(selectedBooking.id, BookingStatus.IN_PROGRESS)} disabled={!!processingId} className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20 flex items-center justify-center">
                       {processingId === selectedBooking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start Job"}
                     </button>
-                    <button onClick={() => handleCancelBooking(selectedBooking)} disabled={!!processingId} className="flex-1 py-2.5 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 font-medium rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">Cancel</button>
+                    {!selectedBooking.isWarrantyClaim && (
+                      <button onClick={() => handleCancelBooking(selectedBooking)} disabled={!!processingId} className="flex-1 py-2.5 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 font-medium rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">Cancel</button>
+                    )}
                   </div>
                 )}
                 {selectedBooking.status === BookingStatus.IN_PROGRESS && (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart, Settings, X } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, LayoutGrid, CreditCard, CalendarCheck, MessageSquareQuote, BarChart, Settings, X, ShieldAlert } from 'lucide-react';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -18,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
     { icon: <CreditCard className="w-5 h-5" />, label: 'Subscription Plans', path: '/admin/subscriptionPlan' },
     { icon: <CalendarCheck className="w-5 h-5" />, label: 'Bookings', path: '/admin/bookings' },
     { icon: <MessageSquareQuote className="w-5 h-5" />, label: 'Review Moderation', path: '/admin/reviewModerationPage' },
+    { icon: <ShieldAlert className="w-5 h-5" />, label: 'Reports', path: '/admin/reports' },
     { icon: <BarChart className="w-5 h-5" />, label: 'Analytics', path: '/admin/analyticsDashboard' },
     { icon: <Settings className="w-5 h-5" />, label: 'Account Settings', path: '/admin/profile-settings' },
   ];
@@ -38,10 +39,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
             QuickMate
           </h2>
           {/* Close button for mobile */}
-          <button 
+          <button
             type='button'
             aria-label="Close Sidebar"
-            onClick={onClose} 
+            onClick={onClose}
             className="lg:hidden p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
           >
             <X className="w-6 h-6" />
@@ -53,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
           {navigationItems.map((item, index) => {
             const isActive =
               item.path === '/admin'
-                ? location.pathname === '/admin' 
+                ? location.pathname === '/admin'
                 : location.pathname === item.path || location.pathname.startsWith(item.path + '/');
 
             return (
@@ -62,8 +63,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
                 to={item.path}
                 onClick={onClose} // Close sidebar on mobile when link clicked
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${isActive
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                  : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
                   }`}
               >
                 {item.icon}

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'; 
+import React, { lazy } from 'react';
 import RegistrationOTPVerification from '../components/OtpVerification';
 import ForgotPasswordRequest from '../pages/ForgotPasswordRequest';
 import ServicesPage from '../pages/user/Services';
@@ -21,6 +21,7 @@ const Booking_servicePage = lazy(() => import('../pages/user/BookingServicePage'
 const BookingDetails = lazy(() => import('../pages/user/BookingDetails'))
 const CurrentPassword = lazy(() => import('../pages/CurrentPassword'))
 const Wallet = lazy(() => import('../pages/user/Wallet'))
+const MyReports = lazy(() => import('../pages/user/MyReports'));
 const ProviderDetailsPage = lazy(() => import('../pages/user/ProviderDetails'))
 const PaymentPage = lazy(() => import('../pages/user/ProviderDetails'))
 import { LayoutRoute } from './LayoutRoute';
@@ -32,24 +33,24 @@ import BookingConfirmation from '../pages/user/bookingConfirmation';
 const userRoutes = [
   LayoutRoute(UserLayout, [
     { path: '/', element: <Home /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/forgot-password', element: <ForgotPasswordRequest /> },
-  { path: '/reset-password/:token', element: <ResetPasswordForm /> },
-  { path: '/verify-otp', element: <RegistrationOTPVerification /> },
-  { path: '/services', element: <ServicesPage /> },
-  { path: '/providers', element: <ProviderPage /> },
-  { path: '/providers/:providerId', element: <ProviderDetailsPage /> },
-  { path: '/about', element: <AboutPage /> },
-  { path: '/working', element: <HowItWorksPage /> },
-  { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },
-  { path: '/service-detailsPage/:serviceId', element: <ServiceDetailsPage /> },
-  {
-  element: <ProtectedRoute roles={['Customer', 'ServiceProvider']} />,
-  children: [
-    { path: '/confirmationModel/:bookingId', element: <BookingConfirmation /> },
-  ],
-}
+    { path: '/login', element: <Login /> },
+    { path: '/register', element: <Register /> },
+    { path: '/forgot-password', element: <ForgotPasswordRequest /> },
+    { path: '/reset-password/:token', element: <ResetPasswordForm /> },
+    { path: '/verify-otp', element: <RegistrationOTPVerification /> },
+    { path: '/services', element: <ServicesPage /> },
+    { path: '/providers', element: <ProviderPage /> },
+    { path: '/providers/:providerId', element: <ProviderDetailsPage /> },
+    { path: '/about', element: <AboutPage /> },
+    { path: '/working', element: <HowItWorksPage /> },
+    { path: '/booking_serviceList/:categoryId', element: <Booking_servicePage /> },
+    { path: '/service-detailsPage/:serviceId', element: <ServiceDetailsPage /> },
+    {
+      element: <ProtectedRoute roles={['Customer', 'ServiceProvider']} />,
+      children: [
+        { path: '/confirmationModel/:bookingId', element: <BookingConfirmation /> },
+      ],
+    }
 
 
   ]),
@@ -65,6 +66,7 @@ const userRoutes = [
         { path: '/profile/currentPassword', element: <CurrentPassword /> },
         { path: '/profile/reset-password/:token', element: <ResetPasswordForm /> },
         { path: '/profile/wallet', element: <Wallet /> },
+        { path: '/profile/reports', element: <MyReports /> },
         { path: '/payment', element: <PaymentPage /> },
 
 

@@ -11,70 +11,71 @@ export interface GoogleCalendarTokens {
 
 
 export interface IUser {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    isVerified?: boolean; 
-    profilePicture?: string;
-    googleCalendar?: {
-        tokens: GoogleCalendarTokens
-    }
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isVerified?: boolean;
+  profilePicture?: string;
+  phone?: string;
+  googleCalendar?: {
+    tokens: GoogleCalendarTokens
+  }
 }
 
 export interface IBookingDetailsForAdmin {
-    id: string;
-    providerName: string;
-    service: string;
-    bookingDate: string;
-    serviceDate: string;
-    status: BookingStatus;
+  id: string;
+  providerName: string;
+  service: string;
+  bookingDate: string;
+  serviceDate: string;
+  status: BookingStatus;
 }
 
 export interface IUserDetailsResponse {
-    id: string;
-    name: string;
-    avatarUrl: string;
-    email: string;
-    phone: string;
-    registrationDate: string;
-    lastLogin: string;
-    isActive: boolean;
-    totalBookings: number;
-    bookingStats: {
-        completed: number;
-        canceled: number;
-        pending: number;
-    };
-    bookingHistory: IBookingDetailsForAdmin[];
+  id: string;
+  name: string;
+  avatarUrl: string;
+  email: string;
+  phone: string;
+  registrationDate: string;
+  lastLogin: string;
+  isActive: boolean;
+  totalBookings: number;
+  bookingStats: {
+    completed: number;
+    canceled: number;
+    pending: number;
+  };
+  bookingHistory: IBookingDetailsForAdmin[];
 }
 
-export type RenderableStatus = 
-    | BookingStatus.PENDING
-    | BookingStatus.CONFIRMED
-    | BookingStatus.CANCELLED
-    | BookingStatus.COMPLETED
-    | BookingStatus.IN_PROGRESS;
+export type RenderableStatus =
+  | BookingStatus.PENDING
+  | BookingStatus.CONFIRMED
+  | BookingStatus.CANCELLED
+  | BookingStatus.COMPLETED
+  | BookingStatus.IN_PROGRESS;
 
 export type StatusStyle = {
-    bgColor: string;
-    textColor: string;
-    icon: JSX.Element;
+  bgColor: string;
+  textColor: string;
+  icon: JSX.Element;
 };
 
 export interface AuthState {
-    user: IUser | null;
-    isAuthenticated: boolean;
+  user: IUser | null;
+  isAuthenticated: boolean;
 }
 
 export interface ValidationErrors {
-    email?: string;
-    password?: string;
+  email?: string;
+  password?: string;
 }
 
 export interface FormTouched {
-    email: boolean;
-    password: boolean;
+  email: boolean;
+  password: boolean;
 }
 
 export interface ValidationErrorsForReset {
@@ -92,17 +93,17 @@ export interface User {
 }
 
 export interface RegistrationValidationErrors {
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 export interface RegistrationFormTouched {
-    name: boolean;
-    email: boolean;
-    password: boolean;
-    confirmPassword: boolean;
+  name: boolean;
+  email: boolean;
+  password: boolean;
+  confirmPassword: boolean;
 }
 
 export interface IRazorpayOrder {

@@ -115,6 +115,24 @@ export const authService = {
     }
   },
 
+  sendPhoneOtp: async (phone: string) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/send-phone-otp`, { phone });
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to send phone OTP.");
+    }
+  },
+
+  verifyPhoneOtp: async (otp: string, phone: string) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/verify-phone-otp`, { otp, phone });
+      return response.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to verify phone OTP.");
+    }
+  },
+
   getUserWithAllDetails: async ({
     page,
     limit,
@@ -138,7 +156,7 @@ export const authService = {
 
   updateUser: async (userId: string, reason?: string) => {
     try {
-      const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`, {reason});
+      const response = await axiosInstance.put(`${API_URL}/update-user/${userId}`, { reason });
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to update user information.");

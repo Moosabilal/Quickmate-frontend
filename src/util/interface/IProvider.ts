@@ -111,9 +111,9 @@ export interface IProviderForChatListPage {
   location: string;
   isOnline: boolean;
   services: string;
-  lastMessage: string | null; 
+  lastMessage: string | null;
   messageType: 'text' | 'image' | 'file';
-  lastMessageSenderId: string | null; 
+  lastMessageSenderId: string | null;
   lastMessageAt?: Date | null;
 }
 
@@ -202,11 +202,11 @@ export type FilterParams = {
   longitude: number;
   date: string | null
   time: string | null
-  
+
 };
 
 export interface EarningsBreakdownItem {
-  date: string; 
+  date: string;
   service: string;
   client: string;
   amount: number;
@@ -226,58 +226,58 @@ export interface EarningsAnalyticsData {
 }
 
 export interface IReview {
-    name: string;
-    time: string;
-    rating: number;
-    comment: string;
-    avatar: string;
+  name: string;
+  time: string;
+  rating: number;
+  comment: string;
+  avatar: string;
 }
 
 export interface IRatingDistribution {
-    stars: number;
-    percentage: number;
+  stars: number;
+  percentage: number;
 }
 
 export interface IMonthlyTrend {
-    month: string;
-    value: number;
+  month: string;
+  value: number;
 }
 
 export interface IServiceBreakdown {
-    serviceName: string;
-    completionRate: number;
+  serviceName: string;
+  completionRate: number;
 }
 
 export interface IProviderPerformance {
-    providerName: string;
-    totalBookings: number;
-    completedBookings: number;
-    avgRating: number;
-    completionRate: string;
-    reviews: IReview[];
-    ratingDistribution: IRatingDistribution[];
-    starRatingTrend: IMonthlyTrend[];
-    serviceBreakdown: IServiceBreakdown[];
+  providerName: string;
+  totalBookings: number;
+  completedBookings: number;
+  avgRating: number;
+  completionRate: string;
+  reviews: IReview[];
+  ratingDistribution: IRatingDistribution[];
+  starRatingTrend: IMonthlyTrend[];
+  serviceBreakdown: IServiceBreakdown[];
 }
 
-export interface ProviderState  {
-    provider: Partial<IProviderProfile>
+export interface ProviderState {
+  provider: Partial<IProviderProfile>
 }
 
 export interface IEditedProviderProfile extends Partial<IProviderProfile> {
-    profilePhotoFile?: File;
-    aadhaarIdProofFile?: File;
+  profilePhotoFile?: File;
+  aadhaarIdProofFile?: File;
 }
 
 export interface IProviderFormState {
-    fullName: string;
-    phoneNumber: string;
-    email: string;
-    serviceArea: string | null;
-    serviceLocation: { lat: number; lng: number } | null;
-    aadhaarIdProof: File | null;
-    profilePhoto: File | null;
-    agreeTerms: boolean;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  serviceArea: string | null;
+  serviceLocation: { lat: number; lng: number } | null;
+  aadhaarIdProof: File | null;
+  profilePhoto: File | null;
+  agreeTerms: boolean;
 }
 
 export interface ProviderPopupProps {
@@ -291,47 +291,48 @@ export interface ProviderPopupProps {
   latitude?: number;
   longitude?: number;
   radiusKm?: number;
+  preSelectedProviderId?: string;
 }
 
 export interface RatingTrendChartProps {
-    data: IMonthlyTrend[];
+  data: IMonthlyTrend[];
 }
 
 export interface TimeSlot {
-    start: string;
-    end: string;
+  start: string;
+  end: string;
 }
 
 export interface DaySchedule {
-    day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
-    active: boolean;
-    slots: TimeSlot[];
+  day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+  active: boolean;
+  slots: TimeSlot[];
 }
 
 export interface DateOverride {
-    date: string; 
-    isUnavailable: boolean;
-    busySlots: TimeSlot[];
-    reason?: string;
+  date: string;
+  isUnavailable: boolean;
+  busySlots: TimeSlot[];
+  reason?: string;
 }
 
 export interface EditDateModalProps {
-    date: Date;
-    onClose: () => void;
-    onSave: (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => void;
-    initialOverride?: DateOverride;
+  date: Date;
+  onClose: () => void;
+  onSave: (date: Date, isUnavailable: boolean, busySlots: TimeSlot[], reason: string) => void;
+  initialOverride?: DateOverride;
 }
 
 export interface LeavePeriod {
-    from: string; 
-    to: string;  
-    reason?: string; 
+  from: string;
+  to: string;
+  reason?: string;
 }
 
 export interface IAvailabilityUpdateData {
-    weeklySchedule: DaySchedule[];
-    dateOverrides: DateOverride[];
-    leavePeriods: LeavePeriod[];
+  weeklySchedule: DaySchedule[];
+  dateOverrides: DateOverride[];
+  leavePeriods: LeavePeriod[];
 }
 
 export interface IServiceDetails {

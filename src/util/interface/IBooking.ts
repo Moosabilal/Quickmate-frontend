@@ -1,17 +1,24 @@
 export enum PaymentStatus {
-    PAID = "Paid",
-    UNPAID = "UnPaid",
-    REFUNDED = "Refunded"
+  PAID = "Paid",
+  UNPAID = "UnPaid",
+  REFUNDED = "Refunded"
 }
 
 export enum BookingStatus {
-    All = "All",
-    PENDING = "Pending",
-    CONFIRMED = "Confirmed",
-    CANCELLED = "Cancelled",
-    COMPLETED = "Completed",
-    IN_PROGRESS = "In-Progress",
-    EXPIRED = "Expired"
+  All = "All",
+  PENDING = "Pending",
+  CONFIRMED = "Confirmed",
+  CANCELLED = "Cancelled",
+  COMPLETED = "Completed",
+  IN_PROGRESS = "In-Progress",
+  EXPIRED = "Expired"
+}
+
+export enum WarrantyStatus {
+  AVAILABLE = "AVAILABLE",
+  CLAIMED = "CLAIMED",
+  EXPIRED = "EXPIRED",
+  NONE = "NONE",
 }
 
 export interface IBookingStatusCounts {
@@ -52,9 +59,12 @@ export interface IBookingRequest {
 
 export interface IBookingConfirmationPage {
   id: string;
-  bookedOrderId: string;
+  bookedOrderId?: string;
+  serviceId: string;
+  subCategoryId?: string;
   serviceName: string;
   serviceImage?: string;
+  providerId: string;
   providerName?: string;
   providerImage?: string;
   providerRating?: number;
@@ -71,6 +81,8 @@ export interface IBookingConfirmationPage {
     city: string;
     state: string;
     zip: string;
+    latitude?: number;
+    longitude?: number;
   };
   amount: number;
   status: BookingStatus;
@@ -78,9 +90,14 @@ export interface IBookingConfirmationPage {
   specialInstruction: string;
   providerTimings?: { day: string; startTime: string; endTime: string }[];
   createdAt: Date;
+  completedAt?: Date | string;
   reviewed: boolean;
   rating: number;
   review: string;
+  warrantyValidUntil?: Date | string;
+  warrantyStatus?: WarrantyStatus;
+  isWarrantyClaim?: boolean;
+  parentBookingId?: string;
 }
 
 export interface IBookingHistoryPage {
@@ -98,6 +115,9 @@ export interface IBookingHistoryPage {
   duration?: string;
   description?: string;
   createdAt?: Date;
+  completedAt?: Date | string;
+  warrantyStatus?: WarrantyStatus;
+  isWarrantyClaim?: boolean;
 }
 
 export interface IProviderBookingManagement {
@@ -118,6 +138,7 @@ export interface IProviderBookingManagement {
   customerEmail: string;
   specialRequests: string;
   createdAt: string;
+  isWarrantyClaim?: boolean;
 }
 
 export interface IAdminBookingFilters {
@@ -164,6 +185,7 @@ export interface CalendarModalProps {
   longitude: number;
   serviceId?: string;
   radius?: number;
+  providerId?: string;
   onSlotSelect: (date: string, time: string) => void;
 }
 
@@ -185,8 +207,8 @@ export interface BookingData {
   providerId: string;
   addressId: string;
   instructions?: string;
-  scheduledDate: string;  
-  scheduledTime: string;  
+  scheduledDate: string;
+  scheduledTime: string;
   customerName: string;
   phone: string;
   amount: number;
@@ -201,6 +223,7 @@ export interface IBookingDetailData {
     date: string;
     time: string;
     createdAt: string;
+    completedAt?: string;
     instructions?: string;
   };
   user: { name: string; email: string; phone: string; image: string };

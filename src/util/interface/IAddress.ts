@@ -1,14 +1,14 @@
 import React from "react";
 
 export interface IAddress {
-    id?: string;
-    userId?: string
-    label: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    locationCoords?: string;
+  id?: string;
+  userId?: string
+  label: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  locationCoords?: string;
 }
 
 export interface AddressPopupProps {
@@ -22,4 +22,5 @@ export interface AddressPopupProps {
   setNewAddress: React.Dispatch<React.SetStateAction<IAddress>>;
   handleAddAddress: (address: IAddress) => void;
   serviceId?: string;
+  isGuest?: boolean;
 }

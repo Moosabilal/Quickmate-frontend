@@ -147,7 +147,7 @@ export const providerService = {
 
   getProviderForChatPage: async (search: string) => {
     try {
-      const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderForChatPage`, { params: { search}});
+      const response = await axiosInstance.get(`${PROVIDER_URL}/getProviderForChatPage`, { params: { search } });
       return response.data;
     } catch (error) {
       handleAxiosError(error, "Failed to fetch provider for chat page.");
@@ -169,10 +169,11 @@ export const providerService = {
     serviceId: string,
     radius: number,
     timeMin: string,
-    timeMax: string
+    timeMax: string,
+    providerId?: string
   ) => {
     try {
-      const params = { latitude, longitude, serviceId, radius, timeMin, timeMax };
+      const params = { latitude, longitude, serviceId, radius, timeMin, timeMax, providerId };
       const response = await axiosInstance.get(`${PROVIDER_URL}/calendar/availability`, { params });
       return response.data;
     } catch (error) {
@@ -234,11 +235,11 @@ export const providerService = {
   },
 
   getProviderFullDetails: async (providerId: string) => {
-        try {
-            const response = await axiosInstance.get(`${PROVIDER_URL}/admin/${providerId}/full-details`);
-            return response.data.data;
-        } catch (error) {
-            handleAxiosError(error, "Failed to fetch provider full details.");
-        }
-    },
+    try {
+      const response = await axiosInstance.get(`${PROVIDER_URL}/admin/${providerId}/full-details`);
+      return response.data.data;
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch provider full details.");
+    }
+  },
 };

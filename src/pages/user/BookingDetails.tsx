@@ -8,15 +8,21 @@ import {
   XCircle,
   Shield,
   Download,
+  AlertTriangle,
+  Wrench,
+  ShieldAlert,
+  CalendarDays,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bookingService } from '../../services/bookingService';
-import { BookingStatus, IBookingConfirmationPage } from '../../util/interface/IBooking';
+import { BookingStatus, IBookingConfirmationPage, WarrantyStatus } from '../../util/interface/IBooking';
 import DeleteConfirmationModal from '../../components/deleteConfirmationModel';
 import { toast } from 'react-toastify';
 import DateTimePopup from '../../components/user/DateTimePopup';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { reviewService } from '../../services/reviewService';
+import { reportService } from '../../services/reportService';
+import { CalendarModal } from '../../components/user/CalendarModal';
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -40,8 +46,16 @@ const BookingDetails: React.FC = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState<string>('');
-  const [showRated, SetShowRated] = useState(false)
-
+  const [showRated, SetShowRated] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState('Poor Quality Service');
+  const [reportDescription, setReportDescription] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+  const [showWarrantyModal, setShowWarrantyModal] = useState(false);
+  const [showCalendarForWarranty, setShowCalendarForWarranty] = useState(false);
+  const [warrantyIssue, setWarrantyIssue] = useState('');
+  const [isClaimingWarranty, setIsClaimingWarranty] = useState(false);
 
   const fetchBookingDetails = useCallback(async () => {
     if (!id) return;
@@ -55,6 +69,35 @@ const BookingDetails: React.FC = () => {
       setReview(response.review || '');
       setSelectedDate(response.date);
       setSelectedTime(response.time);
+
+      // Check if the user has already reported this booking or its relative in the warranty chain
+      const userReports = await reportService.getUserReports();
+      if (userReports.success && id) {
+        const hasReport = userReports.reports.some((r: any) => {
+          // Robust string extraction for IDs
+          const reportBook = typeof r.bookingId === 'object' ? r.bookingId : null;
+          const reportNodeId = (reportBook?._id || reportBook?.id || r.bookingId)?.toString();
+          const reportParentId = reportBook?.parentBookingId?.toString();
+
+          const currentNodeId = id?.toString();
+          const currentParentId = response?.parentBookingId?.toString();
+
+          if (!reportNodeId || !currentNodeId) return false;
+
+          // Is it reported on this exact booking?
+          if (reportNodeId === currentNodeId) return true;
+          // Is it reported on the parent of this booking?
+          if (currentParentId && reportNodeId === currentParentId) return true;
+          // Is it reported on a child of this booking?
+          if (reportParentId && reportParentId === currentNodeId) return true;
+          // Is it reported on a sibling of this booking?
+          if (currentParentId && reportParentId && reportParentId === currentParentId) return true;
+
+          return false;
+        });
+        setHasReported(hasReport);
+      }
+
     } catch (err) {
       console.error('Error fetching booking details:', err);
 
@@ -129,6 +172,66 @@ const BookingDetails: React.FC = () => {
     }
 
   }
+
+  const handleReportSubmit = async (bookingId: string) => {
+    if (!booking) return;
+    setIsReporting(true);
+    try {
+      const response = await reportService.createReport(id!, reportReason, reportDescription);
+
+      if (response.success) {
+        toast.success(response.message || 'Report submitted successfully');
+        setShowReportForm(false);
+        setReportReason('Poor Quality Service');
+        setReportDescription('');
+        setHasReported(true); // Set hasReported to true on successful submission
+      } else {
+        toast.error(response.message || 'Failed to submit report');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to submit report');
+      }
+    } finally {
+      setIsReporting(false);
+    }
+  }
+
+  const handleWarrantyClaim = async (date: string, time: string) => {
+    if (!booking || !warrantyIssue.trim()) return;
+
+    setIsClaimingWarranty(true);
+    try {
+      const response = await bookingService.claimWarranty({
+        originalBookingId: booking.id,
+        issueDescription: warrantyIssue,
+        requestedDate: date,
+        requestedTime: time,
+      });
+
+      if (response.success) {
+        toast.success(response.message || 'Warranty claim submitted successfully');
+        setShowWarrantyModal(false);
+        setWarrantyIssue('');
+        await fetchBookingDetails(); // Refresh to update warranty status
+      }
+    } catch (error: any) {
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        // Handle Zod validation errors
+        error.response.data.errors.forEach((err: any) => {
+          toast.error(err.message || 'Validation error');
+        });
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message || 'Failed to claim warranty');
+      } else {
+        toast.error('Failed to claim warranty');
+      }
+    } finally {
+      setIsClaimingWarranty(false);
+    }
+  };
 
   const handleDownloadReceipt = async () => {
     if (!booking) return;
@@ -227,7 +330,7 @@ const BookingDetails: React.FC = () => {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Booking Details</h1>
-                <p className="text-gray-600 dark:text-gray-400">Booking ID: #{booking.bookedOrderId.slice(-8).toUpperCase()}</p>
+                <p className="text-gray-600 dark:text-gray-400">Booking ID: #{(booking.bookedOrderId || booking.id).slice(-8).toUpperCase()}</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -381,62 +484,198 @@ const BookingDetails: React.FC = () => {
               </div>
             </div>
 
-            {booking.status === 'Completed' && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">After Service</h3>
-                <div className="space-y-4">
-                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
-                    <p className="text-green-800 dark:text-green-200 mb-3">
-                      ✓ Service completed successfully!
-                    </p>
-                    {!showReviewForm ? (
-                      !booking.review && <button
-                        onClick={() => setShowReviewForm(true)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
-                      >
-                        Leave a Review
-                      </button>
-                    ) : (
-                      <div className="space-y-4 mt-4">
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-6 h-6 cursor-pointer ${rating >= star ? "fill-yellow-400 text-yellow-400" : "text-gray-300 dark:text-gray-600"}`}
-                              onClick={() => setRating(star)}
-                            />
-                          ))}
+            {booking.status === 'Completed' && (() => {
+              const completionDate = booking.completedAt ? new Date(booking.completedAt) : new Date(booking.date);
+              const validityEnd = new Date(completionDate);
+              validityEnd.setDate(validityEnd.getDate() + 7);
+              const today = new Date();
+              const daysLeft = Math.ceil((validityEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
+              const isValid = daysLeft > 0;
+
+              const handleBookAgain = () => {
+                // Navigate to service details with providerId in state or query
+                navigate(`/service-detailsPage/${booking.serviceId}`, {
+                  state: { preSelectedProviderId: booking.providerId }
+                });
+              };
+
+              return (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Service Validity</h3>
+                    {isValid ? (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Wrench className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <p className="font-semibold text-blue-800 dark:text-blue-200">
+                            {booking.warrantyStatus === WarrantyStatus.CLAIMED ? 'Warranty claim in progress' : 'Covered under 7-Day Free Repair'}
+                          </p>
                         </div>
-
-                        <textarea
-                          value={review}
-                          onChange={(e) => setReview(e.target.value)}
-                          placeholder="Write your review here..."
-                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                          rows={4}
-                        />
-
-                        <div className="flex gap-3">
+                        {booking.warrantyStatus !== WarrantyStatus.CLAIMED && (
+                          <p className="text-blue-700 dark:text-blue-300 text-sm mb-4">
+                            Your service is covered until {validityEnd.toLocaleDateString('en-US')}. If any issue arises prior to this date, you can contact the provider for a free repair.
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-3">
+                          {booking.warrantyStatus === WarrantyStatus.AVAILABLE ? (
+                            <button
+                              onClick={() => setShowWarrantyModal(true)}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
+                            >
+                              <Wrench className="w-4 h-4" /> Request Free Repair
+                            </button>
+                          ) : (
+                            <div className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-sm font-medium flex items-center gap-2 border border-gray-200 dark:border-gray-600">
+                              <ShieldAlert className="w-4 h-4 text-orange-500" />
+                              {booking.warrantyStatus === WarrantyStatus.CLAIMED ? 'Warranty claim in progress' : `Warranty ${booking.warrantyStatus}`}
+                            </div>
+                          )}
                           <button
-                            onClick={() => handleReviewSubmit(booking.id)}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
-                            disabled={!rating || !review.trim()}
+                            onClick={handleBookAgain}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
                           >
-                            Submit Review
-                          </button>
-                          <button
-                            onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-colors text-sm font-medium"
-                          >
-                            Cancel
+                            <Calendar className="w-4 h-4" /> Book Again
                           </button>
                         </div>
                       </div>
+                    ) : (
+                      <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
+                        <p className="text-gray-600 dark:text-gray-400">Your 7-day free repair validity period has expired.</p>
+                        <button
+                          onClick={handleBookAgain}
+                          className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
+                        >
+                          <Calendar className="w-4 h-4" /> Book This Service Again
+                        </button>
+                      </div>
                     )}
                   </div>
+
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Feedback & Reporting</h3>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-4 space-y-4">
+                      {!showReviewForm && !showReportForm ? (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-gray-800 dark:text-gray-200 mb-2">Service completed successfully!</p>
+                          {/* Action Buttons for Feedback */}
+                          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                            {!booking.review && (
+                              <button
+                                onClick={() => {
+                                  setShowReviewForm(true)
+                                  setShowReportForm(false)
+                                }}
+                                className="flex-1 px-4 py-2 border border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 font-medium rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                              >
+                                Leave a Review
+                              </button>
+                            )}
+
+                            {hasReported ? (
+                              <button
+                                disabled
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium rounded-lg opacity-80 cursor-not-allowed"
+                              >
+                                <ShieldAlert className="w-5 h-5" />
+                                Report Submitted
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setShowReportForm(true)
+                                  setShowReviewForm(false)
+                                }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-red-500 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              >
+                                <AlertTriangle className="w-5 h-5 pointer-events-none" />
+                                Report Provider
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ) : showReviewForm ? (
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Write a Review</h4>
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-6 h-6 cursor-pointer ${rating >= star ? "fill-yellow-400 text-yellow-400" : "text-gray-300 dark:text-gray-600"}`}
+                                onClick={() => setRating(star)}
+                              />
+                            ))}
+                          </div>
+
+                          <textarea
+                            value={review}
+                            onChange={(e) => setReview(e.target.value)}
+                            placeholder="Write your review here..."
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                            rows={4}
+                          />
+
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleReviewSubmit(booking.id)}
+                              className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                              disabled={!rating || !review.trim()}
+                            >
+                              Submit Review
+                            </button>
+                            <button
+                              onClick={() => setShowReviewForm(false)}
+                              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-colors text-sm font-medium"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : showReportForm ? (
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Report Provider</h4>
+                          <select
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                          >
+                            <option value="Poor Quality Service">Poor Quality Service</option>
+                            <option value="Unprofessional Behavior">Unprofessional Behavior</option>
+                            <option value="Overcharging">Overcharging</option>
+                            <option value="Service Not Completed">Service Not Completed</option>
+                            <option value="Other">Other</option>
+                          </select>
+                          <textarea
+                            value={reportDescription}
+                            onChange={(e) => setReportDescription(e.target.value)}
+                            placeholder="Provide more details about the issue..."
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                            rows={4}
+                          />
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleReportSubmit(booking.id)}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                              disabled={isReporting || !reportDescription.trim()}
+                            >
+                              {isReporting ? 'Submitting...' : 'Submit Report'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowReportForm(false);
+                                setReportDescription('');
+                              }}
+                              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-colors text-sm font-medium"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
           </div>
 
@@ -520,12 +759,77 @@ const BookingDetails: React.FC = () => {
         onConfirm={handleCancelBooking}
         itemType={DeleteConfirmationTypes.BOOKING}
         itemName={bookingToDelete?.serviceName || ''}
-        itemDetails={bookingToDelete ? `Booking ID: #${bookingToDelete.bookedOrderId.slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • ₹${bookingToDelete?.amount}` : ''}
+        itemDetails={bookingToDelete ? `Booking ID: #${(bookingToDelete.bookedOrderId || bookingToDelete.id).slice(-8).toUpperCase()}\n ${bookingToDelete.serviceName}  • ₹${bookingToDelete?.amount}` : ''}
         isLoading={isDeleting}
         customMessage="Are you sure you want to cancel this booking?."
         additionalInfo={`If you cancel now, you may miss out on this service. \n ${bookingToDelete?.status === BookingStatus.CONFIRMED ? `You will only get 50% of Price refund, \n amount ${(bookingToDelete?.amount ?? 0) * 0.5} will be refunded to you account within 5-7 business days.` : `amount ${bookingToDelete?.amount} will be refunded to you account within 5-7 business days.`} `}
       />
       <DateTimePopup dateTimePopup={dateTimePopup} setDateTimePopup={setDateTimePopup} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} timeSlots={timeSlots} handleDateTimeConfirm={handleDateTimeConfirm} providersTimings={booking.providerTimings} />
+
+      {/* Warranty Claim Modal */}
+      {showWarrantyModal && (
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Wrench className="w-6 h-6 text-blue-600" />
+                  Request Free Repair
+                </h2>
+                <button
+                  onClick={() => setShowWarrantyModal(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-400"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Describe the issue
+                </label>
+                <textarea
+                  className="w-full h-32 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 dark:text-white outline-none"
+                  placeholder="Tell us what's wrong with the previous service..."
+                  value={warrantyIssue}
+                  onChange={(e) => setWarrantyIssue(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  * Note: This request is subject to provider availability and original service scope.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    if (!warrantyIssue.trim()) {
+                      toast.warning('Please describe the issue first');
+                      return;
+                    }
+                    setShowCalendarForWarranty(true);
+                  }}
+                  className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                  disabled={!warrantyIssue.trim() || isClaimingWarranty}
+                >
+                  {isClaimingWarranty ? 'Processing...' : 'Schedule Rework Session'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CalendarModal for Warranty Claim */}
+      <CalendarModal
+        isOpen={showCalendarForWarranty}
+        onClose={() => setShowCalendarForWarranty(false)}
+        latitude={booking.address.latitude || 0}
+        longitude={booking.address.longitude || 0}
+        radius={10}
+        serviceId={booking.subCategoryId || booking.serviceId}
+        providerId={booking.providerId}
+        onSlotSelect={handleWarrantyClaim}
+      />
 
     </div>
   );

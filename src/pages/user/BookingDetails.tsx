@@ -22,9 +22,6 @@ import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 import { reviewService } from '../../services/reviewService';
 import { reportService } from '../../services/reportService';
 import { CalendarModal } from '../../components/user/CalendarModal';
-
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { getStatusColor } from '../../components/getStatusColor';
 import { getStatusIcon } from '../../components/BookingStatusIcon';
 import { isAxiosError } from 'axios';
@@ -237,6 +234,9 @@ const BookingDetails: React.FC = () => {
     const toastId = toast.loading("Generating receipt...");
 
     try {
+      const { default: html2canvas } = await import('html2canvas');
+      const { default: jsPDF } = await import('jspdf');
+
       const canvas = await html2canvas(receiptElement, {
         scale: 2,
         useCORS: true,

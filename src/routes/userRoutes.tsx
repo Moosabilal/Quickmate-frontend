@@ -24,10 +24,9 @@ const Wallet = lazy(() => import('../pages/user/Wallet'))
 const MyReports = lazy(() => import('../pages/user/MyReports'));
 const ProviderDetailsPage = lazy(() => import('../pages/user/ProviderDetails'))
 const PaymentPage = lazy(() => import('../pages/user/ProviderDetails'))
+const BookingConfirmation = lazy(() => import('../pages/user/bookingConfirmation'))
+const UserSidebarLayout = lazy(() => import('../layouts/UserSidebarLayout'))
 import { LayoutRoute } from './LayoutRoute';
-
-import UserSidebarLayout from '../layouts/UserSidebarLayout';
-import BookingConfirmation from '../pages/user/bookingConfirmation';
 
 
 const userRoutes = [

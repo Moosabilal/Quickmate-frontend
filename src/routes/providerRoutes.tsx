@@ -2,8 +2,7 @@ import React, { lazy } from 'react';
 
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'));
 import { LayoutRoute } from './LayoutRoute';
-import ProviderSidebarLayout from '../layouts/ProviderSidebarLayout';
-
+const ProviderSidebarLayout = lazy(() => import('../layouts/ProviderSidebarLayout'))
 const Provider_profile = lazy(() => import('../pages/provider/ProfileSetingPage'));
 const ProviderDashboard = lazy(() => import('../pages/provider/Dashboard'));
 const EarningsAnalytics = lazy(() => import('../pages/provider/Earnings'));
@@ -39,4 +38,4 @@ const providerRoutes = [
 
 const flattenedProviderRoutes = providerRoutes.flat();
 export default flattenedProviderRoutes
-;
+    ;

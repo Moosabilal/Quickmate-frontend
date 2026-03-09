@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import { lazy } from 'react';
 
 const MainChatLayout = lazy(() => import('../layouts/MainChatLayout'));
 const ChatPlaceholder = lazy(() => import('../components/ChatPlaceholder'));
@@ -12,7 +12,7 @@ const commonRoutes = [
     children: [
       { index: true, element: <ChatPlaceholder /> },
       { path: ':joiningId', element: <Chat_Room /> },
-      
+
     ],
   },
   { path: '/chat/:joiningId/call', element: <VideoCallPage /> },

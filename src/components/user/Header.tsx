@@ -6,7 +6,7 @@ import { logout, updateProfile } from '../../features/auth/authSlice';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useLocation } from 'react-router-dom';
 import { authService } from '../../services/authService';
-import { Menu, X, ChevronDown, User, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LayoutDashboard, LogOut } from 'lucide-react';
 import DeleteConfirmationModal from '../deleteConfirmationModel';
 import { DeleteConfirmationTypes } from '../../util/interface/IDeleteModelType';
 
@@ -72,7 +72,7 @@ const Header = () => {
 
     return (
         <>
-            <header className="fixed top-0 w-full z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-lg border-b border-gray-200/20 dark:border-gray-700/20">
+            <header className="fixed top-0 w-full z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md shadow-lg border-b border-gray-200/20 dark:border-gray-700/20 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16 md:h-20">
 
@@ -118,7 +118,7 @@ const Header = () => {
 
                         {/* Actions Section */}
                         <div className="flex items-center space-x-2 sm:space-x-4">
-
+                            
                             {/* ThemeToggle - Desktop Only (Hidden on mobile top bar) */}
                             <div className="hidden sm:flex items-center">
                                 <ThemeToggle />
@@ -134,7 +134,7 @@ const Header = () => {
                                         <img
                                             src={user?.profilePicture || '/profileImage.png'}
                                             alt="User Avatar"
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-blue-500 transition-all duration-300"
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-blue-500 transition-all duration-300"
                                         />
                                         <div className="hidden md:block text-left">
                                             <p className="text-sm font-semibold truncate max-w-[100px]">{user?.name || 'My Account'}</p>
@@ -184,7 +184,7 @@ const Header = () => {
                     {/* Mobile Navigation Menu */}
                     <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[85vh] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="border-t border-gray-100 dark:border-gray-800 pb-6 pt-2 space-y-1">
-
+                            
                             {/* Mobile Theme Toggle - Only visible when menu is open on small screens */}
                             <div className="sm:hidden px-4 py-3 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50 rounded-xl mx-2 mb-2">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Appearance</span>
@@ -196,8 +196,8 @@ const Header = () => {
                                     key={link.to}
                                     to={link.to}
                                     className={`block px-4 py-3.5 text-base font-medium rounded-xl mx-2 ${isLinkActive(link.to)
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                                        : 'text-gray-700 dark:text-gray-300'
+                                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                            : 'text-gray-700 dark:text-gray-300'
                                         }`}
                                 >
                                     {link.label}
@@ -208,7 +208,7 @@ const Header = () => {
                                 {isAuthenticated ? (
                                     <div className="space-y-2">
                                         <div className="flex items-center space-x-3 mb-4 p-2">
-                                            <img src={user?.profilePicture || '/profileImage.png'} alt="User" className="w-12 h-12 rounded-full ring-2 ring-blue-500" />
+                                            <img src={user?.profilePicture || '/profileImage.png'} alt="User" className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500" />
                                             <div className="overflow-hidden">
                                                 <p className="font-bold dark:text-white truncate">{user?.name}</p>
                                                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>

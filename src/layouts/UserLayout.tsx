@@ -6,13 +6,13 @@ import Footer from '../components/user/Footer';
 
 const userLayout = () => {
   return (
-    <>
-    <Header />
-    <main className='min-h-screen'>
-        <Outlet />
-    </main>
-    <Footer />
-    </>
+    <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className='flex-grow'>
+            <Outlet />
+        </main>
+        <Footer />
+    </div>
   )
 }
 

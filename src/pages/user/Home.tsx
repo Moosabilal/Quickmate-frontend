@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, X, ChevronDown, Bot, Minimize2, Maximize2 } from 'lucide-react';
 import { categoryService } from '../../services/categoryService';
@@ -30,7 +31,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
             {[...Array(fullStars)].map((_, i) => (
                 <svg
                     key={`full-${i}`}
-                    className="w-4 h-4 text-yellow-400"
+                    className="w-4 h-4 text-amber-400 drop-shadow-sm"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +42,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
             ))}
             {hasHalfStar && (
                 <svg
-                    className="w-4 h-4 text-yellow-400"
+                    className="w-4 h-4 text-amber-400 drop-shadow-sm"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +54,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
             {[...Array(emptyStars)].map((_, i) => (
                 <svg
                     key={`empty-${i}`}
-                    className="w-4 h-4 text-gray-300"
+                    className="w-4 h-4 text-slate-300"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -67,6 +68,9 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
 };
 
 const Home: React.FC = () => {
+    const { scrollY } = useScroll();
+    const heroBgY = useTransform(scrollY, [0, 1000], [0, 300]);
+
     const [fetchedCategories, setFetchedCategories] = useState<ICategoryResponse[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -397,50 +401,85 @@ const Home: React.FC = () => {
     }
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+        <div className="bg-transparent dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500">
 
             <main>
-                <section
-                    className="relative bg-cover bg-no-repeat bg-center h-[500px] md:h-[650px] lg:h-screen flex items-center justify-center text-white"
-                    style={{ backgroundImage: "url('/landingPageImage.png')" }}
-                >
-                    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                <section className="relative h-[500px] md:h-[650px] lg:h-screen flex items-center justify-center text-white overflow-hidden">
+                    <motion.div
+                        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: "url('/landingPageImage.png')", y: heroBgY }}
+                    />
+                    <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/70 via-black/40 to-transparent dark:from-black/90 dark:via-black/60 dark:to-transparent"></div>
 
-                    <div className="relative z-10 text-center px-4 sm:px-6">
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
-                            Find local services for <span className="text-emerald-300">almost anything</span>
-                        </h1>
-                        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
-                            Connect with trusted professionals for your everyday needs.
-                        </p>
-
-                        <form
-                            onSubmit={handleSearchSubmit}
-                            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto"
+                    <div className="relative z-10 text-center px-4 sm:px-6 w-full max-w-4xl mx-auto pt-16">
+                        <motion.h1 
+                            className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight flex flex-wrap justify-center gap-x-3 gap-y-1"
+                            initial="hidden"
+                            animate="visible"
+                            variants={{
+                                hidden: { opacity: 0 },
+                                visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+                            }}
                         >
-                            <div className="relative w-full">
+                            {"Find local services for".split(" ").map((word, i) => (
+                                <motion.span key={i} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                                    {word}
+                                </motion.span>
+                            ))}
+                            <motion.span 
+                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
+                                className="text-emerald-400 inline-block drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]"
+                            >
+                                almost anything
+                            </motion.span>
+                        </motion.h1>
+                        
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8, duration: 0.8 }}
+                            className="text-lg md:text-2xl mb-10 max-w-2xl mx-auto text-gray-200 font-light"
+                        >
+                            Connect with trusted professionals for your everyday needs.
+                        </motion.p>
+
+                        <motion.form
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 1, duration: 0.8, type: "spring" }}
+                            onSubmit={handleSearchSubmit}
+                            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-3xl mx-auto"
+                        >
+                            <div className="relative w-full group flex-1">
+                                <motion.div 
+                                    className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-blue-500 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition duration-500"
+                                />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="What service are you looking for?"
-                                    className="p-3 rounded-lg w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 outline-none transition-shadow"
+                                    className="relative p-4 sm:p-5 rounded-2xl w-full bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/20 text-white placeholder-white/70 focus:bg-white/20 focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-base sm:text-lg focus:scale-[1.02]"
                                     aria-label="Search for services"
                                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                 />
                                 {showSuggestions && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-b-lg z-50 mt-1 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 text-left">
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="absolute top-full left-0 right-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-2xl rounded-2xl z-50 mt-2 max-h-60 overflow-y-auto border border-white/20 dark:border-gray-700/50 text-left p-2"
+                                    >
                                         {suggestions.map((suggestion) => (
                                             <div
                                                 key={`${suggestion.type}-${suggestion.id}`}
                                                 onClick={() => handleSuggestionClick(suggestion)}
-                                                className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                                className="flex items-center p-3 hover:bg-emerald-50 dark:hover:bg-gray-700/50 rounded-xl cursor-pointer transition-colors"
                                             >
                                                 <img
                                                     src={suggestion.image! || './home_search_backup_img.webp'}
                                                     alt={suggestion.name}
-                                                    className="w-10 h-10 rounded-full object-cover mr-3"
+                                                    className="w-10 h-10 rounded-full object-cover mr-3 shadow-sm"
                                                 />
                                                 <div>
                                                     <p className="font-medium text-gray-800 dark:text-gray-200 text-sm">{suggestion.name}</p>
@@ -448,176 +487,283 @@ const Home: React.FC = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                    </div>
+                                    </motion.div>
                                 )}
                             </div>
                             <button
                                 type="submit"
-                                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 whitespace-nowrap"
+                                className="bg-gradient-to-r from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)] hover:-translate-y-0.5 whitespace-nowrap text-lg"
                             >
                                 Search
                             </button>
-                        </form>
+                        </motion.form>
                     </div>
                 </section>
 
-                <section className="container mx-auto px-4 py-12 md:py-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+                <section className="container mx-auto px-4 py-16 md:py-24">
+                    <motion.h2 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-3xl md:text-5xl font-extrabold text-center mb-12 text-gray-800 dark:text-gray-100 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400"
+                    >
                         Browse by Category
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+                    </motion.h2>
+                    <div className="flex overflow-x-auto pb-8 -mx-4 px-4 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0 gap-6 sm:gap-8 scrollbar-hide snap-x">
                         {fetchedCategories
                             .filter(category => category.status)
                             .slice(0, 4)
-                            .map((category) => (
-                                <Link
-                                    to={`/booking_serviceList/${category.id}`}
+                            .map((category, index) => (
+                                <motion.div
                                     key={category.id}
-                                    className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: index * 0.1, duration: 0.5, type: 'spring' }}
+                                    className="snap-center shrink-0 w-[240px] sm:w-[280px]"
                                 >
-                                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-                                        <img
-                                            src={category.iconUrl || 'https://via.placeholder.com/64?text=Category'}
-                                            alt={`${category.name} category icon`}
-                                            className="rounded-full w-24 h-24 object-cover"
-                                        />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center">
-                                        {category.name}
-                                    </h3>
-                                </Link>
+                                    <motion.div 
+                                        whileHover={{ y: -5 }} 
+                                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                    >
+                                        <Link
+                                            to={`/booking_serviceList/${category.id}`}
+                                            className="relative block group rounded-[1.5rem] overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none transition-shadow duration-500 border border-white/60 dark:border-white/10 focus:outline-none h-64 w-full"
+                                        >
+                                            <img
+                                                src={category.iconUrl || 'https://via.placeholder.com/64?text=Category'}
+                                                alt={`${category.name} category icon`}
+                                                className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-out z-0"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-10 pointer-events-none"></div>
+                                            <div className="absolute bottom-0 left-0 w-full p-5 z-20">
+                                                <h3 className="text-xl font-bold text-white text-left tracking-tight">
+                                                    {category.name}
+                                                </h3>
+                                                {category.description && (
+                                                    <p className="text-slate-200 font-medium line-clamp-2 text-sm mt-1 tracking-tight">
+                                                        {category.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </motion.div>
+                                </motion.div>
                             ))}
                     </div>
                 </section>
 
-                <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
-                    <div className="container mx-auto">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+                <section className="bg-transparent px-4 py-16 md:py-24 relative">
+                    <div className="absolute inset-0 bg-blue-50/50 dark:bg-gray-900/50 backdrop-blur-3xl -z-10 skew-y-2 transform origin-top-left"></div>
+                    <div className="container mx-auto relative z-10">
+                        <motion.h2 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-3xl md:text-5xl font-extrabold text-center mb-12 text-gray-800 dark:text-gray-100 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400"
+                        >
                             Popular Services Near You
-                        </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        </motion.h2>
+                        <motion.div 
+                            variants={{
+                                hidden: { opacity: 0 },
+                                visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                            }}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8"
+                        >
                             {popularServices.map((service) => (
-                                <Link
-                                    to={`/service-detailsPage/${service.id}`}
-                                    key={service.id}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <img
-                                        src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
-                                        alt={`${service.name} service`}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                    <div className="p-5">
-                                        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                                            {service.name}
-                                        </h3>
-                                        <p className="text-blue-600 dark:text-blue-400 font-bold line-clamp-2">
-                                            {service.description || 'Service Details'}
-                                        </p>
-                                    </div>
-                                </Link>
+                                <motion.div key={service.id} variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', bounce: 0.4 } } }}>
+                                    <Link
+                                        to={`/service-detailsPage/${service.id}`}
+                                        className="relative block group rounded-[2rem] overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 h-full transform hover:-translate-y-2 hover:shadow-2xl"
+                                    >
+                                        <div className="absolute inset-0 rounded-[2rem] border border-white/40 dark:border-white/10 pointer-events-none z-20"></div>
+                                        <div className="relative overflow-hidden aspect-[4/5] bg-gray-200 dark:bg-gray-800 h-full">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity z-10 duration-500"></div>
+                                            <img
+                                                src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
+                                                alt={`${service.name} service`}
+                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                                            />
+                                            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 bg-white/30 dark:bg-black/40 backdrop-blur-md border-t border-white/20 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-300 dark:group-hover:text-indigo-400 transition-colors tracking-tight drop-shadow-md">
+                                                    {service.name}
+                                                </h3>
+                                                <p className="text-indigo-100 dark:text-indigo-200 font-semibold line-clamp-2 text-sm tracking-tight drop-shadow-md">
+                                                    {service.description || 'Premium Service'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
                             ))}
                             {popularServices.length === 0 && (
-                                <p className="text-center text-gray-600 dark:text-gray-400 col-span-full">
+                                <p className="text-center text-gray-600 dark:text-gray-400 col-span-full py-8">
                                     No popular services found.
                                 </p>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
-                <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
+                <section className="bg-transparent px-4 py-16 md:py-24">
                     <div className="container mx-auto">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+                        <motion.h2 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-3xl md:text-5xl font-extrabold text-center mb-12 text-gray-800 dark:text-gray-100 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400"
+                        >
                             Trending in Your Area
-                        </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+                        </motion.h2>
+                        <motion.div 
+                            variants={{
+                                hidden: { opacity: 0 },
+                                visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                            }}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8"
+                        >
                             {trendingServices.map((service) => (
-                                <Link
-                                    to={`/service-detailsPage/${service.id}`}
-                                    key={service.id}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <img
-                                        src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
-                                        alt={`${service.name} service`}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                    <div className="p-5">
-                                        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                                            {service.name}
-                                        </h3>
-                                        <p className="text-blue-600 dark:text-blue-400 font-bold line-clamp-2">
-                                            {service.description || 'Service Details'}
-                                        </p>
-                                    </div>
-                                </Link>
+                                <motion.div key={service.id} variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', bounce: 0.4 } } }}>
+                                    <Link
+                                        to={`/service-detailsPage/${service.id}`}
+                                        className="relative block group rounded-[1.5rem] overflow-hidden shadow-lg shadow-slate-200/40 dark:shadow-none transition-all duration-500 h-full transform hover:-translate-y-2 hover:shadow-xl"
+                                    >
+                                        <div className="absolute inset-0 rounded-[1.5rem] border border-white/40 dark:border-white/10 pointer-events-none z-20"></div>
+                                        <div className="relative overflow-hidden aspect-square bg-gray-200 dark:bg-gray-800 h-full">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity z-10 duration-500"></div>
+                                            <img
+                                                src={service.iconUrl ? service.iconUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7Z6nS0paslUx7X-rSOyNqmhge_ugyoMcFA&s'}
+                                                alt={`${service.name} service`}
+                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                                            />
+                                            <div className="absolute bottom-0 left-0 right-0 p-4 z-20 bg-white/30 dark:bg-black/40 backdrop-blur-md border-t border-white/20 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-300 dark:group-hover:text-indigo-400 transition-colors tracking-tight drop-shadow-md">
+                                                    {service.name}
+                                                </h3>
+                                                <p className="text-indigo-100 dark:text-indigo-200 font-semibold line-clamp-2 text-xs tracking-tight drop-shadow-md">
+                                                    {service.description || 'Premium Service'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
                             ))}
                             {trendingServices.length === 0 && (
-                                <p className="text-center text-gray-600 dark:text-gray-400 col-span-full">
+                                <p className="text-center text-gray-600 dark:text-gray-400 col-span-full py-8">
                                     No trending services found.
                                 </p>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
-                <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
-                    <div className="container mx-auto">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+                <section className="bg-transparent px-4 py-16 md:py-24 relative overflow-hidden">
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob"></div>
+                    <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+                    
+                    <div className="container mx-auto relative z-10">
+                        <motion.h2 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-3xl md:text-5xl font-extrabold text-center mb-12 text-gray-800 dark:text-gray-100 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400"
+                        >
                             Featured Providers
-                        </h2>
-                        <div className="flex overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-                            <div className="flex space-x-6">
+                        </motion.h2>
+                        <div className="flex overflow-x-auto pb-8 -mx-4 px-4 scrollbar-hide snap-x">
+                            <motion.div 
+                                variants={{
+                                    hidden: { opacity: 0 },
+                                    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                                }}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                className="flex space-x-6 sm:space-x-8"
+                            >
                                 {featuredProviders.map((provider) => (
-                                    <Link
-                                        to={`/providers/${provider.id}`}
-                                        key={provider.id}
-                                        className="flex-shrink-0 w-48 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center hover:shadow-lg transition duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    <motion.div 
+                                        key={provider.id} 
+                                        variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', bounce: 0.5 } } }} 
+                                        className="snap-center py-6 px-2"
+                                        whileHover={{ y: -8, scale: 1.03 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                     >
-                                        <img
-                                            src={provider.profilePhoto}
-                                            alt={`${provider.fullName} profile`}
-                                            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
-                                        />
-                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 line-clamp-1">
-                                            {provider.fullName}
-                                        </h3>
-                                        <div className="flex justify-center">
-                                            <StarRating rating={provider.rating} />
-                                        </div>
-                                    </Link>
+                                        <Link
+                                            to={`/providers/${provider.id}`}
+                                            className="flex flex-col items-center justify-center w-56 sm:w-64 p-6 rounded-[2rem] bg-[#DDECED] hover:brightness-95 dark:bg-gray-800/80 dark:hover:bg-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_15px_35px_rgb(0,0,0,0.1)] dark:shadow-none transition-all duration-300 group focus:outline-none block border border-white/40 dark:border-white/10"
+                                        >
+                                            <div className="relative w-24 h-24 sm:w-28 sm:h-28 mb-4">
+                                                <img
+                                                    src={provider.profilePhoto}
+                                                    alt={`${provider.fullName} profile`}
+                                                    className="w-full h-full rounded-full object-cover shadow-[0_4px_15px_rgba(0,0,0,0.1)] group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-shadow duration-300 ring-4 ring-white/30"
+                                                />
+                                                <div className="absolute bottom-1 right-1 w-6 h-6 sm:w-7 sm:h-7 bg-indigo-600 rounded-full ring-4 ring-[#DDECED] dark:ring-gray-800 flex items-center justify-center shadow-md transition-colors duration-300 group-hover:ring-[#d2e4e5]">
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                                                </div>
+                                            </div>
+                                            <h3 className="text-lg font-extrabold text-slate-800 dark:text-gray-100 tracking-tight mt-4 capitalize group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                                {provider.fullName}
+                                            </h3>
+                                            <div className="flex justify-center mt-2 scale-110 drop-shadow-[0_2px_4px_rgba(250,204,21,0.4)]">
+                                                <StarRating rating={provider.rating} />
+                                            </div>
+                                        </Link>
+                                    </motion.div>
                                 ))}
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </section>
 
-                <section className="bg-gray-100 dark:bg-gray-950 px-4 py-12 md:py-16">
-                    <div className="container mx-auto flex flex-col md:flex-row items-center gap-10">
-                        <div className="md:w-1/2">
-                            <img
-                                src="/booking_image.png"
-                                alt="How QuickMate Works illustration"
-                                className="rounded-lg shadow-lg w-full max-h-96 object-cover"
-                            />
-                        </div>
-                        <div className="md:w-1/2 text-center md:text-left">
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+                <section className="px-4 py-16 md:py-24 overflow-hidden bg-white/30 dark:bg-black/20 backdrop-blur-sm">
+                    <div className="container mx-auto flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.8, type: "spring" }}
+                            className="md:w-1/2"
+                        >
+                            <div className="relative rounded-3xl p-2 bg-gradient-to-br from-blue-400 to-emerald-400 shadow-[0_20px_50px_rgba(8,112,184,0.2)]">
+                                <div className="absolute inset-0 bg-white dark:bg-gray-900 rounded-3xl opacity-50 backdrop-blur-xl"></div>
+                                <img
+                                    src="/booking_image.png"
+                                    alt="How QuickMate Works illustration"
+                                    className="relative rounded-[1.25rem] shadow-lg w-full max-h-[500px] object-cover"
+                                />
+                            </div>
+                        </motion.div>
+                        <motion.div 
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.8, type: "spring", delay: 0.2 }}
+                            className="md:w-1/2 text-center md:text-left"
+                        >
+                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-800 dark:text-gray-100 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400">
                                 How It Works
                             </h2>
-                            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-8 opacity-90 font-light">
                                 QuickMate connects you with skilled local professionals for all your needs.
                                 Simply search for the service you need, browse through profiles and reviews,
                                 book your service, and get things done! It's that easy.
                             </p>
                             <Link
                                 to="/working"
-                                className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-2xl transition duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                             >
                                 Learn More
                                 <svg
-                                    className="ml-2 w-4 h-4"
+                                    className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -627,33 +773,70 @@ const Home: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </Link>
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
-                { !isAuthenticated && (<section className="container mx-auto px-4 py-12 md:py-16 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-                        Ready to Get Started?
-                    </h2>
-                    <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-                        Join QuickMate today and simplify your life!
-                    </p>
-                    <Link
-                        to="/register"
-                        className="inline-flex items-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-10 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                    >
-                        Sign Up Now - It's Free!
-                        <svg
-                            className="ml-3 w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true"
+                { !isAuthenticated && (<section className="relative overflow-hidden py-20 md:py-32 bg-gradient-to-br from-emerald-500 via-teal-600 to-blue-700 flex items-center justify-center isolate">
+                    {/* Abstract Floating Shapes for CTA */}
+                    <motion.div 
+                        animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }} 
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} 
+                        className="absolute top-10 left-10 w-32 h-32 bg-white/10 backdrop-blur-md rounded-full -z-10"
+                    />
+                    <motion.div 
+                        animate={{ y: [0, 30, 0], rotate: [0, -15, 0] }} 
+                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} 
+                        className="absolute bottom-10 right-20 w-48 h-48 bg-white/10 backdrop-blur-md rounded-full -z-10"
+                    />
+                    <motion.div 
+                        animate={{ scale: [1, 1.1, 1], rotate: [0, 45, 0] }} 
+                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} 
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 blur-[100px] rounded-full -z-10"
+                    />
+
+                    <div className="container mx-auto px-4 text-center z-10 relative">
+                        <motion.h2 
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-4xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-md"
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </Link>
+                            Ready to Get Started?
+                        </motion.h2>
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="text-xl md:text-2xl text-emerald-50 mb-10 font-light max-w-2xl mx-auto"
+                        >
+                            Join QuickMate today and simplify your life!
+                        </motion.p>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.4, type: "spring" }}
+                        >
+                            <Link
+                                to="/register"
+                                className="inline-flex items-center bg-white text-emerald-600 hover:text-emerald-700 font-bold py-5 px-12 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.2)] transform hover:scale-105 transition-all duration-300 text-lg group"
+                            >
+                                Sign Up Now - It's Free!
+                                <svg
+                                    className="ml-3 w-6 h-6 transition-transform group-hover:translate-x-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </Link>
+                        </motion.div>
+                    </div>
                 </section>)}
 
                 <div className={`fixed ${isMobile && showChatbot ? 'inset-0' : 'bottom-6 right-6'} z-50 ${showChatbot && isMobile ? 'chatbot-mobile-fullscreen' : ''}`}>
